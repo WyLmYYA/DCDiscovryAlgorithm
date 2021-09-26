@@ -1,0 +1,31 @@
+2021-09-22 13:08:22  [ main:0 ] - [ INFO ]  test
+2021-09-22 13:08:22  [ main:3 ] - [ DEBUG ]  debug
+2021-09-22 13:08:22  [ main:3 ] - [ ERROR ]  error
+2021-09-22 13:08:30  [ main:0 ] - [ INFO ]  test
+2021-09-22 13:08:30  [ main:3 ] - [ DEBUG ]  debug
+2021-09-22 13:08:30  [ main:3 ] - [ ERROR ]  error
+2021-09-22 13:15:05  [ main:0 ] - [ INFO ]  test
+2021-09-22 13:15:05  [ main:2 ] - [ DEBUG ]  debug
+2021-09-22 13:15:05  [ main:2 ] - [ ERROR ]  error
+2021-09-22 13:16:00  [ main:0 ] - [ INFO ]  test
+2021-09-22 13:16:00  [ main:3 ] - [ DEBUG ]  debug
+2021-09-22 13:16:00  [ main:3 ] - [ ERROR ]  error
+2021-09-22 18:26:54  [ main:0 ] - [ INFO ]  ----------------------Pre processing--------------------------
+2021-09-22 18:26:54  [ main:3 ] - [ INFO ]  --------------Begin getting initial relational input------------------
+2021-09-22 18:27:20  [ main:0 ] - [ INFO ]  ----------------------Pre processing--------------------------
+2021-09-22 18:27:20  [ main:2 ] - [ INFO ]  --------------Begin getting initial relational input------------------
+2021-09-22 18:27:33  [ main:0 ] - [ INFO ]  ----------------------Pre processing--------------------------
+2021-09-22 18:27:33  [ main:2 ] - [ INFO ]  --------------Begin getting initial relational input------------------
+2021-09-22 18:27:43  [ main:0 ] - [ INFO ]  ----------------------Pre processing--------------------------
+2021-09-22 18:27:43  [ main:4 ] - [ INFO ]  --------------Begin getting initial relational input------------------
+2021-09-22 18:28:49  [ main:0 ] - [ INFO ]  ----------------------Pre processing--------------------------
+2021-09-22 18:28:49  [ main:2 ] - [ INFO ]  --------------Begin getting initial relational input------------------
+2021-09-22 18:29:44  [ main:0 ] - [ INFO ]  ----------------------Pre processing--------------------------
+2021-09-22 18:29:44  [ main:4 ] - [ INFO ]  --------------Begin getting initial relational input------------------
+2021-09-22 18:30:01  [ main:0 ] - [ INFO ]  ----------------------Pre processing--------------------------
+2021-09-22 18:30:01  [ main:3 ] - [ INFO ]  --------------Begin getting initial relational input------------------
+2021-09-22 18:30:32  [ main:0 ] - [ INFO ]  ----------------------Pre processing--------------------------
+2021-09-22 18:30:32  [ main:2 ] - [ INFO ]  --------------Begin getting initial relational input------------------
+2021-09-22 18:30:32  [ main:37 ] - [ INFO ]  --------------Begin getting predicates--------------
+2021-09-22 18:30:32  [ main:47 ] - [ INFO ]  predicates size: 34
+2021-09-22 18:30:32  [ main:74 ] - [ INFO ]  ----------------------Algorithm begins--------------------------

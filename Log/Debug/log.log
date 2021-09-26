@@ -1,0 +1,385 @@
+2021-09-24 12:00:03  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 12:00:03  [ main:6 ] - [ INFO ]  -----Begin getting initial relational input-----
+2021-09-24 12:00:03  [ main:91 ] - [ INFO ]  -----Begin getting predicates-----
+2021-09-24 12:00:03  [ main:115 ] - [ INFO ]  predicates size: 34
+2021-09-24 12:00:03  [ main:190 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 12:00:03  [ main:191 ] - [ INFO ]  -----Random Sampling-----
+2021-09-24 12:01:57  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 12:01:57  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 12:01:57  [ main:38 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 12:01:57  [ main:48 ] - [ INFO ]  predicates size: 34
+2021-09-24 12:01:57  [ main:76 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 12:01:57  [ main:76 ] - [ INFO ]  [Random Sampling]
+2021-09-24 12:28:25  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 12:28:25  [ main:6 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 12:28:25  [ main:66 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 12:28:25  [ main:86 ] - [ INFO ]  predicates size: 34
+2021-09-24 12:28:25  [ main:136 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 12:28:25  [ main:137 ] - [ INFO ]  [Random Sampling]
+2021-09-24 12:28:25  [ main:140 ] - [ INFO ]  -----Get pre-EvidenceSet
+2021-09-24 12:28:25  [ main:247 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:08:17  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:08:17  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:08:17  [ main:69 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 13:08:17  [ main:84 ] - [ INFO ]  predicates size: 34
+2021-09-24 13:08:17  [ main:132 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 13:08:17  [ main:133 ] - [ INFO ]  [Random Sampling]
+2021-09-24 13:08:17  [ main:137 ] - [ INFO ]  -----Get pre-EvidenceSet
+2021-09-24 13:08:17  [ main:227 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:08:17  [ main:227 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 13:08:17  [ main:307 ] - [ INFO ]  Time Cost: 68
+2021-09-24 13:08:17  [ main:307 ] - [ INFO ]  [inital MMCS]
+2021-09-24 13:08:17  [ main:339 ] - [ INFO ]  Time Cost: 31
+2021-09-24 13:09:18  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:09:18  [ main:5 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:09:18  [ main:66 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 13:09:18  [ main:80 ] - [ INFO ]  predicates size: 34
+2021-09-24 13:09:18  [ main:138 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 13:09:18  [ main:138 ] - [ INFO ]  [Random Sampling]
+2021-09-24 13:09:18  [ main:142 ] - [ INFO ]  -----Get pre-EvidenceSet
+2021-09-24 13:09:18  [ main:303 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:09:18  [ main:303 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 13:09:18  [ main:401 ] - [ INFO ]  Time Cost: 85
+2021-09-24 13:09:18  [ main:401 ] - [ INFO ]  [inital MMCS]
+2021-09-24 13:09:18  [ main:429 ] - [ INFO ]  Time Cost: 26
+2021-09-24 13:21:52  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:21:52  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:21:52  [ main:53 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 13:21:52  [ main:67 ] - [ INFO ]  predicates size: 34
+2021-09-24 13:21:52  [ main:108 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 13:21:52  [ main:109 ] - [ INFO ]  [Random Sampling]
+2021-09-24 13:21:52  [ main:112 ] - [ INFO ]  -----Get pre-EvidenceSet
+2021-09-24 13:21:53  [ main:202 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:21:53  [ main:202 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 13:21:53  [ main:274 ] - [ INFO ]  Time Cost: 63
+2021-09-24 13:21:53  [ main:276 ] - [ INFO ]  [inital MMCS]
+2021-09-24 13:21:53  [ main:308 ] - [ INFO ]  Time Cost: 24
+2021-09-24 13:23:31  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:23:31  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:23:31  [ main:54 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 13:23:31  [ main:72 ] - [ INFO ]  predicates size: 34
+2021-09-24 13:23:31  [ main:118 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 13:23:31  [ main:118 ] - [ INFO ]  [Random Sampling]
+2021-09-24 13:23:31  [ main:121 ] - [ INFO ]  -----Get pre-EvidenceSet
+2021-09-24 13:23:31  [ main:178 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:23:31  [ main:178 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 13:23:32  [ main:235 ] - [ INFO ]  Time Cost: 49
+2021-09-24 13:23:32  [ main:236 ] - [ INFO ]  [inital MMCS]
+2021-09-24 13:24:13  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:24:13  [ main:5 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:24:13  [ main:56 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 13:24:13  [ main:72 ] - [ INFO ]  predicates size: 34
+2021-09-24 13:24:13  [ main:118 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 13:24:13  [ main:119 ] - [ INFO ]  [Random Sampling]
+2021-09-24 13:24:13  [ main:122 ] - [ INFO ]  -----Get pre-EvidenceSet
+2021-09-24 13:24:13  [ main:190 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:24:13  [ main:190 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 13:24:13  [ main:246 ] - [ INFO ]  Time Cost: 47
+2021-09-24 13:24:13  [ main:246 ] - [ INFO ]  [inital MMCS]
+2021-09-24 13:24:13  [ main:342 ] - [ INFO ]  Time Cost: 91
+2021-09-24 13:27:13  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:27:13  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:28:15  [ main:1 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:28:15  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:28:15  [ main:34 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 13:28:15  [ main:45 ] - [ INFO ]  predicates size: 14
+2021-09-24 13:28:15  [ main:76 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 13:28:15  [ main:76 ] - [ INFO ]  [Random Sampling]
+2021-09-24 13:28:15  [ main:77 ] - [ INFO ]  -----Get pre-EvidenceSet
+2021-09-24 13:28:15  [ main:102 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:28:15  [ main:102 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 13:28:15  [ main:129 ] - [ INFO ]  Time Cost: 22
+2021-09-24 13:28:15  [ main:129 ] - [ INFO ]  [inital MMCS]
+2021-09-24 13:28:15  [ main:148 ] - [ INFO ]  Time Cost: 18
+2021-09-24 13:57:24  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:57:24  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:57:25  [ main:51 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 13:57:25  [ main:67 ] - [ INFO ]  predicates size: 14
+2021-09-24 13:57:25  [ main:117 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 13:57:25  [ main:118 ] - [ INFO ]  [Random Sampling]
+2021-09-24 13:57:25  [ main:121 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 13:57:25  [ main:157 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:57:25  [ main:157 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 13:57:25  [ main:204 ] - [ INFO ]  Time Cost: 38
+2021-09-24 13:57:25  [ main:204 ] - [ INFO ]  [inital MMCS]
+2021-09-24 13:57:25  [ main:256 ] - [ INFO ]  Time Cost: 48
+2021-09-24 13:57:42  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 13:57:42  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 13:57:42  [ main:38 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 13:57:42  [ main:54 ] - [ INFO ]  predicates size: 14
+2021-09-24 13:57:42  [ main:92 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 13:57:42  [ main:92 ] - [ INFO ]  [Random Sampling]
+2021-09-24 13:57:42  [ main:96 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 13:57:42  [ main:126 ] - [ INFO ]  -----Get DC-----
+2021-09-24 13:57:42  [ main:127 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 13:57:42  [ main:159 ] - [ INFO ]  Time Cost: 27
+2021-09-24 13:57:42  [ main:159 ] - [ INFO ]  [inital MMCS]
+2021-09-24 13:57:43  [ main:186 ] - [ INFO ]  Time Cost: 26
+2021-09-24 14:14:21  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 14:14:21  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 14:14:21  [ main:39 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 14:14:21  [ main:52 ] - [ INFO ]  predicates size: 14
+2021-09-24 14:14:21  [ main:88 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 14:14:21  [ main:89 ] - [ INFO ]  [Random Sampling]
+2021-09-24 14:14:21  [ main:91 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 14:14:21  [ main:118 ] - [ INFO ]  -----Get DC-----
+2021-09-24 14:14:21  [ main:118 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 14:14:21  [ main:141 ] - [ INFO ]  Time Cost: 17
+2021-09-24 14:14:21  [ main:141 ] - [ INFO ]  [inital MMCS]
+2021-09-24 14:14:21  [ main:161 ] - [ INFO ]  Time Cost: 18
+2021-09-24 14:15:21  [ main:1 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 14:15:21  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 14:15:21  [ main:56 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 14:15:21  [ main:79 ] - [ INFO ]  predicates size: 14
+2021-09-24 14:15:21  [ main:140 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 14:15:21  [ main:140 ] - [ INFO ]  [Random Sampling]
+2021-09-24 14:15:21  [ main:144 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 14:15:21  [ main:199 ] - [ INFO ]  -----Get DC-----
+2021-09-24 14:15:21  [ main:199 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 14:15:21  [ main:243 ] - [ INFO ]  Time Cost: 35
+2021-09-24 14:15:21  [ main:244 ] - [ INFO ]  [inital MMCS]
+2021-09-24 14:15:22  [ main:293 ] - [ INFO ]  Time Cost: 47
+2021-09-24 14:16:52  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 14:16:52  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 14:16:52  [ main:61 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 14:16:52  [ main:78 ] - [ INFO ]  predicates size: 14
+2021-09-24 14:16:52  [ main:127 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 14:16:52  [ main:127 ] - [ INFO ]  [Random Sampling]
+2021-09-24 14:16:52  [ main:130 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 14:16:52  [ main:169 ] - [ INFO ]  -----Get DC-----
+2021-09-24 14:16:52  [ main:170 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 14:16:52  [ main:220 ] - [ INFO ]  Time Cost: 37
+2021-09-24 14:16:52  [ main:240 ] - [ INFO ]  [inital MMCS]
+2021-09-24 14:16:52  [ main:284 ] - [ INFO ]  Time Cost: 42
+2021-09-24 14:18:14  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 14:18:14  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 14:18:14  [ main:43 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 14:18:14  [ main:61 ] - [ INFO ]  predicates size: 14
+2021-09-24 14:18:14  [ main:106 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 14:18:14  [ main:106 ] - [ INFO ]  [Random Sampling]
+2021-09-24 14:18:14  [ main:109 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 14:18:14  [ main:141 ] - [ INFO ]  -----Get DC-----
+2021-09-24 14:18:14  [ main:142 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 14:18:14  [ main:176 ] - [ INFO ]  Time Cost: 29
+2021-09-24 14:18:14  [ main:190 ] - [ INFO ]  [inital MMCS]
+2021-09-24 14:18:14  [ main:220 ] - [ INFO ]  Time Cost: 27
+2021-09-24 14:18:30  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 14:18:30  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 14:18:30  [ main:31 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 14:18:30  [ main:44 ] - [ INFO ]  predicates size: 14
+2021-09-24 14:18:30  [ main:79 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 14:18:30  [ main:79 ] - [ INFO ]  [Random Sampling]
+2021-09-24 14:18:30  [ main:81 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 14:18:30  [ main:104 ] - [ INFO ]  -----Get DC-----
+2021-09-24 14:18:30  [ main:105 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 14:18:30  [ main:134 ] - [ INFO ]  Time Cost: 22
+2021-09-24 14:18:30  [ main:145 ] - [ INFO ]  [inital MMCS]
+2021-09-24 14:18:30  [ main:167 ] - [ INFO ]  Time Cost: 21
+2021-09-24 14:24:20  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 14:24:20  [ main:5 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 14:24:20  [ main:53 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 14:24:20  [ main:70 ] - [ INFO ]  predicates size: 14
+2021-09-24 14:24:20  [ main:125 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 14:24:20  [ main:126 ] - [ INFO ]  [Random Sampling]
+2021-09-24 14:24:20  [ main:129 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 14:24:20  [ main:172 ] - [ INFO ]  -----Get DC-----
+2021-09-24 14:24:20  [ main:172 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 14:24:20  [ main:234 ] - [ INFO ]  Time Cost: 53
+2021-09-24 14:24:20  [ main:250 ] - [ INFO ]  [inital MMCS]
+2021-09-24 14:24:20  [ main:295 ] - [ INFO ]  Time Cost: 43
+2021-09-24 15:12:33  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:12:33  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:12:33  [ main:52 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:12:33  [ main:66 ] - [ INFO ]  predicates size: 14
+2021-09-24 15:12:33  [ main:125 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:12:33  [ main:125 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:12:33  [ main:130 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:12:33  [ main:169 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:12:33  [ main:170 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:12:33  [ main:217 ] - [ INFO ]  Time Cost: 37
+2021-09-24 15:12:33  [ main:237 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:12:33  [ main:291 ] - [ INFO ]  Time Cost: 51
+2021-09-24 15:15:02  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:15:02  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:15:02  [ main:36 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:15:02  [ main:51 ] - [ INFO ]  predicates size: 14
+2021-09-24 15:15:02  [ main:94 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:15:02  [ main:94 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:15:02  [ main:98 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:15:02  [ main:124 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:15:02  [ main:125 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:15:02  [ main:151 ] - [ INFO ]  Time Cost: 21
+2021-09-24 15:15:02  [ main:164 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:15:02  [ main:185 ] - [ INFO ]  Time Cost: 20
+2021-09-24 15:15:53  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:15:53  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:15:53  [ main:48 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:15:53  [ main:85 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:15:53  [ main:138 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:15:53  [ main:139 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:15:53  [ main:142 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:15:53  [ main:179 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:15:53  [ main:180 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:15:53  [ main:225 ] - [ INFO ]  Time Cost: 35
+2021-09-24 15:15:53  [ main:313 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:15:53  [ main:369 ] - [ INFO ]  Time Cost: 52
+2021-09-24 15:17:00  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:17:00  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:17:00  [ main:56 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:17:00  [ main:106 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:17:00  [ main:171 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:17:00  [ main:172 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:17:00  [ main:176 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:17:00  [ main:230 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:17:00  [ main:231 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:17:00  [ main:306 ] - [ INFO ]  Time Cost: 60
+2021-09-24 15:17:00  [ main:403 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:17:00  [ main:457 ] - [ INFO ]  Time Cost: 50
+2021-09-24 15:17:51  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:17:51  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:17:51  [ main:55 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:17:51  [ main:92 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:17:51  [ main:141 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:17:51  [ main:142 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:17:51  [ main:145 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:17:51  [ main:175 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:17:51  [ main:175 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:17:51  [ main:220 ] - [ INFO ]  Time Cost: 35
+2021-09-24 15:17:51  [ main:300 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:17:51  [ main:352 ] - [ INFO ]  Time Cost: 48
+2021-09-24 15:20:34  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:20:34  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:20:34  [ main:43 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:20:34  [ main:70 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:20:34  [ main:112 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:20:34  [ main:113 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:20:34  [ main:116 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:20:34  [ main:147 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:20:34  [ main:148 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:20:34  [ main:187 ] - [ INFO ]  Time Cost: 32
+2021-09-24 15:20:35  [ main:248 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:20:35  [ main:295 ] - [ INFO ]  Time Cost: 44
+2021-09-24 15:21:02  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:21:02  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:21:02  [ main:52 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:21:02  [ main:91 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:21:02  [ main:166 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:21:02  [ main:167 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:21:02  [ main:172 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:21:02  [ main:221 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:21:02  [ main:222 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:21:02  [ main:290 ] - [ INFO ]  Time Cost: 58
+2021-09-24 15:21:02  [ main:358 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:21:02  [ main:413 ] - [ INFO ]  Time Cost: 50
+2021-09-24 15:21:32  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:21:32  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:21:32  [ main:54 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:21:32  [ main:94 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:21:32  [ main:151 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:21:32  [ main:151 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:21:32  [ main:155 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:21:59  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:21:59  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:21:59  [ main:42 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:21:59  [ main:73 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:21:59  [ main:132 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:21:59  [ main:132 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:21:59  [ main:136 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:22:00  [ main:206 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:22:00  [ main:206 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:22:00  [ main:251 ] - [ INFO ]  Time Cost: 37
+2021-09-24 15:22:00  [ main:328 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:22:00  [ main:390 ] - [ INFO ]  Time Cost: 60
+2021-09-24 15:28:08  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:28:08  [ main:2 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:28:08  [ main:37 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:28:08  [ main:60 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:28:08  [ main:92 ] - [ INFO ]  --------------------Algorithm begins--------------------
+2021-09-24 15:28:08  [ main:93 ] - [ INFO ]  [Random Sampling]
+2021-09-24 15:28:08  [ main:95 ] - [ INFO ]  -----Get pre-EvidenceSet-----
+2021-09-24 15:28:08  [ main:126 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:28:08  [ main:127 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:28:08  [ main:163 ] - [ INFO ]  Time Cost: 30
+2021-09-24 15:28:08  [ main:217 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:28:08  [ main:250 ] - [ INFO ]  Time Cost: 30
+2021-09-24 15:40:59  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:40:59  [ main:1 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:40:59  [ main:22 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:40:59  [ main:40 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:40:59  [ main:106 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:40:59  [ main:146 ] - [ INFO ]  Time Cost: 33
+2021-09-24 15:45:56  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:45:56  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:45:56  [ main:49 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:45:56  [ main:81 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:45:56  [ main:209 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:45:56  [ main:239 ] - [ INFO ]  Time Cost: 21
+2021-09-24 15:46:12  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:46:12  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:46:12  [ main:42 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:46:12  [ main:77 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:46:12  [ main:181 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:46:12  [ main:227 ] - [ INFO ]  Time Cost: 37
+2021-09-24 15:48:30  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:48:30  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:48:30  [ main:31 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:48:30  [ main:57 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:48:30  [ main:111 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:48:30  [ main:112 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:48:30  [ main:162 ] - [ INFO ]  Time Cost: 42
+2021-09-24 15:48:30  [ main:227 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:48:30  [ main:263 ] - [ INFO ]  Time Cost: 34
+2021-09-24 15:50:27  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:50:27  [ main:2 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:50:27  [ main:40 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:50:27  [ main:64 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:50:27  [ main:109 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:50:27  [ main:110 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:50:27  [ main:163 ] - [ INFO ]  Time Cost: 46
+2021-09-24 15:50:27  [ main:213 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:50:27  [ main:235 ] - [ INFO ]  Time Cost: 20
+2021-09-24 15:51:16  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:51:16  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:51:16  [ main:57 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:51:16  [ main:92 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:51:16  [ main:169 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:51:16  [ main:169 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:51:16  [ main:277 ] - [ INFO ]  Time Cost: 86
+2021-09-24 15:51:16  [ main:429 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:51:16  [ main:506 ] - [ INFO ]  Time Cost: 75
+2021-09-24 15:53:57  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:53:57  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:53:57  [ main:54 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:53:57  [ main:99 ] - [ INFO ]  predicates size: 20
+2021-09-24 15:53:57  [ main:188 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:53:57  [ main:189 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:53:57  [ main:285 ] - [ INFO ]  Time Cost: 81
+2021-09-24 15:53:57  [ main:384 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:53:58  [ main:428 ] - [ INFO ]  Time Cost: 42
+2021-09-24 15:56:16  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:56:16  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:56:16  [ main:46 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:56:16  [ main:81 ] - [ INFO ]  predicates size: 68
+2021-09-24 15:56:16  [ main:159 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:56:16  [ main:159 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:56:17  [ main:825 ] - [ INFO ]  Time Cost: 654
+2021-09-24 15:56:18  [ main:2413 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:56:18  [ main:2433 ] - [ INFO ]  Time Cost: 18
+2021-09-24 15:56:53  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 15:56:53  [ main:3 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 15:56:53  [ main:301 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 15:56:53  [ main:423 ] - [ INFO ]  predicates size: 70
+2021-09-24 15:56:55  [ main:1757 ] - [ INFO ]  -----Get DC-----
+2021-09-24 15:56:55  [ main:1758 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 15:57:19  [ main:26525 ] - [ INFO ]  Time Cost: 24759
+2021-09-24 15:58:10  [ main:76841 ] - [ INFO ]  [inital MMCS]
+2021-09-24 15:58:10  [ main:77099 ] - [ INFO ]  Time Cost: 178
+2021-09-24 16:02:40  [ main:0 ] - [ INFO ]  --------------------Pre processing--------------------
+2021-09-24 16:02:40  [ main:4 ] - [ INFO ]  [Begin getting initial relational input]
+2021-09-24 16:02:41  [ main:447 ] - [ INFO ]  [Begin getting predicates]
+2021-09-24 16:02:41  [ main:665 ] - [ INFO ]  predicates size: 70
+2021-09-24 16:02:42  [ main:1679 ] - [ INFO ]  -----Get DC-----
+2021-09-24 16:02:42  [ main:1680 ] - [ INFO ]  [initial tree DFS]
+2021-09-24 16:02:59  [ main:18592 ] - [ INFO ]  Time Cost: 16904
+2021-09-24 16:03:35  [ main:55199 ] - [ INFO ]  [inital MMCS]
+2021-09-24 16:06:11  [ main:211230 ] - [ INFO ]  Time Cost: 156015

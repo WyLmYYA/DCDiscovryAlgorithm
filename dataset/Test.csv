@@ -1,0 +1,8 @@
+clo1(String),col2(Integer),col3(Integer)
+A,1,3
+A,2,4
+B,1,5
+B,0,1
+C,3,2
+D,1,3
+E,2,2
