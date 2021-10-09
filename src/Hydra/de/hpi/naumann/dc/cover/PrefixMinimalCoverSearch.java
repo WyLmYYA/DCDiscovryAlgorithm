@@ -72,7 +72,6 @@ public class PrefixMinimalCoverSearch {
 //			if (i % 1000 == 0 && i > 0)
 //				System.out.println("\r" + i);
 		}
-
 		Collection<IBitSet> result = new ArrayList<IBitSet>();
 		posCover.forEach(bs -> result.add(bs));
 

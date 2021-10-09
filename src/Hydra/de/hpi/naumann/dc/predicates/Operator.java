@@ -10,6 +10,7 @@ public enum Operator {
   private Operator[] implications;
   private Operator[] transitives;
   private String shortString;
+  private Operator[] redundant;
 
   public Operator getInverse() {
     return inverse;
@@ -30,6 +31,8 @@ public enum Operator {
   public Operator[] getTransitives() {
     return transitives;
   }
+
+  public Operator[] getRedundant() { return redundant; }
 
   public boolean isTransitiveWith(Operator op) {
     for (Operator i : transitives) {
@@ -158,5 +161,20 @@ public enum Operator {
     GREATER_EQUAL.shortString = ">=";
     LESS_EQUAL.shortString = "<=";
   }
+
+  /**
+   * @Description: get redundant operator from menglu and chaoqin
+   * @Author yoyuan
+   * @DateTime: 2021-10-9
+  */
+  static {
+    EQUAL.redundant = new Operator[] {UNEQUAL, LESS_EQUAL, LESS, GREATER_EQUAL, GREATER};
+    UNEQUAL.redundant = new Operator[] {EQUAL, LESS_EQUAL, LESS, GREATER_EQUAL, GREATER};
+    LESS_EQUAL.redundant = new Operator[] {UNEQUAL, EQUAL, LESS, GREATER_EQUAL, GREATER};
+    LESS.redundant = new Operator[] {UNEQUAL, EQUAL, LESS_EQUAL, GREATER_EQUAL, GREATER};
+    GREATER.redundant = new Operator[] {UNEQUAL, EQUAL, LESS_EQUAL, GREATER_EQUAL, LESS};
+    GREATER_EQUAL.redundant = new Operator[] {UNEQUAL, EQUAL, LESS_EQUAL, GREATER, LESS};
+  }
+
 
 }

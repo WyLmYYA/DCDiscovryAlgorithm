@@ -472,7 +472,7 @@ public class LongBitSet implements IBitSet, Serializable {
 		// thus, set a is always directing the new length
 		final long[] units = new long[setA.mUnits.length];
 		for (int i = 0; i < setB.mUnits.length; i++) {
-			units[i] = setA.mUnits[i] & ~setA.mUnits[i];
+			units[i] = setA.mUnits[i] & ~setB.mUnits[i];
 		}
 		for (int i = setB.mUnits.length; i < setA.mUnits.length; i++) {
 			units[i] = setA.mUnits[i];
@@ -636,7 +636,7 @@ public class LongBitSet implements IBitSet, Serializable {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append('{');
+//		sb.append('{');
 		int unitLen = unitLength();
 		for (int ii = 0; ii < unitLen; ii++) {
 			int len = ii == unitLen - 1 ? 1 + (length() - 1) % BITS_PER_UNIT : BITS_PER_UNIT;
@@ -652,7 +652,7 @@ public class LongBitSet implements IBitSet, Serializable {
 				sb.append("0000000000000000000000000000000000000000000000000000000000000000", 0, len);
 			}
 		}
-		sb.append('}');
+//		sb.append('}');
 		return sb.toString();
 	}
 

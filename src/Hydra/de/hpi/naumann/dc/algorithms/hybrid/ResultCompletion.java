@@ -1,7 +1,6 @@
 package Hydra.de.hpi.naumann.dc.algorithms.hybrid;
 
 import Hydra.ch.javasoft.bitset.IBitSet;
-import Hydra.dc.algorithms.hybrid.Hydra;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;

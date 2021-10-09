@@ -12,6 +12,7 @@ public class Predicate implements PartitionRefiner {
 	private final Operator op;
 	private final ColumnOperand operand1;
 	private final ColumnOperand operand2;
+	private Collection<Predicate> redundants;
 
 	public Predicate(Operator op, ColumnOperand<?> operand1, ColumnOperand<?> operand2) {
 		if (op == null)
@@ -144,4 +145,21 @@ public class Predicate implements PartitionRefiner {
 		return list;
 	}
 	*/
+
+	/**
+	 * @Description: get redundant predicates from menglu and chaoqin
+	 * @Author yoyuan
+	 * @DateTime: 2021-10-9
+	 */
+	public Collection<Predicate> getRedundants(){
+		if (redundants != null)
+			return redundants;
+		Operator[] operatorRedundants = op.getRedundant();
+		List<Predicate> predicateRedundants = new ArrayList<>(operatorRedundants.length);
+		for (int i = 0; i < operatorRedundants.length; ++i){
+			predicateRedundants.add(predicateProvider.getPredicate(operatorRedundants[i], operand1, operand2));
+		}
+		redundants = Collections.unmodifiableList(predicateRedundants);
+		return predicateRedundants;
+	}
 }

@@ -47,6 +47,7 @@ public class PredicateBitSet implements Iterable<Predicate> {
 
 
 	public static IndexProvider<Predicate> indexProvider = new IndexProvider<>();
+
 	private static BitSetFactory bf = new LongBitSetFactory();
 
 	static public Predicate getPredicate(int index) {

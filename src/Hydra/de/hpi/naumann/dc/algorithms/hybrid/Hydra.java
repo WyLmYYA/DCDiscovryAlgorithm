@@ -9,15 +9,24 @@ import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.ColumnAwareEvidenceSet
 import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.SystematicLinearEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
+import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+
+import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 public class Hydra {
 
+	private IEvidenceSet fullEvidenceSet;
 	protected int sampleRounds = 20;
 	//sampling efficiency : growth/total
 	protected double efficiencyThreshold = 0.005d;
 
-	public DenialConstraintSet run(Input input, PredicateBuilder predicates) {
+	public IEvidenceSet getFullEvidenceSet() {
+		return fullEvidenceSet;
+	}
 
+	public DenialConstraintSet run(Input input, PredicateBuilder predicates, long timebefore) {
+
+		long hydraBegin = System.currentTimeMillis();
 		//two phases:random sampling and focused sampling
 		System.out.println("Building approximate evidence set...");
 		//preliminary evidence set
@@ -52,6 +61,12 @@ public class Hydra {
 		long t1 = System.currentTimeMillis();
 		IEvidenceSet result = new ResultCompletion(input, predicates).complete(dcsApprox, sampleEvidenceSet,
 				fullEvidenceSet);
+		this.fullEvidenceSet = result;
+		System.out.println("full EvidenceSet : " + result.size());
+//		result.forEach(predicates1 -> {
+//			System.out.println(predicates1);
+//			System.out.println(predicates1.getBitset().toBitSet());
+//		});
 		System.out.println("complete time :" + (System.currentTimeMillis() - t1));
 //
 //		for(PredicateBitSet pre:result){
@@ -79,15 +94,30 @@ public class Hydra {
 			e.printStackTrace();
 		}
 */
+//		for (int i = 0; i < 20; ++i){
+//			System.out.println(indexProvider.getObject(i));
+//		}
+
+
+		System.out.println("before second inversion cost : " + (System.currentTimeMillis() - hydraBegin + timebefore));
+
 		long starttime = System.currentTimeMillis();
 		DenialConstraintSet dcs = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(result);
 		long endtime=System.currentTimeMillis();
+//		dcs.forEach(System.out::println);
 		System.out.println("evidence inversion time: "+ (endtime - starttime)+ " ms");
 		dcs.minimize();
 //		for(DenialConstraint dc:dcs){
 //			System.out.println(dc);
 //		}
+//		dcs.forEach(denialConstraint -> {
+//			System.out.println(denialConstraint);
+//			System.out.println(denialConstraint.getPredicateSet().getBitset().toBitSet());
+//		});
 		System.out.println("dc size:"+dcs.size());
+//		for (int i = 0; i < 20; ++i){
+//			System.out.println(indexProvider.getObject(i));
+//		}
 		return dcs;
 	}
 

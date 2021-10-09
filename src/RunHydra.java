@@ -3,10 +3,12 @@
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.Hydra;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
+import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.input.InputIterationException;
 import Hydra.de.hpi.naumann.dc.input.RelationalInput;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
+import mmcsforDC.MMCSDC;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -19,7 +21,7 @@ public class RunHydra {
 
 	public static void main(String[] args) throws InputIterationException, IOException {
 		// TODO Auto-generated method stub
-//		String line=args[0];
+		//		String line=args[0];
 //		String odline=args[1];
 //		String indexline=args[2];
 //		String sizeline=args[3];
@@ -29,9 +31,9 @@ public class RunHydra {
 //		String odline ="dataset//stock_1k2_nocross.txt";
 //		String sizeline ="1000";
 
-		String line ="dataset//Tax10k.csv";
+		String line ="dataset//Test.csv";
 //		String odline ="dataset//hospital1kDC.txt";
-		String sizeline ="10000";
+		String sizeline ="7";
 //		String indexline="dataset//Hospital_dc.txt";
 
 		long starttime = System.currentTimeMillis();
@@ -54,34 +56,19 @@ public class RunHydra {
 		Hydra hydra = new Hydra();
 		System.out.println("now is hydra for dc");
 
-		DenialConstraintSet dcs = hydra.run(input, predicates);
+		DenialConstraintSet dcs = hydra.run(input, predicates, System.currentTimeMillis() - starttime );
 		long endtime=System.currentTimeMillis();
 		System.out.println("Used time: "+ (endtime - starttime)+ " ms");
 
 
-		dcs.forEach(System.out::println);
+//		dcs.forEach(System.out::println);
 		String od="";
 		int count=-1;
-		for(Iterator<DenialConstraint> iter = dcs.iterator(); iter.hasNext();){
+		for(Iterator<DenialConstraint> iter = dcs.iterator();iter.hasNext();){
 			count++;
 			od+="this is "+count+" "+iter.next().toString()+"\n";
 		}
 		System.out.println("Minimal dc size : "+(count+1));
-		System.out.println(od);
-//		try{
-//			System.out.println("Writting dc...");
-//			File file =new File(odline);
-//			FileWriter fileWritter = new FileWriter(file);
-//			fileWritter.write(od);
-//			if(!file.exists()){
-//				file.createNewFile();
-//			}
-//			fileWritter.close();
-//			System.out.println("Write dc Done");
-//		}catch(IOException e){
-//			e.printStackTrace();
-//		}
-//		long end=System.currentTimeMillis();
-//		System.out.println("Used time: "+ (end - starttime)+ " ms");
+//		System.out.println(od);
 	}
 }
