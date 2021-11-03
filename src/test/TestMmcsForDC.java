@@ -2,6 +2,7 @@ package test;
 
 
 import Hydra.ch.javasoft.bitset.IBitSet;
+import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.ResultCompletion;
 import Hydra.de.hpi.naumann.dc.cover.PrefixMinimalCoverSearch;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
@@ -19,6 +20,8 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import mmcsforDC.MMCSDC;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
+
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 
@@ -139,5 +142,6 @@ public class TestMmcsForDC {
         input = inputTmp;
 
         System.out.println("predicate space:"+predicateBuilder.getPredicates().size());
+
     }
 }

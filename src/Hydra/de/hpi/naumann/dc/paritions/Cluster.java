@@ -77,6 +77,22 @@ public class Cluster {
 		return map;
 	}
 
+	/**
+	 * @Description: transfrom TIntArrayList to array
+	 * @Author yoyuan
+	 * @DateTime: 2021-10-16 before dawn
+	 * */
+	public int[] toArray(){
+		int[] array = new int[this.array.size()];
+		TIntIterator iter = this.array.iterator();
+		int j = 0;
+		while (iter.hasNext()) {
+			array[j++] = iter.next();
+		}
+		return array;
+
+	}
+
 	public static Cluster minus(Cluster c1, Cluster cNot) {
 		if (cNot.size() < 1)
 			return c1;

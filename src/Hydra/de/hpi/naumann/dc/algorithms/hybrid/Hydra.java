@@ -47,7 +47,9 @@ public class Hydra {
 
 
 		//得到DC之后都需要check 防止冗余
+		long t2 = System.currentTimeMillis();
 		DenialConstraintSet dcsApprox = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(fullEvidenceSet);
+		System.out.println("first Inversion :" + (System.currentTimeMillis() - t2));
 
 //		for(DenialConstraint dcset:dcsApprox)
 //			System.out.println(dcset.getPredicateSet().getBitset().toBitSet());
@@ -103,10 +105,11 @@ public class Hydra {
 
 		long starttime = System.currentTimeMillis();
 		DenialConstraintSet dcs = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(result);
-		long endtime=System.currentTimeMillis();
+
 //		dcs.forEach(System.out::println);
-		System.out.println("evidence inversion time: "+ (endtime - starttime)+ " ms");
+		System.out.println("evidence inversion time: "+ (System.currentTimeMillis() - starttime)+ " ms");
 		dcs.minimize();
+		System.out.println("evidence inversion + minimize time: "+ (System.currentTimeMillis() - starttime)+ " ms");
 //		for(DenialConstraint dc:dcs){
 //			System.out.println(dc);
 //		}
