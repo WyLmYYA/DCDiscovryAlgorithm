@@ -2,6 +2,9 @@ package binaryindextree;
 
 import Hydra.de.hpi.naumann.dc.paritions.Cluster;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @Author yoyuan
  * @Description: Binary Index Tree
@@ -29,13 +32,13 @@ public class BIT {
         }
     }
 
-    public Cluster getSum(int rightBound){
-        Cluster cluster = new Cluster();
+    public List<Cluster> getSum(int rightBound){
+        List<Cluster> clustes = new ArrayList<>();
         while(rightBound > 0){
-            cluster.addAll(nodes[rightBound]);
+            clustes.add(nodes[rightBound]);
             rightBound -= lowbit(rightBound);
         }
-        return cluster;
+        return clustes;
     }
 
     private int lowbit(int x){

@@ -14,11 +14,11 @@ import gnu.trove.map.hash.TIntIntHashMap;
 import net.mintern.primitive.Primitive;
 import net.mintern.primitive.comparators.IntComparator;
 import utils.TimeCal;
-import utils.TimeCal2;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.IntUnaryOperator;
 
@@ -179,19 +179,18 @@ public class  IEJoin {
 	@SuppressWarnings("rawtypes")
 	public void calc(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer){
 
+		/** Phase1: get init structure */
 
-		long l1 = System.currentTimeMillis();
-		/** init BIT tree */
+		long phase1 = System.currentTimeMillis();
+
 		int len1 = clusters.getC1().size();
 		int len2 = clusters.getC2().size();
 
 
 		BIT bit = new BIT(len2);
 
-
 		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
 		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
-		ParsedColumn<?> columnC = p2.getOperand1().getColumn();
 		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
 
 		Order order1 = getSortingOrder(p1);
@@ -199,14 +198,11 @@ public class  IEJoin {
 
 		int[] L_A = getSortedArray(clusters.getC1(), columnA, order1);
 		int[] L_B = getSortedArray(clusters.getC2(), columnB, order1);
-		int[] L_C = getSortedArray(clusters.getC1(), columnC, order2);
 		int[] L_D = getSortedArray(clusters.getC2(), columnD, order2);
 
 
 		int[] O1 = getOffsetArray(L_A, L_B, columnA.getIndex(), columnB.getIndex(), order1 == Order.DESCENDING,
 				p1.getOperator() == Operator.GREATER || p1.getOperator() == Operator.LESS);
-		int[] O2 = getOffsetArray(L_C, L_D, columnC.getIndex(), columnD.getIndex(), order2 == Order.DESCENDING,
-				p2.getOperator() == Operator.GREATER_EQUAL || p2.getOperator() == Operator.LESS_EQUAL);
 
 		HashMap<Integer, Integer> B_D = new HashMap<>();
 		for (int i = 0; i < len2; ++i){
@@ -226,39 +222,36 @@ public class  IEJoin {
 			int D = L_D[i];
 			bit.addTuple(B_D.get(D) + 1, D);
 		}
-		TimeCal.add(System.currentTimeMillis() - l1);
+		TimeCal.add(System.currentTimeMillis() - phase1, 0);
 
-		/** scan L_A */
+
 		for (int i = 0; i < len1; ++i){
-			/** Step2: get BIT nodes set satisfies predicate1 with A and B logN*/
+			/** Phase2:  get cluster */
+			long phase2 = System.currentTimeMillis();
 			int A = L_A[i];
 //			int offsetForAandB = getOffset(L_B,  L_A[i]);
 			int offsetForAandB = O1[i];
 
-			Cluster A_BNodesCluster = bit.getSum(offsetForAandB);
-
-			if (A_BNodesCluster.size() == 0) {
-				continue;
-			}
-//			System.out.println(columnC.getValue(A).getClass().getName());
-//			double value = columnC.getValue(A).getClass().getName() == "java.lang.Double" ? ((Double)columnC.getValue(A)) : ((Long)columnC.getValue(A)).doubleValue();
-//			int offsetForCandD = getOffset(A_BNodesCluster.toArray(), value);
-			int offsetForCandD = O2[A_C.get(A)];
-
+			List<Cluster> A_BNodesCluster = bit.getSum(offsetForAandB);
 
 			Cluster c1 = new Cluster(A);
-
 			Cluster c2 = new Cluster();
 
+			int C_value = A_C.get(A);
+			if ( A_BNodesCluster.size() != 0){
+				A_BNodesCluster.forEach(cluster -> {
+					int[] arr = cluster.toArray();
+					int index = getOffset(arr, C_value), len = arr.length;
+					for(int i2 = index; i2 < len; ++i2){
+						c2.add(arr[i2]);
+					}
 
+				});
+				TimeCal.add(System.currentTimeMillis() - phase2, 1);
 
-			if (offsetForCandD < A_BNodesCluster.size()){
-				int[] toArray = A_BNodesCluster.toArray();
-				for (int index = offsetForCandD; index < toArray.length; ++index){
-					c2.add(toArray[index]);
-				}
+				/** Phase3: other operation the same as IEJoin */
+				long phase3 = System.currentTimeMillis();
 				ClusterPair pair = new ClusterPair(c1, c2);
-				long l2 = System.currentTimeMillis();
 				if (pair.containsLinePair()) {
 					if (lastC2 != null && c2.equals(lastC2)) {
 						lastC1.add(A);
@@ -279,7 +272,7 @@ public class  IEJoin {
 
 					lastC2 = lastC1 = null;
 				}
-				TimeCal2.add(System.currentTimeMillis() - l2);
+				TimeCal.add(System.currentTimeMillis() - phase3, 2);
 			}else{
 				if(lastC1 != null) {
 					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
@@ -296,28 +289,9 @@ public class  IEJoin {
 
 	}
 
-	/**
-	 * @Description:
-	 * @Author yoyuan
-	 * @DateTime: 2021-10-16 before dawn
-	 * */
-	private Cluster getClusterFormBIT(int[] toArray, int offset1, Order order2) {
-		Cluster c2 = new Cluster();
-		if(order2 == Order.DESCENDING){
-			for (int i = 0; i < offset1; ++i){
-				c2.add(toArray[i]);
-			}
-		}else{
-			for (int i = offset1; i < toArray.length; ++i){
-				c2.add(toArray[i]);
-			}
-		}
-
-		return c2;
-	}
 
 	/**
-	 * @Description: find offset
+	 * @Description: binary search
 	 * @Author yoyuan
 	 * @DateTime: 2021-10-16 before dawn
 	 * */
@@ -343,6 +317,8 @@ public class  IEJoin {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void calc2(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer) {
+		/** Phase1: get init structure */
+		long phase1 = System.currentTimeMillis();
 		ColumnOperand op11 = p1.getOperand1();
 		ParsedColumn<?> columnX = op11.getColumn();
 		ColumnOperand op12 = p1.getOperand2();
@@ -393,10 +369,13 @@ public class  IEJoin {
 		Cluster lastC2 = null;
 
 
+		TimeCal.add(System.currentTimeMillis() - phase1, 0);
 		/** begin with scanning L2  here can replace with clusters.getC2().size()*/
 		for (int i = 0; i < clusters.getC1().size(); ++i) {
 			// relative position of r_i in L2'
 			/** the first bigger off2 in L2' than L2[i]*/
+			/** Phase2:  get cluster */
+			long phase2 = System.currentTimeMillis();
 			int off2 = O2[i];
 
 
@@ -437,7 +416,9 @@ public class  IEJoin {
 					c2.add(L1_[k]);
 
 
-				long l2 = System.currentTimeMillis();
+				TimeCal.add(System.currentTimeMillis() - phase2, 1);
+				/** Phase3: other operation the same as IEJoin */
+				long phase3 = System.currentTimeMillis();
 				ClusterPair pair = new ClusterPair(c1, c2);
 				if (pair.containsLinePair()) {
 					if (lastC2 != null && c2.equals(lastC2)) {
@@ -460,6 +441,7 @@ public class  IEJoin {
 					lastC2 = lastC1 = null;
 				}
 
+				TimeCal.add(System.currentTimeMillis() - phase3, 2);
 			} else {
 				if(lastC1 != null) {
 					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);

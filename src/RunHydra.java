@@ -1,22 +1,13 @@
-
-
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.Hydra;
-import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
-import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.input.InputIterationException;
 import Hydra.de.hpi.naumann.dc.input.RelationalInput;
-import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
-import mmcsforDC.MMCSDC;
 import utils.TimeCal;
-import utils.TimeCal2;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
 
 
 public class RunHydra {
@@ -25,19 +16,14 @@ public class RunHydra {
 	public static void main(String[] args) throws InputIterationException, IOException {
 		// TODO Auto-generated method stub
 		//		String line=args[0];
-//		String odline=args[1];
-//		String indexline=args[2];
-//		String sizeline=args[3];
 
 
-//		String line ="dataset//fd30.csv";
-//		String odline ="dataset//stock_1k2_nocross.txt";
-//		String sizeline ="1000";
-
-		String line ="dataset//stock_100.csv";
-//		String odline ="dataset//hospital1kDC.txt";
-		String sizeline ="100";
-//		String indexline="dataset//Hospital_dc.txt";
+//		String line ="dataset//stock_100.csv";
+//		String sizeline ="100";
+//		String line ="dataset//Test.csv";
+//		String sizeline ="7";
+		String line ="dataset//Tax10k.csv";
+		String sizeline ="10000";
 
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);
@@ -63,8 +49,7 @@ public class RunHydra {
 		long endtime=System.currentTimeMillis();
 		System.out.println("Used time: "+ (endtime - starttime)+ " ms");
 
-		System.out.println(TimeCal.getTime());
-		System.out.println(TimeCal2.getTime());
+		TimeCal.time.forEach(System.out::println);
 
 //		dcs.forEach(System.out::println);
 //		String od="";
