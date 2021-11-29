@@ -290,6 +290,119 @@ public class  IEJoin {
 
 	}
 
+	public void calcForTest(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> Res){
+
+		/** Phase1: get init structure */
+
+		long phase1 = System.currentTimeMillis();
+
+		int len1 = clusters.getC1().size();
+		int len2 = clusters.getC2().size();
+
+
+		BIT bit = new BIT(len2);
+
+		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
+		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
+		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
+
+		Order order1 = getSortingOrder(p1);
+		Order order2 = getSortingOrder(p2);
+
+		int[] L_A = getSortedArray(clusters.getC1(), columnA, order1);
+		int[] L_B = getSortedArray(clusters.getC2(), columnB, order1);
+		int[] L_D = getSortedArray(clusters.getC2(), columnD, order2);
+
+
+		int[] O1 = getOffsetArray(L_A, L_B, columnA.getIndex(), columnB.getIndex(), order1 == Order.DESCENDING,
+				p1.getOperator() == Operator.GREATER || p1.getOperator() == Operator.LESS);
+
+		HashMap<Integer, Integer> B_D = new HashMap<>();
+		for (int i = 0; i < len2; ++i){
+			B_D.put(L_B[i], i);
+		}
+		HashMap<Integer, Integer> A_C = new HashMap<>();
+		for (int i = 0; i < len1; ++i){
+			A_C.put(L_A[i], i);
+		}
+
+		Cluster lastC1 = null;
+		Cluster lastC2 = null;
+
+
+		/** Step1:  init BIT with insert L_D */
+		for (int i = 0;i < len2; ++i){
+			int D = L_D[i];
+			bit.addTuple(B_D.get(D) + 1, D);
+		}
+		TimeCal.add(System.currentTimeMillis() - phase1, 0);
+
+
+		int Prec2 = 0;
+		for (int i = 0; i < len1; ++i){
+			/** Phase2:  get cluster */
+			long phase2 = System.currentTimeMillis();
+			int A = L_A[i];
+//			int offsetForAandB = getOffset(L_B,  L_A[i]);
+			int offsetForAandB = O1[i];
+
+			int C_value = A_C.get(A);
+			Cluster c1 = new Cluster(A);
+			Cluster c2 = new Cluster();
+
+			int next = bit.getSum(offsetForAandB, C_value, c2);
+
+			if(Prec2 == next && next != 0 && lastC1 != null){
+				lastC1.add(A);
+				TimeCal.add(1, 3);
+				continue;
+			}else{
+				Prec2 = next;
+			}
+
+
+			if ( next != 0 ){
+				TimeCal.add(System.currentTimeMillis() - phase2, 1);
+
+				/** Phase3: other operation the same as IEJoin */
+				long phase3 = System.currentTimeMillis();
+				ClusterPair pair = new ClusterPair(c1, c2);
+				if (pair.containsLinePair()) {
+					if (lastC2 != null && c2.equals(lastC2)) {
+						lastC1.add(A);
+					} else {
+						if(lastC1 != null) {
+							ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+							Res.add(pairLast);
+						}
+
+						lastC2 = c2;
+						lastC1 = c1;
+					}
+				} else {
+					if(lastC1 != null) {
+						ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+						Res.add(pairLast);
+					}
+
+					lastC2 = lastC1 = null;
+				}
+				TimeCal.add(System.currentTimeMillis() - phase3, 2);
+			}else{
+				if(lastC1 != null) {
+					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+					Res.add(pairLast);
+				}
+				lastC2 = lastC1 = null;
+			}
+		}
+
+		if(lastC1 != null) {
+			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+			Res.add(pairLast);
+		}
+
+	}
 	/**
 	 * @Author yoyuan
 	 * @Description: BIT for IEJoin
@@ -574,6 +687,149 @@ public class  IEJoin {
 		if(lastC1 != null) {
 			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
 			consumer.accept(pairLast);
+		}
+//		pointJ.collect();
+	}
+
+	public void calc2ForTest(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> res) {
+		System.out.println(p1);
+		System.out.println(p2);
+		/** Phase1: get init structure */
+		long phase1 = System.currentTimeMillis();
+		ColumnOperand op11 = p1.getOperand1();
+		ParsedColumn<?> columnX = op11.getColumn();
+		ColumnOperand op12 = p1.getOperand2();
+		ParsedColumn<?> columnX_ = op12.getColumn();
+		ColumnOperand op21 = p2.getOperand1();
+		ParsedColumn<?> columnY = op21.getColumn();
+		ColumnOperand op22 = p2.getOperand2();
+		ParsedColumn<?> columnY_ = op22.getColumn();
+
+		Order order1 = getSortingOrder(0, p1);
+		Order order2 = getSortingOrder(1, p2);
+
+//		EtmPoint pointS = etmMonitor.createPoint("sortings..");
+		/** sort 55s*/
+		int[] L1 = getSortedArray(clusters.getC1(), columnX, order1);
+		int[] L1_ = getSortedArray(clusters.getC2(), columnX_, order1);
+		int[] L2 = getSortedArray(clusters.getC1(), columnY, order2);
+		int[] L2_ = getSortedArray(clusters.getC2(), columnY_, order2);
+//		pointS.collect();
+
+
+
+
+		/** permutation array is map the index for L2 tuple in L1 30s*/
+//		EtmPoint pointP = etmMonitor.createPoint("permutations..");
+		int[] P = getPermutationArray(L2, L1);
+		int[] P_ = getPermutationArray(L2_, L1_);
+//		pointP.collect();
+
+
+
+		/** O1 O2 is the index of the first one not bigger than the value in permutation for L1, L2 respectively
+		 *  6s
+		 * */
+//		EtmPoint pointO = etmMonitor.createPoint("offsets..");
+		int[] O1 = getOffsetArray(L1, L1_, columnX.getIndex(), columnX_.getIndex(), order1 == Order.DESCENDING,
+				p1.getOperator() == Operator.GREATER || p1.getOperator() == Operator.LESS);
+		int[] O2 = getOffsetArray(L2, L2_, columnY.getIndex(), columnY_.getIndex(), order2 == Order.DESCENDING,
+				p2.getOperator() == Operator.GREATER_EQUAL || p2.getOperator() == Operator.LESS_EQUAL);
+//		pointO.collect();
+
+
+		/** the bit-array B*/
+		LongBitSet bitset = new LongBitSet(clusters.getC2().size());
+
+//		EtmPoint pointJ = etmMonitor.createPoint("Join");
+		Cluster lastC1 = null;
+		Cluster lastC2 = null;
+
+
+		TimeCal.add(System.currentTimeMillis() - phase1, 0);
+		/** begin with scanning L2  here can replace with clusters.getC2().size()*/
+		for (int i = 0; i < clusters.getC1().size(); ++i) {
+			// relative position of r_i in L2'
+			/** the first bigger off2 in L2' than L2[i]*/
+			/** Phase2:  get cluster */
+			long phase2 = System.currentTimeMillis();
+			int off2 = O2[i];
+
+
+			/** 0 - O2[i-1] has been scanned by 0 - i-1, so this time we don't need to set 0 - i-1
+			 *  the index in bitset value with 1 represent, the tuple with the same index in L2' satisfies p2 with L2[I]
+			 * */
+			int start = i > 0 ? O2[i - 1] : 0;
+			for (int j = start; j < off2; ++j) {
+				bitset.set(P_[j]);
+			}
+
+			/** P[i] is the index of L2[i] in L1[i], so the O1[P[i]] is the first bigger value in L1' than L2[i]'s value in column columnX*/
+			int start2 = O1[P[i]];
+
+			if (lastC2 != null && start >= off2 && bitset.nextSetBit(start2) == bitset.nextSetBit(O1[P[i - 1]])) {
+				lastC1.add(L2[i]);
+				continue;
+			}
+
+			Cluster c1 = new Cluster(L2[i]);
+
+			/** get satisfied tuple pair with two predicates */
+			int count = 0;
+
+			/** transform bitset*/
+
+			for (int k = bitset.nextSetBit(start2); k >= 0; k = bitset.nextSetBit(k + 1))
+				++count;
+
+
+
+
+			if (count > 0) {
+				Cluster c2 = new Cluster(new TIntArrayList(count));
+
+				// Tax10k 10s
+				for (int k = bitset.nextSetBit(start2); k >= 0; k = bitset.nextSetBit(k + 1))
+					c2.add(L1_[k]);
+
+
+				TimeCal.add(System.currentTimeMillis() - phase2, 1);
+				/** Phase3: other operation the same as IEJoin */
+				long phase3 = System.currentTimeMillis();
+				ClusterPair pair = new ClusterPair(c1, c2);
+				if (pair.containsLinePair()) {
+					if (lastC2 != null && c2.equals(lastC2)) {
+						lastC1.add(L2[i]);
+					} else {
+						if(lastC1 != null) {
+							ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+							res.add(pairLast);
+						}
+
+						lastC2 = c2;
+						lastC1 = c1;
+					}
+				} else {
+					if(lastC1 != null) {
+						ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+						res.add(pairLast);
+					}
+
+					lastC2 = lastC1 = null;
+				}
+
+				TimeCal.add(System.currentTimeMillis() - phase3, 2);
+			} else {
+				if(lastC1 != null) {
+					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+					res.add(pairLast);
+				}
+				lastC2 = lastC1 = null;
+			}
+		}
+		if(lastC1 != null) {
+			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+			res.add(pairLast);
 		}
 //		pointJ.collect();
 	}

@@ -3,6 +3,7 @@ import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.input.InputIterationException;
 import Hydra.de.hpi.naumann.dc.input.RelationalInput;
+import Hydra.de.hpi.naumann.dc.paritions.Cluster;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import utils.TimeCal;
 
