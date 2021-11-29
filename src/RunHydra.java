@@ -18,12 +18,12 @@ public class RunHydra {
 		//		String line=args[0];
 
 
-		String line ="dataset//stock_100.csv";
-		String sizeline ="100";
+//		String line ="dataset//stock_100.csv";
+//		String sizeline ="100";
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
-//		String line ="dataset//Tax10k.csv";
-//		String sizeline ="10000";
+		String line ="dataset//Tax10k.csv";
+		String sizeline ="10000";
 
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);

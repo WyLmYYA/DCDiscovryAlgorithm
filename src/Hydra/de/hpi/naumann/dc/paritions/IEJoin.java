@@ -170,6 +170,125 @@ public class  IEJoin {
 	}
 
 
+	/**
+	 * @Author yoyuan
+	 * @Description: BIT for IEJoin optimistic in 2021-11-29
+	 * @DateTime: 2021-10-15
+	 */
+	@SuppressWarnings("rawtypes")
+	public void calc(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer){
+
+		/** Phase1: get init structure */
+
+		long phase1 = System.currentTimeMillis();
+
+		int len1 = clusters.getC1().size();
+		int len2 = clusters.getC2().size();
+
+
+		BIT bit = new BIT(len2);
+
+		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
+		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
+		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
+
+		Order order1 = getSortingOrder(p1);
+		Order order2 = getSortingOrder(p2);
+
+		int[] L_A = getSortedArray(clusters.getC1(), columnA, order1);
+		int[] L_B = getSortedArray(clusters.getC2(), columnB, order1);
+		int[] L_D = getSortedArray(clusters.getC2(), columnD, order2);
+
+
+		int[] O1 = getOffsetArray(L_A, L_B, columnA.getIndex(), columnB.getIndex(), order1 == Order.DESCENDING,
+				p1.getOperator() == Operator.GREATER || p1.getOperator() == Operator.LESS);
+
+		HashMap<Integer, Integer> B_D = new HashMap<>();
+		for (int i = 0; i < len2; ++i){
+			B_D.put(L_B[i], i);
+		}
+		HashMap<Integer, Integer> A_C = new HashMap<>();
+		for (int i = 0; i < len1; ++i){
+			A_C.put(L_A[i], i);
+		}
+
+		Cluster lastC1 = null;
+		Cluster lastC2 = null;
+
+
+		/** Step1:  init BIT with insert L_D */
+		for (int i = 0;i < len2; ++i){
+			int D = L_D[i];
+			bit.addTuple(B_D.get(D) + 1, D);
+		}
+		TimeCal.add(System.currentTimeMillis() - phase1, 0);
+
+
+		int Prec2 = 0;
+		for (int i = 0; i < len1; ++i){
+			/** Phase2:  get cluster */
+			long phase2 = System.currentTimeMillis();
+			int A = L_A[i];
+//			int offsetForAandB = getOffset(L_B,  L_A[i]);
+			int offsetForAandB = O1[i];
+
+			int C_value = A_C.get(A);
+			Cluster c1 = new Cluster(A);
+			Cluster c2 = new Cluster();
+
+			int next = bit.getSum(offsetForAandB, C_value, c2);
+
+			if(Prec2 == next && next != 0 && lastC1 != null){
+				lastC1.add(A);
+				TimeCal.add(1, 3);
+				continue;
+			}else{
+				Prec2 = next;
+			}
+
+
+			if ( next != 0 ){
+				TimeCal.add(System.currentTimeMillis() - phase2, 1);
+
+				/** Phase3: other operation the same as IEJoin */
+				long phase3 = System.currentTimeMillis();
+				ClusterPair pair = new ClusterPair(c1, c2);
+				if (pair.containsLinePair()) {
+					if (lastC2 != null && c2.equals(lastC2)) {
+						lastC1.add(A);
+					} else {
+						if(lastC1 != null) {
+							ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+							consumer.accept(pairLast);
+						}
+
+						lastC2 = c2;
+						lastC1 = c1;
+					}
+				} else {
+					if(lastC1 != null) {
+						ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+						consumer.accept(pairLast);
+					}
+
+					lastC2 = lastC1 = null;
+				}
+				TimeCal.add(System.currentTimeMillis() - phase3, 2);
+			}else{
+				if(lastC1 != null) {
+					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+					consumer.accept(pairLast);
+				}
+				lastC2 = lastC1 = null;
+			}
+		}
+
+		if(lastC1 != null) {
+			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+			consumer.accept(pairLast);
+		}
+
+	}
 
 	/**
 	 * @Author yoyuan
@@ -177,7 +296,7 @@ public class  IEJoin {
 	 * @DateTime: 2021-10-15
 	 */
 	@SuppressWarnings("rawtypes")
-	public void calc2(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer){
+	public void calc3(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer){
 
 		/** Phase1: get init structure */
 
@@ -316,7 +435,7 @@ public class  IEJoin {
 	 *   IEjoin for predicates pair
 	 */
 	@SuppressWarnings("rawtypes")
-	public void calc(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer) {
+	public void calc2(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer) {
         System.out.println(p1);
         System.out.println(p2);
 		/** Phase1: get init structure */
