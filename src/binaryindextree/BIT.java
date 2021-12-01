@@ -9,6 +9,7 @@ import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import utils.TimeCal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -22,6 +23,7 @@ public class BIT {
 
     private ParsedColumn<?> ColC, ColD;
 
+    private HashMap<Integer, int[]> hashMap = new HashMap<>();
     private int length;
 
     public IEJoin.Order order2;
@@ -54,8 +56,16 @@ public class BIT {
 
         while (rightBound > 0) {
             long phase2 = System.currentTimeMillis();
-            int[] arr = nodes[rightBound].toArray();
-            TimeCal.add(System.currentTimeMillis() - phase2, 1);
+            int[] arr = null;
+            if (hashMap.containsKey(rightBound)){
+                arr = hashMap.get(rightBound);
+                TimeCal.add(System.currentTimeMillis() - phase2, 1);
+            }
+            else{
+                arr = nodes[rightBound].toArray();
+                hashMap.put(rightBound, arr);
+            }
+
             int index = IEJoin.getOffset(value, arr, ColC.getIndex(), ColD.getIndex(), order2 == IEJoin.Order.DESCENDING,
                     p2.getOperator() == Operator.GREATER_EQUAL || p2.getOperator() == Operator.LESS_EQUAL);
 
@@ -73,7 +83,8 @@ public class BIT {
         }else {
 
             for (int i = 0; i < res.NodeIndex.size(); ++i){
-                int[] arr = nodes[res.NodeIndex.get(i)].toArray();
+                int tmp = res.NodeIndex.get(i);
+                int[] arr = hashMap.get(tmp);;
                 for(int j = 0; j < res.offsetInNode.get(i); ++j){
                     cluster.add(arr[j]);
                 }

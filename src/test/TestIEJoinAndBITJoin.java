@@ -29,18 +29,18 @@ public class TestIEJoinAndBITJoin {
 
 
 
-//        long l1 = System.currentTimeMillis();
-//        System.out.println("test for IEJoin");
-//        ieJoin.calc2ForTest(clusterPair, p1, p2, resForIEJoin);
-//        System.out.println("IEJoin Time " + (System.currentTimeMillis() - l1));
-//        System.out.println(resForIEJoin.stream().mapToLong(ClusterPair::getLinePairCount).sum());
+        long l1 = System.currentTimeMillis();
+        System.out.println("test for IEJoin");
+        ieJoin.calc2ForTest(clusterPair, p1, p2, resForIEJoin);
+        System.out.println("IEJoin Time " + (System.currentTimeMillis() - l1));
+        System.out.println(resForIEJoin.stream().mapToLong(ClusterPair::getLinePairCount).sum());
 
         long l2 = System.currentTimeMillis();
         System.out.println("test for BITJoin");
         ieJoin.calcForTest(clusterPair, p1, p2, resForBITJoin);
         System.out.println("BITJoin Time " + (System.currentTimeMillis() - l2) );
         System.out.println(resForBITJoin.stream().mapToLong(ClusterPair::getLinePairCount).sum());
-                TimeCal.time.forEach(System.out::println);
+//                TimeCal.time.forEach(System.out::println);
 
 
 
