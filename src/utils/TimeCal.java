@@ -10,15 +10,15 @@ import java.util.List;
  */
 public class TimeCal {
 
+    public static int len = 5;
     public static List<Long> time = new ArrayList<>();
 
-    public TimeCal(){
-
-    }
-    public static void add(long t1, int index){
-        if(time.size() <= index){
+    static {
+        for(int i = 0; i < len; ++i){
             time.add(0L);
         }
+    }
+    public static void add(long t1, int index){
         time.set(index, time.get(index) + t1);
     }
 

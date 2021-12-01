@@ -7,6 +7,7 @@ import Hydra.de.hpi.naumann.dc.predicates.Operator;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import binaryindextree.BIT;
+import binaryindextree.IndexForBIT;
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.map.TIntIntMap;
@@ -25,11 +26,11 @@ import java.util.function.IntUnaryOperator;
 public class  IEJoin {
 	//inequality join
 
-	private enum Order {
+	public enum Order {
 		ASCENDING, DESCENDING
 	}
 
-	int[][] values;
+	static int[][] values;
 
 	public IEJoin(Input input) {
 		values = input.getInts();
@@ -113,7 +114,7 @@ public class  IEJoin {
 		return result;
 	}
 
-	private int[] getOffsetArray(int[] l2, int[] l2_, int column1, int column2, boolean c2Rev,
+	public static int[] getOffsetArray(int[] l2, int[] l2_, int column1, int column2, boolean c2Rev,
 			boolean equal) {
 		final int size = l2.length;
 		int[] result = new int[size];
@@ -124,6 +125,14 @@ public class  IEJoin {
 					equal);
 		}
 		return result;
+	}
+
+	public static int getOffset(int l2, int[] l2_, int column1, int column2, boolean c2Rev, boolean equal) {
+		int value = values[l2][column1];
+
+		return  indexOf(index -> values[l2_[index]][column2], value, l2_.length, c2Rev,
+				equal);
+
 	}
 
 	public static int indexOf2(IntUnaryOperator a, int key, int count, boolean rev, boolean equal) {
@@ -186,11 +195,13 @@ public class  IEJoin {
 		int len2 = clusters.getC2().size();
 
 
-		BIT bit = new BIT(len2);
+
 
 		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
 		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
+		ParsedColumn<?> columnC =  p2.getOperand1().getColumn();
 		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
+		BIT bit = new BIT(len2,columnC, columnD);
 
 		Order order1 = getSortingOrder(p1);
 		Order order2 = getSortingOrder(p2);
@@ -229,14 +240,13 @@ public class  IEJoin {
 			/** Phase2:  get cluster */
 			long phase2 = System.currentTimeMillis();
 			int A = L_A[i];
-//			int offsetForAandB = getOffset(L_B,  L_A[i]);
 			int offsetForAandB = O1[i];
 
 			int C_value = A_C.get(A);
 			Cluster c1 = new Cluster(A);
 			Cluster c2 = new Cluster();
 
-			int next = bit.getSum(offsetForAandB, C_value, c2);
+			int next = bit.getSum(offsetForAandB, C_value, c2, Prec2);
 
 			if(Prec2 == next && next != 0 && lastC1 != null){
 				lastC1.add(A);
@@ -300,22 +310,27 @@ public class  IEJoin {
 		int len2 = clusters.getC2().size();
 
 
-		BIT bit = new BIT(len2);
+
 
 		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
 		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
+		ParsedColumn<?> columnC =  p2.getOperand1().getColumn();
 		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
+
+		BIT bit = new BIT(len2,columnC, columnD);
 
 		Order order1 = getSortingOrder(p1);
 		Order order2 = getSortingOrder(p2);
+
+		bit.order2 = order2;
+		bit.p2 = p2;
 
 		int[] L_A = getSortedArray(clusters.getC1(), columnA, order1);
 		int[] L_B = getSortedArray(clusters.getC2(), columnB, order1);
 		int[] L_D = getSortedArray(clusters.getC2(), columnD, order2);
 
-
 		int[] O1 = getOffsetArray(L_A, L_B, columnA.getIndex(), columnB.getIndex(), order1 == Order.DESCENDING,
-				p1.getOperator() == Operator.GREATER || p1.getOperator() == Operator.LESS);
+				p1.getOperator() == Operator.GREATER_EQUAL || p1.getOperator() == Operator.LESS_EQUAL);
 
 		HashMap<Integer, Integer> B_D = new HashMap<>();
 		for (int i = 0; i < len2; ++i){
@@ -338,34 +353,36 @@ public class  IEJoin {
 		TimeCal.add(System.currentTimeMillis() - phase1, 0);
 
 
-		int Prec2 = 0;
+		IndexForBIT indexForBIT = new IndexForBIT();
 		for (int i = 0; i < len1; ++i){
 			/** Phase2:  get cluster */
-			long phase2 = System.currentTimeMillis();
 			int A = L_A[i];
 //			int offsetForAandB = getOffset(L_B,  L_A[i]);
 			int offsetForAandB = O1[i];
-
-			int C_value = A_C.get(A);
-			Cluster c1 = new Cluster(A);
+			if(offsetForAandB == 0)continue;
+//			int C_value = A_C.get(A);
+ 			Cluster c1 = new Cluster(A);
 			Cluster c2 = new Cluster();
 
-			int next = bit.getSum(offsetForAandB, C_value, c2);
+			long phase2 = System.currentTimeMillis();
+			IndexForBIT next = bit.getSum(offsetForAandB, A, c2, indexForBIT);
 
-			if(Prec2 == next && next != 0 && lastC1 != null){
+			if(indexForBIT.equals(next)  && next.hasNext() && lastC1 != null){
 				lastC1.add(A);
-				TimeCal.add(1, 3);
+
+//				TimeCal.add(System.currentTimeMillis() - phase2, 1);
 				continue;
 			}else{
-				Prec2 = next;
+				indexForBIT = next;
 			}
 
+//			TimeCal.add(System.currentTimeMillis() - phase2, 1);
+			long phase3 = System.currentTimeMillis();
+			if ( next.hasNext() ){
 
-			if ( next != 0 ){
-				TimeCal.add(System.currentTimeMillis() - phase2, 1);
-
+				TimeCal.add(1, 3);
 				/** Phase3: other operation the same as IEJoin */
-				long phase3 = System.currentTimeMillis();
+
 				ClusterPair pair = new ClusterPair(c1, c2);
 				if (pair.containsLinePair()) {
 					if (lastC2 != null && c2.equals(lastC2)) {
@@ -387,7 +404,7 @@ public class  IEJoin {
 
 					lastC2 = lastC1 = null;
 				}
-				TimeCal.add(System.currentTimeMillis() - phase3, 2);
+
 			}else{
 				if(lastC1 != null) {
 					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
@@ -395,6 +412,7 @@ public class  IEJoin {
 				}
 				lastC2 = lastC1 = null;
 			}
+			TimeCal.add(System.currentTimeMillis() - phase3, 2);
 		}
 
 		if(lastC1 != null) {
@@ -419,15 +437,16 @@ public class  IEJoin {
 		int len2 = clusters.getC2().size();
 
 
-		BIT bit = new BIT(len2);
+
 
 		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
 		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
 		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
-
+		BIT bit = new BIT(len2,columnA,columnD);
 		Order order1 = getSortingOrder(p1);
 		Order order2 = getSortingOrder(p2);
 
+		bit.order2 = order2;
 		int[] L_A = getSortedArray(clusters.getC1(), columnA, order1);
 		int[] L_B = getSortedArray(clusters.getC2(), columnB, order1);
 		int[] L_D = getSortedArray(clusters.getC2(), columnD, order2);
@@ -769,6 +788,7 @@ public class  IEJoin {
 
 			if (lastC2 != null && start >= off2 && bitset.nextSetBit(start2) == bitset.nextSetBit(O1[P[i - 1]])) {
 				lastC1.add(L2[i]);
+
 				continue;
 			}
 
@@ -786,12 +806,14 @@ public class  IEJoin {
 
 
 			if (count > 0) {
+				TimeCal.add(1, 3);
 				Cluster c2 = new Cluster(new TIntArrayList(count));
 
 				// Tax10k 10s
+				long timeForAddRes = System.currentTimeMillis();
 				for (int k = bitset.nextSetBit(start2); k >= 0; k = bitset.nextSetBit(k + 1))
 					c2.add(L1_[k]);
-
+				TimeCal.add(System.currentTimeMillis() - timeForAddRes, 4);
 
 				TimeCal.add(System.currentTimeMillis() - phase2, 1);
 				/** Phase3: other operation the same as IEJoin */
