@@ -1,11 +1,14 @@
 package Hydra.de.hpi.naumann.dc.paritions;
 
+import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
+import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.input.ParsedColumn;
 import Hydra.de.hpi.naumann.dc.predicates.Operator;
 import Hydra.de.hpi.naumann.dc.predicates.PartitionRefiner;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
 import Hydra.de.hpi.naumann.dc.predicates.operands.ColumnOperand;
+import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.procedure.TObjectProcedure;
@@ -344,4 +347,16 @@ public class ClusterPair {
 		}
 	}
 
+	/**
+	 * @Author yongan.yuan
+	 * @Description: add functions for HyDC
+	 */
+	public boolean isEmpty(){
+		return c1.size() == 0 || c2.size() == 0;
+	}
+
+	//TODO:
+	public HashEvidenceSet getEvidenceSet(){
+		return new HashEvidenceSet();
+	}
 }

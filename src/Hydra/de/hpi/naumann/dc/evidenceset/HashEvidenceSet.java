@@ -46,4 +46,9 @@ public class HashEvidenceSet implements IEvidenceSet {
 		return evidences.isEmpty();
 	}
 
+	// TODO: for evidenceSet add if it will cost too much time
+	public void add(HashEvidenceSet hashEvidenceSet){
+		evidences.addAll(hashEvidenceSet.getSetOfPredicateSets());
+	}
+
 }
