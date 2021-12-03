@@ -185,7 +185,7 @@ public class  IEJoin {
 	 * @DateTime: 2021-10-15
 	 */
 	@SuppressWarnings("rawtypes")
-	public void calc(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer){
+	public void calc2(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer){
 
 		/** Phase1: get init structure */
 
@@ -567,9 +567,7 @@ public class  IEJoin {
 	 *   IEjoin for predicates pair
 	 */
 	@SuppressWarnings("rawtypes")
-	public void calc2(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer) {
-        System.out.println(p1);
-        System.out.println(p2);
+	public void calc(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer) {
 		/** Phase1: get init structure */
 		long phase1 = System.currentTimeMillis();
 		ColumnOperand op11 = p1.getOperand1();
