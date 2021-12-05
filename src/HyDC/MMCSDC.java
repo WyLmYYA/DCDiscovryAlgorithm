@@ -127,9 +127,9 @@ public class MMCSDC {
 
             MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
             if(childNode.isGlobalMinimal()){
-                HashEvidenceSet hashEvidenceSet = walkDown(childNode, currentCovers);
-                currentNode.newEvidenceSet.add(hashEvidenceSet);
-                currentNode.uncoverEvidenceSet.add(hashEvidenceSet);
+                HashEvidenceSet newEvidenceSet = walkDown(childNode, currentCovers);
+                currentNode.newEvidenceSet.add(newEvidenceSet);
+                currentNode.uncoverEvidenceSet.add(newEvidenceSet);
                 nextCandidatePredicates.set(next);
             }
         }

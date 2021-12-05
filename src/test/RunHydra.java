@@ -1,3 +1,5 @@
+package test;
+
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.Hydra;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.input.Input;
