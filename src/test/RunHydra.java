@@ -38,13 +38,7 @@ public class RunHydra {
 		PredicateBuilder predicates = new PredicateBuilder(input, false, 0.3d);
 //		PredicateBuilder predicates = new PredicateBuilder(index,input);
 		System.out.println("predicate space:"+predicates.getPredicates().size());
-//		for(Predicate p:predicates.getPredicates())
-//			System.out.println(p);
-//		for (Collection<Predicate> pSet : predicates.getPredicateGroups()) {
-//			for (Predicate p : pSet) {
-//				System.out.println(p);
-//			}
-//		}
+
 		Hydra hydra = new Hydra();
 		System.out.println("now is hydra for dc");
 

@@ -1,12 +1,12 @@
 package Hydra.de.hpi.naumann.dc.paritions;
 
+import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
+import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;
+import Hydra.de.hpi.naumann.dc.input.ColumnPair;
 import Hydra.de.hpi.naumann.dc.input.ParsedColumn;
-import Hydra.de.hpi.naumann.dc.predicates.Operator;
-import Hydra.de.hpi.naumann.dc.predicates.PartitionRefiner;
-import Hydra.de.hpi.naumann.dc.predicates.Predicate;
-import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
+import Hydra.de.hpi.naumann.dc.predicates.*;
 import Hydra.de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import gnu.trove.iterator.TIntIterator;
@@ -194,6 +194,30 @@ public class ClusterPair {
 				// point.collect();
 			}
 	}
+	public void refinePsPublic(Predicate p, IEJoin iejoin, List<ClusterPair> consumer) {
+		ColumnOperand<?> o1 = p.getOperand1();
+		ColumnOperand<?> o2 =  p.getOperand2();
+		if (o1.getIndex() == o2.getIndex()) {
+			// SIMPLE FILTER
+			// EtmPoint point = etmMonitor.createPoint("FILTER");
+			this.filter(p, o1.getIndex(), consumer);
+			// point.collect();
+		} else if (p.getOperator() == Operator.EQUAL) {
+			// EQUI JOIN
+			// EtmPoint point = etmMonitor.createPoint("EQUIJOIN");
+			this.equiJoin(o1.getColumn(), o2.getColumn(), iejoin.values, consumer);
+			// point.collect();
+		} else if (p.getOperator() == Operator.UNEQUAL) {
+			// ANTI JOIN
+			// EtmPoint point = etmMonitor.createPoint("ANTIJOIN");
+			this.antiJoin(o1.getColumn(), o2.getColumn(), consumer);
+			// point.collect();
+		} else {
+			// EtmPoint point = etmMonitor.createPoint("IEJOIN SINGLE");
+			iejoin.calc(this, p, consumer);
+			// point.collect();
+		}
+	}
 
 	private void antiJoin(ParsedColumn<?> column, ParsedColumn<?> column2, Consumer<ClusterPair> consumer) {
 		Map<Object, Cluster> map1 = c1.refineBy(column);
@@ -355,8 +379,4 @@ public class ClusterPair {
 		return c1.size() == 0 || c2.size() == 0;
 	}
 
-	//TODO:
-	public HashEvidenceSet getEvidenceSet(){
-		return new HashEvidenceSet();
-	}
 }

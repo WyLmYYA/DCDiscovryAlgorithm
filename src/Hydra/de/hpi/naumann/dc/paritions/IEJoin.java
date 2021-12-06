@@ -185,7 +185,7 @@ public class  IEJoin {
 	 * @DateTime: 2021-10-15
 	 */
 	@SuppressWarnings("rawtypes")
-	public void calc2(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer){
+	public void calcForBITJoin(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> consumer){
 
 		/** Phase1: get init structure */
 
@@ -201,18 +201,21 @@ public class  IEJoin {
 		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
 		ParsedColumn<?> columnC =  p2.getOperand1().getColumn();
 		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
+
 		BIT bit = new BIT(len2,columnC, columnD);
 
 		Order order1 = getSortingOrder(p1);
 		Order order2 = getSortingOrder(p2);
 
+		bit.order2 = order2;
+		bit.p2 = p2;
+
 		int[] L_A = getSortedArray(clusters.getC1(), columnA, order1);
 		int[] L_B = getSortedArray(clusters.getC2(), columnB, order1);
 		int[] L_D = getSortedArray(clusters.getC2(), columnD, order2);
 
-
 		int[] O1 = getOffsetArray(L_A, L_B, columnA.getIndex(), columnB.getIndex(), order1 == Order.DESCENDING,
-				p1.getOperator() == Operator.GREATER || p1.getOperator() == Operator.LESS);
+				p1.getOperator() == Operator.GREATER_EQUAL || p1.getOperator() == Operator.LESS_EQUAL);
 
 		HashMap<Integer, Integer> B_D = new HashMap<>();
 		for (int i = 0; i < len2; ++i){
@@ -235,33 +238,36 @@ public class  IEJoin {
 		TimeCal.add(System.currentTimeMillis() - phase1, 0);
 
 
-		int Prec2 = 0;
+		IndexForBIT indexForBIT = new IndexForBIT();
 		for (int i = 0; i < len1; ++i){
 			/** Phase2:  get cluster */
-			long phase2 = System.currentTimeMillis();
 			int A = L_A[i];
+//			int offsetForAandB = getOffset(L_B,  L_A[i]);
 			int offsetForAandB = O1[i];
-
-			int C_value = A_C.get(A);
+			if(offsetForAandB == 0)continue;
+//			int C_value = A_C.get(A);
 			Cluster c1 = new Cluster(A);
 			Cluster c2 = new Cluster();
 
-			int next = bit.getSum(offsetForAandB, C_value, c2, Prec2);
+			long phase2 = System.currentTimeMillis();
+			IndexForBIT next = bit.getSum(offsetForAandB, A, c2, indexForBIT);
 
-			if(Prec2 == next && next != 0 && lastC1 != null){
+			if(indexForBIT.equals(next)  && next.hasNext() && lastC1 != null){
 				lastC1.add(A);
-				TimeCal.add(1, 3);
+
+//				TimeCal.add(System.currentTimeMillis() - phase2, 1);
 				continue;
 			}else{
-				Prec2 = next;
+				indexForBIT = next;
 			}
 
+//			TimeCal.add(System.currentTimeMillis() - phase2, 1);
+			long phase3 = System.currentTimeMillis();
+			if ( next.hasNext() ){
 
-			if ( next != 0 ){
-				TimeCal.add(System.currentTimeMillis() - phase2, 1);
-
+				TimeCal.add(1, 3);
 				/** Phase3: other operation the same as IEJoin */
-				long phase3 = System.currentTimeMillis();
+
 				ClusterPair pair = new ClusterPair(c1, c2);
 				if (pair.containsLinePair()) {
 					if (lastC2 != null && c2.equals(lastC2)) {
@@ -269,7 +275,7 @@ public class  IEJoin {
 					} else {
 						if(lastC1 != null) {
 							ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
-							consumer.accept(pairLast);
+							consumer.add(pairLast);
 						}
 
 						lastC2 = c2;
@@ -278,24 +284,25 @@ public class  IEJoin {
 				} else {
 					if(lastC1 != null) {
 						ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
-						consumer.accept(pairLast);
+						consumer.add(pairLast);
 					}
 
 					lastC2 = lastC1 = null;
 				}
-				TimeCal.add(System.currentTimeMillis() - phase3, 2);
+
 			}else{
 				if(lastC1 != null) {
 					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
-					consumer.accept(pairLast);
+					consumer.add(pairLast);
 				}
 				lastC2 = lastC1 = null;
 			}
+			TimeCal.add(System.currentTimeMillis() - phase3, 2);
 		}
 
 		if(lastC1 != null) {
 			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
-			consumer.accept(pairLast);
+			consumer.add(pairLast);
 		}
 
 	}
@@ -900,6 +907,53 @@ public class  IEJoin {
 			ClusterPair pair = new ClusterPair(c1, c2);
 			if (pair.containsLinePair()) {
 				consumer.accept(pair);
+			}
+		}
+	}
+
+	// use List for HyDC to collect result
+	public void calc(ClusterPair clusters, Predicate p1, List<ClusterPair> consumer) {
+
+		/** get operator and column  */
+		ColumnOperand<?> op11 = p1.getOperand1();
+		ParsedColumn<?> columnX = op11.getColumn();
+		ColumnOperand<?> op12 = p1.getOperand2();
+		ParsedColumn<?> columnX_ = op12.getColumn();
+
+		Order order1 = getSortingOrder(0, p1);
+
+
+		/** sort with two columns */
+		int[] L1 = getSortedArray(clusters.getC1(), columnX, order1);
+		int[] L1_ = getSortedArray(clusters.getC2(), columnX_, order1);
+
+
+		int start2 = 0;
+
+		/** begin algorithm with scanning L1 */
+		for (int i = 0; i < L1.length; ++i) {
+			/** find the first tuple which can satisfy the predicate with tuple i */
+			while (start2 < L1_.length && !p1.satisfies(L1[i], L1_[start2]))
+				++start2;
+			if (start2 == L1_.length)
+				break;
+
+			/** get cluster in which all tuples satisfy the predicate with the first tuple
+			 *  this is once a tuple satisfies, all tuples before satisfy
+			 * */
+			Cluster c1 = new Cluster(L1[i]);
+			while (i + 1 < L1.length && p1.satisfies(L1[i + 1], L1_[start2])) {
+				++i;
+				c1.add(L1[i]);
+			}
+
+			Cluster c2 = new Cluster();
+			for (int j = start2; j < L1_.length; ++j) {
+				c2.add(L1_[j]);
+			}
+			ClusterPair pair = new ClusterPair(c1, c2);
+			if (pair.containsLinePair()) {
+				consumer.add(pair);
 			}
 		}
 	}

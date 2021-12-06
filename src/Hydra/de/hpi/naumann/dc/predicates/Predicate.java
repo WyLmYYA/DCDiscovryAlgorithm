@@ -162,4 +162,11 @@ public class Predicate implements PartitionRefiner {
 		redundants = Collections.unmodifiableList(predicateRedundants);
 		return predicateRedundants;
 	}
+
+	public boolean needCombine(){
+		return op == Operator.GREATER ||
+				op == Operator.GREATER_EQUAL ||
+				op == Operator.LESS ||
+				op == Operator.LESS_EQUAL;
+	}
 }

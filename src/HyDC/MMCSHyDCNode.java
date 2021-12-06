@@ -3,20 +3,26 @@ package HyDC;
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
-import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
+import Hydra.de.hpi.naumann.dc.helpers.IndexProvider;
+import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.paritions.Cluster;
 import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
+import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
+import Hydra.de.hpi.naumann.dc.predicates.Predicate;
+import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
-import HyDC.MMCSDC;
+import gnu.trove.list.array.TIntArrayList;
 
+import javax.swing.plaf.basic.BasicListUI;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * @Author yoyuan
  * @Description:   tree node in the deep transversal of MMCS for DC
  * @DateTime: 2021/9/26 14:56
  */
-public class MMCSNode {
+public class MMCSHyDCNode {
 
     private int numberOfPredicates;
     /**
@@ -42,21 +48,34 @@ public class MMCSNode {
     // if predicate of node is not equal, we need to combine another to run BITJoin
     public boolean isNeedCombine = false;
 
-    public ClusterPair clusterPair;
+    public int numOfNeedCombinePredicate;
+
+    public List<ClusterPair> clusterPairs;
 
     // new added evidenceSet from childNode, initial is null
     public HashEvidenceSet newEvidenceSet = null;
 
+    private Predicate lastPredicate;
 
-    public MMCSNode(int numberOfPredicates, HashEvidenceSet evidenceToCover) {
+
+    public MMCSHyDCNode( int lineCount, int numberOfPredicates, HashEvidenceSet evidenceToCover, int numOfNeedCombinePredicate ) {
 
         this.numberOfPredicates = numberOfPredicates;
+
+        this.numOfNeedCombinePredicate = numOfNeedCombinePredicate;
 
         element = new LongBitSet();
 
         uncoverEvidenceSet = evidenceToCover;
 
-        candidatePredicates = MMCSDC.candidatePredicates;
+        //Initial ClusterPair only one full lineCount
+        TIntArrayList c = new TIntArrayList();
+        for(int i = 0; i < lineCount; ++i){
+            c.add(i);
+        }
+        clusterPairs.add(new ClusterPair(new Cluster(c), new Cluster(c)));
+
+        candidatePredicates = MMCSHyDC.candidatePredicates;
 
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
@@ -64,14 +83,14 @@ public class MMCSNode {
         }
     }
 
-    public MMCSNode(int numberOfPredicates) {
+    public MMCSHyDCNode(int numberOfPredicates) {
 
         this.numberOfPredicates = numberOfPredicates;
 
     }
 
     public boolean canCover() {
-        return uncoverEvidenceSet.isEmpty() && clusterPair.isEmpty();
+        return uncoverEvidenceSet.isEmpty();
     }
 
 
@@ -83,33 +102,46 @@ public class MMCSNode {
 
     }
 
-    public MMCSNode getChildNode(int predicateAdded, IBitSet nextCandidatePredicates) {
+    public MMCSHyDCNode getChildNode(int predicateAdded, IBitSet nextCandidatePredicates, IEJoin ieJoin) {
 
-        MMCSNode childNode = new MMCSNode(numberOfPredicates);
-
-        //TODO: get new Cluster Pair from parent node by BITJoin
-
-        childNode.refine(this);
+        MMCSHyDCNode childNode = new MMCSHyDCNode(numberOfPredicates);
 
         childNode.cloneContext(nextCandidatePredicates, this);
 
-        childNode.updateContextFromParent(predicateAdded, this);
+        boolean isGlobalMini = childNode.updateContextFromParent(predicateAdded, this);
+
+        if (!isGlobalMini) return null;
+        // update clusterPair BITJoin is here
+        childNode.refine(this, ieJoin);
 
         return childNode;
 
     }
 
-    private void refine(MMCSNode parentNode){
+    private void refine(MMCSHyDCNode parentNode, IEJoin ieJoin){
+        List<ClusterPair> newResult = new ArrayList<>();
         if (parentNode.isNeedCombine && this.isNeedCombine){
-            // TODO: refine use BITJoin
-        }else if (!parentNode.isNeedCombine && this.isNeedCombine){
-            // TODO：wait next combine
-            //  if this node is the last one need combine, how to solve?
+            // refine use BITJoin,
+            for (ClusterPair clusterPair : clusterPairs){
+                ieJoin.calcForBITJoin(clusterPair,
+                        parentNode.lastPredicate,
+                        this.lastPredicate,
+                        newResult
+                );
+            }
+
+        }else if (!parentNode.isNeedCombine && this.isNeedCombine && numOfNeedCombinePredicate >= 1){
+            // wait next combine
+            return;
         }else{
-            // TODO: use normal way
+            // use normal way
+            for (ClusterPair clusterPair : clusterPairs) {
+                clusterPair.refinePsPublic(lastPredicate, ieJoin, newResult);
+            }
         }
+        clusterPairs = newResult;
     }
-    private void updateContextFromParent(int predicateAdded, MMCSNode node) {
+    private boolean updateContextFromParent(int predicateAdded, MMCSHyDCNode node) {
 
         //TODO: we can change TroveEvidenceSet to see which one is more suitable
         uncoverEvidenceSet = new HashEvidenceSet();
@@ -129,17 +161,29 @@ public class MMCSNode {
         for (int next = element.nextSetBit(0); next >= 0; next = element.nextSetBit(next + 1))
             crit.get(next).removeIf(predicates -> predicates.getBitset().get(predicateAdded));
 
+        if (!this.isGlobalMinimal()){
+            return false;
+        }
+
         /**
          *  update element
         */
         element.set(predicateAdded, true);
 
+        lastPredicate = PredicateBitSet.getPredicate(predicateAdded);
+
+        if (lastPredicate.needCombine()) numOfNeedCombinePredicate -= 1;
+
+        return true;
+
     }
 
-    private void cloneContext(IBitSet nextCandidatePredicates, MMCSNode parentNode) {
+    private void cloneContext(IBitSet nextCandidatePredicates, MMCSHyDCNode parentNode) {
         element = parentNode.element.clone();
 
         candidatePredicates = nextCandidatePredicates.clone();
+
+        numOfNeedCombinePredicate = parentNode.numOfNeedCombinePredicate;
 
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
@@ -161,7 +205,7 @@ public class MMCSNode {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MMCSNode mmcsNode = (MMCSNode) o;
+        MMCSHyDCNode mmcsNode = (MMCSHyDCNode) o;
         return numberOfPredicates == mmcsNode.numberOfPredicates && Objects.equals(element, mmcsNode.element) && Objects.equals(candidatePredicates, mmcsNode.candidatePredicates) && Objects.equals(uncoverEvidenceSet, mmcsNode.uncoverEvidenceSet) && Objects.equals(crit, mmcsNode.crit);
     }
 

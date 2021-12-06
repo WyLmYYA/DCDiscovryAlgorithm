@@ -25,7 +25,8 @@ public class Cluster {
 		array.add(firstIndex);
 	}
 
-	public void add(int index) {
+
+    public void add(int index) {
 		this.array.add(index);
 	}
 

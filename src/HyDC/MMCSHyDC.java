@@ -3,10 +3,13 @@ package HyDC;
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
-import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
+import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.SystematicLinearEvidenceSetBuilder;
+import Hydra.de.hpi.naumann.dc.input.Input;
+import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
+import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
+import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
-import HyDC.MMCSNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +25,7 @@ import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvi
  * @DateTime: 2021/9/26 14:47
  */
 
-public class MMCSDC {
+public class MMCSHyDC {
 
     /**
      *  in DC, this is number of predicates, generally this is the attribute for FD or vertices for Hypergraph
@@ -32,7 +35,7 @@ public class MMCSDC {
     /**
      *  each node represent current a minimal cover set, here, is a valid DC
     */
-    private List<MMCSNode> coverNodes = new ArrayList<>();
+    private List<MMCSHyDCNode> coverNodes = new ArrayList<>();
 
     /**
      *  `cand` for MMCS, with the transversal walkDown, this will live update
@@ -43,44 +46,57 @@ public class MMCSDC {
 
     private boolean hasEmptySubset = false;
 
-    public List<MMCSNode> getCoverNodes() {
+    private PredicateBuilder predicates;
+
+    private IEJoin iEjoin;
+
+    private Input input;
+
+    private SystematicLinearEvidenceSetBuilder systematicLinearEvidenceSetBuilder;
+
+    public List<MMCSHyDCNode> getCoverNodes() {
         return coverNodes;
     }
 
-    public MMCSDC(int numberOfPredicates, HashEvidenceSet evidenceSetToCover){
+    public MMCSHyDC(int numOfNeedCombinePredicate, Input input, PredicateBuilder predicates, HashEvidenceSet evidenceSetToCover){
 
-        this.numberOfPredicates = numberOfPredicates;
+        this.numberOfPredicates = predicates.getPredicates().size();
 
         candidatePredicates = new LongBitSet(numberOfPredicates);
 
-        mask = new LongBitSet(numberOfPredicates);
+        this.predicates = predicates;
+
+        iEjoin = new IEJoin(input);
 
         for (int i = 0; i < numberOfPredicates; ++i){
             candidatePredicates.set(i);
             mask.set(i);
         }
+        systematicLinearEvidenceSetBuilder = new SystematicLinearEvidenceSetBuilder(predicates, 0);
 
-        initiate(evidenceSetToCover);
+        initiate(evidenceSetToCover, numOfNeedCombinePredicate);
 
     }
 
 
-    public void initiate(HashEvidenceSet evidenceToCover){
+    public void initiate(HashEvidenceSet evidenceToCover, int numOfNeedCombinePredicate){
 
         /**
          *   if there is evidenceSet is empty, return empty DC
         */
         hasEmptySubset = evidenceToCover.getSetOfPredicateSets().stream().anyMatch(predicates -> predicates.getBitset().isEmpty());
+        if (hasEmptySubset)return;
 
-        coverNodes = walkDown(new MMCSNode(numberOfPredicates, evidenceToCover));
+        coverNodes = walkDown(new MMCSHyDCNode(input.getLineCount(),numOfNeedCombinePredicate, evidenceToCover, numberOfPredicates));
     }
 
     /**
      *  root is the root of the deep transversal tree, the elements is null, and the uncover is full EvidenceSet
     */
-    List<MMCSNode>  walkDown(MMCSNode root){
+    List<MMCSHyDCNode>  walkDown(MMCSHyDCNode root){
 
-        List<MMCSNode> currentCovers = new ArrayList<>();
+        // record the result
+        List<MMCSHyDCNode> currentCovers = new ArrayList<>();
 
         walkDown(root, currentCovers);
 
@@ -88,17 +104,24 @@ public class MMCSDC {
     }
 
 
-    public HashEvidenceSet walkDown(MMCSNode currentNode, List<MMCSNode> currentCovers){
+    public HashEvidenceSet walkDown(MMCSHyDCNode currentNode, List<MMCSHyDCNode> currentCovers){
+        // canCover only means current uncover is empty
         if (currentNode.canCover()){
-            if (currentNode.clusterPair.isEmpty()) {
+            //so we need to judge if there are other evidences that sampling doesn't get
+            if (currentNode.clusterPairs.size() == 0) {
                 currentCovers.add(currentNode);
                 return null;
             }
             else {
-                // update evidence in node， uncoverEvidenceSet also the last result, we use newEvidenceSet maintain the new evidence
-                HashEvidenceSet evidenceSet = currentNode.clusterPair.getEvidenceSet();
-                currentNode.newEvidenceSet.add(evidenceSet);
-                currentNode.uncoverEvidenceSet.add(evidenceSet);
+                // update evidence in node， uncoverEvidenceSet presents the last set to cover,
+                // we use newEvidenceSet maintain all new evidences that we need to back to parents
+
+                for (ClusterPair clusterPair : currentNode.clusterPairs){
+                    HashEvidenceSet evidenceSet = (HashEvidenceSet) systematicLinearEvidenceSetBuilder.getEvidenceSet(clusterPair);
+                    currentNode.newEvidenceSet.add(evidenceSet);
+                    currentNode.uncoverEvidenceSet.add(evidenceSet);
+                }
+
             }
         }
 
@@ -125,8 +148,10 @@ public class MMCSDC {
             /** get Trivial prune */
             IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
 
-            MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
-            if(childNode.isGlobalMinimal()){
+            MMCSHyDCNode childNode = currentNode.getChildNode(next, prunedCandidate, iEjoin);
+
+
+            if(childNode != null){
                 HashEvidenceSet newEvidenceSet = walkDown(childNode, currentCovers);
                 currentNode.newEvidenceSet.add(newEvidenceSet);
                 currentNode.uncoverEvidenceSet.add(newEvidenceSet);
