@@ -1,5 +1,6 @@
 package Hydra.de.hpi.naumann.dc.evidenceset.build.sampling;
 
+import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.EvidenceSetBuilder;
@@ -48,7 +49,7 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 		Collection<ColumnPair> pairs = predicates.getColumnPairs();
 		createSets(pairs);
 
-		IEvidenceSet evidenceSet = new TroveEvidenceSet();
+		IEvidenceSet evidenceSet = new HashEvidenceSet();
 		Cluster c1 = clusterPair.getC1();
 		Cluster c2 = clusterPair.getC2();
 		TIntIterator iter1 = c1.iterator();

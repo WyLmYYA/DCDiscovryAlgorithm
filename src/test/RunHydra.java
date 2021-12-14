@@ -11,10 +11,11 @@ import utils.TimeCal;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Scanner;
 
 
 public class RunHydra {
-
 
 	public static void main(String[] args) throws InputIterationException, IOException {
 		// TODO Auto-generated method stub
@@ -26,7 +27,7 @@ public class RunHydra {
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
 		String line ="dataset//Tax10k.csv";
-		String sizeline ="10000";
+		String sizeline ="30";
 
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);
@@ -59,5 +60,6 @@ public class RunHydra {
 
 
 //		System.out.println(od);
+		Scanner in = new Scanner(System.in);
 	}
 }

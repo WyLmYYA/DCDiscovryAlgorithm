@@ -7,10 +7,13 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.hash.TIntHashSet;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Cluster {
-	private final TIntArrayList array;
+	// change to not final by yongan.yuan
+	private TIntArrayList array;
 
 	public Cluster() {
 		array = new TIntArrayList();
@@ -78,21 +81,7 @@ public class Cluster {
 		return map;
 	}
 
-	/**
-	 * @Description: transfrom TIntArrayList to array
-	 * @Author yoyuan
-	 * @DateTime: 2021-10-16 before dawn
-	 * */
-	public int[] toArray(){
-		int[] array = new int[this.array.size()];
-		TIntIterator iter = this.array.iterator();
-		int j = 0;
-		while (iter.hasNext()) {
-			array[j++] = iter.next();
-		}
-		return array;
 
-	}
 
 	public static Cluster minus(Cluster c1, Cluster cNot) {
 		if (cNot.size() < 1)
@@ -134,5 +123,32 @@ public class Cluster {
 		} else if (!array.equals(other.array))
 			return false;
 		return true;
+	}
+	/**
+	 * @Description: add functions for HyDC
+	 * @Author yoyuan
+	 * */
+	public int[] toArray(){
+		int[] array = new int[this.array.size()];
+		TIntIterator iter = this.array.iterator();
+		int j = 0;
+		while (iter.hasNext()) {
+			array[j++] = iter.next();
+		}
+		return array;
+
+	}
+
+	public Set<Integer> toSet(){
+
+		Set<Integer> set = new HashSet<>();
+		TIntIterator iter = this.array.iterator();
+		while (iter.hasNext()) {
+			set.add(iter.next());
+		}
+		return set;
+	}
+	public boolean remove(int value){
+		return array.remove(value);
 	}
 }

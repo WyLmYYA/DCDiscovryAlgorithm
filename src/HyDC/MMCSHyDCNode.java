@@ -11,11 +11,13 @@ import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.array.TIntArrayList;
 
 import javax.swing.plaf.basic.BasicListUI;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @Author yoyuan
@@ -57,6 +59,9 @@ public class MMCSHyDCNode {
 
     private Predicate lastPredicate;
 
+    // maintain evidence set from beg to end
+    public HashEvidenceSet completeEvidenceSet;
+
 
     public MMCSHyDCNode( int lineCount, int numberOfPredicates, HashEvidenceSet evidenceToCover, int numOfNeedCombinePredicate ) {
 
@@ -68,15 +73,19 @@ public class MMCSHyDCNode {
 
         uncoverEvidenceSet = evidenceToCover;
 
+        completeEvidenceSet = evidenceToCover;
+
         //Initial ClusterPair only one full lineCount
         TIntArrayList c = new TIntArrayList();
         for(int i = 0; i < lineCount; ++i){
             c.add(i);
         }
+        clusterPairs = new ArrayList<>();
         clusterPairs.add(new ClusterPair(new Cluster(c), new Cluster(c)));
 
         candidatePredicates = MMCSHyDC.candidatePredicates;
 
+        newEvidenceSet = new HashEvidenceSet();
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
             crit.add(new ArrayList<>());
@@ -87,6 +96,7 @@ public class MMCSHyDCNode {
 
         this.numberOfPredicates = numberOfPredicates;
 
+        newEvidenceSet = new HashEvidenceSet();
     }
 
     public boolean canCover() {
@@ -139,7 +149,12 @@ public class MMCSHyDCNode {
                 clusterPair.refinePsPublic(lastPredicate, ieJoin, newResult);
             }
         }
+
+        // Result may be duplicated
+        refineClusterPairs(newResult);
+
         clusterPairs = newResult;
+        clusterPairs.stream().filter(clusterPair -> !clusterPair.isEmpty());
     }
     private boolean updateContextFromParent(int predicateAdded, MMCSHyDCNode node) {
 
@@ -185,6 +200,10 @@ public class MMCSHyDCNode {
 
         numOfNeedCombinePredicate = parentNode.numOfNeedCombinePredicate;
 
+        clusterPairs = new ArrayList<>(parentNode.clusterPairs);
+
+        completeEvidenceSet = parentNode.completeEvidenceSet;
+
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
             crit.add(new ArrayList<>(parentNode.crit.get(i)));
@@ -201,6 +220,26 @@ public class MMCSHyDCNode {
         return true;
     }
 
+    public void refineClusterPairs(List<ClusterPair> result){
+        Map<Integer, Set<Integer>> map = new HashMap<>();
+        result.removeIf(clusterPair -> {
+            Cluster c1 = clusterPair.getC1();
+            Cluster c2 = clusterPair.getC2();
+            for (int c1Val : c1.toArray()){
+                if (!map.containsKey(c1Val)){
+                    map.put(c1Val, c2.toSet());
+                    continue;
+                }
+                Set<Integer> tmp = map.get(c1Val);
+                for (int c2Val : c2.toArray()){
+                    if (tmp.add(c2Val)){
+                        c2.remove(c2Val);
+                    }
+                }
+            }
+            return !clusterPair.containsLinePair();
+        });
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -213,4 +252,5 @@ public class MMCSHyDCNode {
     public int hashCode() {
         return Objects.hash(numberOfPredicates, element, candidatePredicates, uncoverEvidenceSet, crit);
     }
+
 }

@@ -14,6 +14,7 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
@@ -70,8 +71,8 @@ public class MMCSHyDC {
 
         for (int i = 0; i < numberOfPredicates; ++i){
             candidatePredicates.set(i);
-            mask.set(i);
         }
+        this.input = input;
         systematicLinearEvidenceSetBuilder = new SystematicLinearEvidenceSetBuilder(predicates, 0);
 
         initiate(evidenceSetToCover, numOfNeedCombinePredicate);
@@ -87,7 +88,7 @@ public class MMCSHyDC {
         hasEmptySubset = evidenceToCover.getSetOfPredicateSets().stream().anyMatch(predicates -> predicates.getBitset().isEmpty());
         if (hasEmptySubset)return;
 
-        coverNodes = walkDown(new MMCSHyDCNode(input.getLineCount(),numOfNeedCombinePredicate, evidenceToCover, numberOfPredicates));
+        coverNodes = walkDown(new MMCSHyDCNode(input.getLineCount(), numberOfPredicates, evidenceToCover,numOfNeedCombinePredicate));
     }
 
     /**
@@ -110,16 +111,26 @@ public class MMCSHyDC {
             //so we need to judge if there are other evidences that sampling doesn't get
             if (currentNode.clusterPairs.size() == 0) {
                 currentCovers.add(currentNode);
-                return null;
+                return new HashEvidenceSet();
             }
             else {
                 // update evidence in node， uncoverEvidenceSet presents the last set to cover,
                 // we use newEvidenceSet maintain all new evidences that we need to back to parents
-
                 for (ClusterPair clusterPair : currentNode.clusterPairs){
                     HashEvidenceSet evidenceSet = (HashEvidenceSet) systematicLinearEvidenceSetBuilder.getEvidenceSet(clusterPair);
-                    currentNode.newEvidenceSet.add(evidenceSet);
-                    currentNode.uncoverEvidenceSet.add(evidenceSet);
+                    Set<PredicateBitSet> complete = currentNode.completeEvidenceSet.getSetOfPredicateSets();
+                    evidenceSet.forEach(evidence -> {
+                        if (complete.add(evidence)){
+                            currentNode.newEvidenceSet.add(evidence);
+                            currentNode.uncoverEvidenceSet.add(evidence);
+                        }
+                    });
+
+                }
+                // TODO: ClusterPair: {12} -> {12,12}
+                if (currentNode.uncoverEvidenceSet.size() == 0){
+                    currentCovers.add(currentNode);
+                    return new HashEvidenceSet();
                 }
 
             }
