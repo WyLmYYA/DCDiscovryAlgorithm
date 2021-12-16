@@ -27,6 +27,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
+
 public class ResultCompletion {
 
 	private Input input;
@@ -94,6 +96,9 @@ public class ResultCompletion {
 		PartitionEvidenceSetBuilder builder = new PartitionEvidenceSetBuilder(predicates, values);
 
 		long startTime = System.nanoTime();//纳秒
+		for (int i = 0; i < 68; ++i){
+			System.out.println(indexProvider.getObject(i));
+		}
 		walker.walk((inter) -> {
 			if((System.nanoTime() - startTime) >TimeUnit.MINUTES.toNanos(120))
 				return;

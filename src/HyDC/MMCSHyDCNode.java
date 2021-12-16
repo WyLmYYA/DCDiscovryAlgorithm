@@ -19,6 +19,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
+
 /**
  * @Author yoyuan
  * @Description:   tree node in the deep transversal of MMCS for DC
@@ -50,6 +52,8 @@ public class MMCSHyDCNode {
     // if predicate of node is not equal, we need to combine another to run BITJoin
     public boolean isNeedCombine = false;
 
+    public boolean isCombineWithParent = false;
+
     public int numOfNeedCombinePredicate;
 
     public List<ClusterPair> clusterPairs;
@@ -57,7 +61,7 @@ public class MMCSHyDCNode {
     // new added evidenceSet from childNode, initial is null
     public HashEvidenceSet newEvidenceSet = null;
 
-    private Predicate lastPredicate;
+    public Predicate lastPredicate;
 
     // maintain evidence set from beg to end
     public HashEvidenceSet completeEvidenceSet;
@@ -128,33 +132,49 @@ public class MMCSHyDCNode {
 
     }
 
+    // TODO: 目前只支持大于小于，还没加大于等于以及小于等于
     private void refine(MMCSHyDCNode parentNode, IEJoin ieJoin){
         List<ClusterPair> newResult = new ArrayList<>();
-        if (parentNode.isNeedCombine && this.isNeedCombine){
+        if (parentNode.isNeedCombine && this.isNeedCombine && !parentNode.isCombineWithParent){
             // refine use BITJoin,
             for (ClusterPair clusterPair : clusterPairs){
-                ieJoin.calcForBITJoin(clusterPair,
-                        parentNode.lastPredicate,
-                        this.lastPredicate,
-                        newResult
+                ieJoin.calc(clusterPair,
+                        parentNode.lastPredicate.getInverse(),
+                        this.lastPredicate.getInverse(),
+                        newResult::add
                 );
             }
-
-        }else if (!parentNode.isNeedCombine && this.isNeedCombine && numOfNeedCombinePredicate >= 1){
+            this.isCombineWithParent = true;
+        }
+        else if ( (!parentNode.isNeedCombine || (parentNode.isNeedCombine && parentNode.isCombineWithParent) ) && this.isNeedCombine){
             // wait next combine
             return;
-        }else{
+        }
+        else{
             // use normal way
+            if (parentNode.isNeedCombine && !parentNode.isCombineWithParent){
+                List<ClusterPair> newResults = new ArrayList<>();
+                for (ClusterPair clusterPair : parentNode.clusterPairs) {
+                    clusterPair.refine(parentNode.lastPredicate.getInverse(), ieJoin, newResults::add);
+                }
+                parentNode.clusterPairs = newResults;
+            }
+            clusterPairs = new ArrayList<>(parentNode.clusterPairs);
             for (ClusterPair clusterPair : clusterPairs) {
-                clusterPair.refinePsPublic(lastPredicate, ieJoin, newResult);
+                clusterPair.refine(lastPredicate.getInverse(), ieJoin, newResult::add);
             }
         }
 
-        // Result may be duplicated
-        refineClusterPairs(newResult);
+        // only normal join for single predicate
+//        for (ClusterPair clusterPair : clusterPairs) {
+//            clusterPair.refinePsPublic(lastPredicate.getInverse(), ieJoin, newResult);
+//        }
+
+        // Result may be duplicated, however can't refine
+//        refineClusterPairs(newResult);
 
         clusterPairs = newResult;
-        clusterPairs.stream().filter(clusterPair -> !clusterPair.isEmpty());
+//        clusterPairs.stream().filter(clusterPair -> !clusterPair.isEmpty());
     }
     private boolean updateContextFromParent(int predicateAdded, MMCSHyDCNode node) {
 
@@ -187,7 +207,10 @@ public class MMCSHyDCNode {
 
         lastPredicate = PredicateBitSet.getPredicate(predicateAdded);
 
-        if (lastPredicate.needCombine()) numOfNeedCombinePredicate -= 1;
+        if (lastPredicate.needCombine()) {
+            isNeedCombine = true;
+            numOfNeedCombinePredicate -= 1;
+        }
 
         return true;
 
@@ -202,7 +225,8 @@ public class MMCSHyDCNode {
 
         clusterPairs = new ArrayList<>(parentNode.clusterPairs);
 
-        completeEvidenceSet = parentNode.completeEvidenceSet;
+        completeEvidenceSet = new HashEvidenceSet();
+        completeEvidenceSet.add(parentNode.completeEvidenceSet);
 
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){

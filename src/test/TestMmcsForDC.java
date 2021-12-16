@@ -47,7 +47,7 @@ public class TestMmcsForDC {
     public static void main(String[] args) throws InputIterationException, IOException {
         long DCBegin = System.currentTimeMillis();
         String dataFile ="dataset//Tax10k.csv";
-        int lineSize=1000;
+        int lineSize=30;
 
         getPredicates(dataFile, lineSize);
 

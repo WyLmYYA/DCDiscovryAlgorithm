@@ -164,9 +164,7 @@ public class Predicate implements PartitionRefiner {
 	}
 
 	public boolean needCombine(){
-		return op == Operator.GREATER ||
-				op == Operator.GREATER_EQUAL ||
-				op == Operator.LESS ||
+		return op == Operator.GREATER_EQUAL ||
 				op == Operator.LESS_EQUAL;
 	}
 }

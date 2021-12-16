@@ -716,8 +716,6 @@ public class  IEJoin {
 	}
 
 	public void calc2ForTest(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> res) {
-		System.out.println(p1);
-		System.out.println(p2);
 		/** Phase1: get init structure */
 		long phase1 = System.currentTimeMillis();
 		ColumnOperand op11 = p1.getOperand1();

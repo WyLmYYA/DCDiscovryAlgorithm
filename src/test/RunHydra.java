@@ -27,7 +27,7 @@ public class RunHydra {
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
 		String line ="dataset//Tax10k.csv";
-		String sizeline ="30";
+		String sizeline ="50";
 
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);

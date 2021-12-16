@@ -1,5 +1,6 @@
 package Hydra.de.hpi.naumann.dc.evidenceset.build.sampling;
 
+import HyDC.MMCSHyDCNode;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;
@@ -45,11 +46,11 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 	}
 
 	// get evidenceSet for clusterPair
-	public IEvidenceSet getEvidenceSet(ClusterPair clusterPair){
+	public HashEvidenceSet getEvidenceSet(ClusterPair clusterPair, MMCSHyDCNode currNode){
 		Collection<ColumnPair> pairs = predicates.getColumnPairs();
 		createSets(pairs);
 
-		IEvidenceSet evidenceSet = new HashEvidenceSet();
+		HashEvidenceSet evidenceSet = new HashEvidenceSet();
 		Cluster c1 = clusterPair.getC1();
 		Cluster c2 = clusterPair.getC2();
 		TIntIterator iter1 = c1.iterator();
@@ -66,6 +67,7 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 
 			}
 		}
+
 		return evidenceSet;
 	}
 

@@ -4,6 +4,7 @@ import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.SystematicLinearEvidenceSetBuilder;
+import Hydra.de.hpi.naumann.dc.helpers.IndexProvider;
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
 import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
@@ -11,10 +12,7 @@ import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
@@ -59,6 +57,8 @@ public class MMCSHyDC {
         return coverNodes;
     }
 
+    public static IndexProvider<Predicate> indexForPredicate;
+
     public MMCSHyDC(int numOfNeedCombinePredicate, Input input, PredicateBuilder predicates, HashEvidenceSet evidenceSetToCover){
 
         this.numberOfPredicates = predicates.getPredicates().size();
@@ -74,6 +74,8 @@ public class MMCSHyDC {
         }
         this.input = input;
         systematicLinearEvidenceSetBuilder = new SystematicLinearEvidenceSetBuilder(predicates, 0);
+
+
 
         initiate(evidenceSetToCover, numOfNeedCombinePredicate);
 
@@ -108,6 +110,14 @@ public class MMCSHyDC {
     public HashEvidenceSet walkDown(MMCSHyDCNode currentNode, List<MMCSHyDCNode> currentCovers){
         // canCover only means current uncover is empty
         if (currentNode.canCover()){
+            if (currentNode.isNeedCombine && !currentNode.isCombineWithParent){
+                List<ClusterPair> newResult = new ArrayList<>();
+                for (ClusterPair clusterPair : currentNode.clusterPairs) {
+                    clusterPair.refine(currentNode.lastPredicate.getInverse(), iEjoin, newResult::add);
+                }
+                currentNode.clusterPairs = newResult;
+                currentNode.isCombineWithParent = true;
+            }
             //so we need to judge if there are other evidences that sampling doesn't get
             if (currentNode.clusterPairs.size() == 0) {
                 currentCovers.add(currentNode);
@@ -117,7 +127,7 @@ public class MMCSHyDC {
                 // update evidence in node， uncoverEvidenceSet presents the last set to cover,
                 // we use newEvidenceSet maintain all new evidences that we need to back to parents
                 for (ClusterPair clusterPair : currentNode.clusterPairs){
-                    HashEvidenceSet evidenceSet = (HashEvidenceSet) systematicLinearEvidenceSetBuilder.getEvidenceSet(clusterPair);
+                    HashEvidenceSet evidenceSet = systematicLinearEvidenceSetBuilder.getEvidenceSet(clusterPair, currentNode);
                     Set<PredicateBitSet> complete = currentNode.completeEvidenceSet.getSetOfPredicateSets();
                     evidenceSet.forEach(evidence -> {
                         if (complete.add(evidence)){
@@ -157,6 +167,8 @@ public class MMCSHyDC {
         for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
 
             /** get Trivial prune */
+            List<ClusterPair> clusterPairs = new ArrayList<>(currentNode.clusterPairs);
+
             IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
 
             MMCSHyDCNode childNode = currentNode.getChildNode(next, prunedCandidate, iEjoin);
@@ -164,10 +176,13 @@ public class MMCSHyDC {
 
             if(childNode != null){
                 HashEvidenceSet newEvidenceSet = walkDown(childNode, currentCovers);
+                currentNode.completeEvidenceSet.add(newEvidenceSet);
                 currentNode.newEvidenceSet.add(newEvidenceSet);
                 currentNode.uncoverEvidenceSet.add(newEvidenceSet);
                 nextCandidatePredicates.set(next);
             }
+            currentNode.clusterPairs = clusterPairs;
+
         }
         return currentNode.newEvidenceSet;
 
@@ -187,5 +202,7 @@ public class MMCSHyDC {
         });
         return tmp;
     }
+
+
 
 }

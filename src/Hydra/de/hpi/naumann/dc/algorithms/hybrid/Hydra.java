@@ -61,6 +61,9 @@ public class Hydra {
 
 		//complete之后得到set 利用set得到DC
 		long t1 = System.currentTimeMillis();
+		for (int i = 0; i < 68; ++i){
+			System.out.println(indexProvider.getObject(i));
+		}
 		IEvidenceSet result = new ResultCompletion(input, predicates).complete(dcsApprox, sampleEvidenceSet,
 				fullEvidenceSet);
 		this.fullEvidenceSet = result;

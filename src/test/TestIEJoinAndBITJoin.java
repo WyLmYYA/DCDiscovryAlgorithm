@@ -51,7 +51,7 @@ public class TestIEJoinAndBITJoin {
     public static void main(String[] args) throws IOException, InputIterationException {
 
         String line ="dataset//Tax10k.csv";
-        int sizeLine = 10000;
+        int sizeLine = 2000;
 //        String line ="dataset//Test.csv";
 //        int sizeLine = 7;
         int size=Integer.valueOf(sizeLine);
@@ -72,6 +72,7 @@ public class TestIEJoinAndBITJoin {
         List<Predicate> predicates1 = new ArrayList<>(predicates.getPredicates());
 
         Predicate pre1 = null, pre2 = null;
+        int index = 0;
         for (Predicate predicate : predicates1){
             if (predicate.getOperand1().getColumn().getIndex() == predicate.getOperand2().getColumn().getIndex())continue;
             if (predicate.getOperator() == Operator.GREATER || predicate.getOperator() == Operator.LESS ){
@@ -80,7 +81,6 @@ public class TestIEJoinAndBITJoin {
                     if(predicate.getOperand2() != pre1.getOperand2() && predicate.getOperand1() != pre1.getOperand1())
                     {
                         pre2 = predicate;
-                        break;
                     }
 
                 }
