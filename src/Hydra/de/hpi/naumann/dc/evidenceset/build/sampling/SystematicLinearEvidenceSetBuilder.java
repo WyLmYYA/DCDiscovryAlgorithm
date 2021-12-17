@@ -13,7 +13,6 @@ import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import gnu.trove.iterator.TIntIterator;
 
-import java.rmi.activation.ActivationGroup_Stub;
 import java.util.Collection;
 import java.util.Random;
 

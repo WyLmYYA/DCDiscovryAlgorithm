@@ -1,5 +1,6 @@
 package Hydra.de.hpi.naumann.dc.predicates;
 
+import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 
 import java.util.ArrayList;
@@ -167,4 +168,6 @@ public class Predicate implements PartitionRefiner {
 		return op == Operator.GREATER_EQUAL ||
 				op == Operator.LESS_EQUAL;
 	}
+
+
 }

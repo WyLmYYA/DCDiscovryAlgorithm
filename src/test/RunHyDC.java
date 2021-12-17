@@ -16,13 +16,11 @@ import Hydra.de.hpi.naumann.dc.predicates.Operator;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import utils.TimeCal;
 
-import javax.swing.plaf.synth.SynthUI;
 import java.io.File;
 import java.io.IOException;
-import java.util.Deque;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
@@ -36,16 +34,18 @@ public class RunHyDC {
         //Initial: get predicates
 
         String line ="dataset//Tax10k.csv";
-        String sizeLine ="50";
+        String sizeLine ="30";
         //        line ="dataset//Test.csv";
         //        sizeLine ="7";
 
-        //             hydra   2021.12.16   baseline
-        // 20    dc 7304  t1:9s    t2: 8s(single)   t3:  8s(combine)
-        // 30    dc 10770 t1:15s   t2: 15s(single)  t3:  19s(combine)
-        // 40    dc 14109 t1:21s   t2: 31s(single)  t3:  34s(combine)
-        // 50    dc 26396 t1:34s   t2: 100s(single) t3:  116(combine)
-        //             To be continue...
+        //             Hydra                        HyDC(BIT)      HyDC(IEJoin)
+        // 40    dc 14109 t1:21s                                   t3:  12.7s(combine) mmcs 6s[refine:2s, clone: 1.5s, update 2s] + inverse 6s
+        // 50    dc 26396 t1:34s                                   t3:  21s(combine) mmcs 10s[refine:3.5s, clone 1.7s, update 3.2s] + inverse 10s
+        // 100   dc 34489 t1:57s   complete:                       t3:  42s(combine) mmcs 25s[refine:12.6s, clone 2.7s, update 7s] + inverse 17s
+        // 200   dc 41150 t1:80s   complete: 5.4s  109s refine 75s t3:  130s(combine) mmcs 104s[refine:72s, clone 4.4s, update 20.7s] + inverse 30s
+
+        // 1000  dc 84150 t1:171s  complete: 18s
+        // 10000 dc 85360 t1:525s  complete: 227s                  t3:
 
          int sampleRounds = 5;
 
@@ -82,9 +82,6 @@ public class RunHyDC {
         indexAddSet(needConbine, indexProvider);
 
         // Sampling
-        for (int i = 0; i < 68; ++i){
-            System.out.println(indexProvider.getObject(i));
-        }
         IEvidenceSet sampleEvidenceSet = new SystematicLinearEvidenceSetBuilder(predicates,
                 sampleRounds).buildEvidenceSet(input);
         HashEvidenceSet set = new HashEvidenceSet();
@@ -93,9 +90,8 @@ public class RunHyDC {
         IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
         // HyDC MMCS begin
-        int numOfNeedCombinePredicate =  (int)predicates.getPredicates().stream().filter(predicate -> predicate.needCombine() == true).count();
 
-        MMCSHyDC mmcsHyDC = new MMCSHyDC(numOfNeedCombinePredicate, input, predicates, (HashEvidenceSet) fullSamplingEvidenceSet);
+        MMCSHyDC mmcsHyDC = new MMCSHyDC(input, predicates, (HashEvidenceSet) fullSamplingEvidenceSet);
 
         System.out.println("mmcs end: " + (System.currentTimeMillis() - beg));
         // Transform cover to dc
@@ -115,6 +111,9 @@ public class RunHyDC {
         System.out.println("algorithm end: " + (System.currentTimeMillis() - beg));
         System.out.println(denialConstraintSet.size());
 
+        System.out.println("refine time:" + TimeCal.getTime(0));
+        System.out.println("clone time:" + TimeCal.getTime(1));
+        System.out.println("update time:" + TimeCal.getTime(2));
 
     }
     public  static void indexAddSet(Set<Predicate> set, IndexProvider<Predicate> indexProvider){

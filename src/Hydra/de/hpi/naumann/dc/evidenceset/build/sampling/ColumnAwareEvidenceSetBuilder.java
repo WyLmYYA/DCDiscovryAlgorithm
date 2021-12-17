@@ -103,7 +103,7 @@ public class ColumnAwareEvidenceSetBuilder extends EvidenceSetBuilder {
 				(p1, p2) -> Double.compare(p2.efficiency, p1.efficiency));
 
 		for (ParsedColumn<?> c : input.getColumns()) {
-			System.out.println("Sampling column " + c.getName());
+//			System.out.println("Sampling column " + c.getName());
 			Map<Object, OrderedCluster> valueMap = new HashMap<>();
 			for (int i = 0; i < input.getLineCount(); ++i) {
 				OrderedCluster cluster = valueMap.computeIfAbsent(c.getValue(i), (k) -> new OrderedCluster());

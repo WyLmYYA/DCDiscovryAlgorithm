@@ -218,7 +218,7 @@ public class ResultCompletion {
 		return bestP;
 	}
 
-	private ArrayList<PredicatePair> getSortedPredicatePairs(Multiset<PredicatePair> paircountDC,
+	public static ArrayList<PredicatePair> getSortedPredicatePairs(Multiset<PredicatePair> paircountDC,
 			AtomicLongMap<PartitionRefiner> selectivityCount) {
 		ArrayList<PredicatePair> sortedPredicatePairs = new ArrayList<>();
 		sortedPredicatePairs.addAll(paircountDC.elementSet());
@@ -255,7 +255,7 @@ public class ResultCompletion {
 
 
 	// 选择性估计
-	private AtomicLongMap<PartitionRefiner> createSelectivityEstimation(IEvidenceSet sampleEvidence,
+	public static AtomicLongMap<PartitionRefiner> createSelectivityEstimation(IEvidenceSet sampleEvidence,
 			Set<PredicatePair> predicatePairs) {
 		AtomicLongMap<PartitionRefiner> selectivityCount = AtomicLongMap.create();
 		for (PredicateBitSet ps : sampleEvidence) {

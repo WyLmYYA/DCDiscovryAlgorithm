@@ -26,7 +26,7 @@ public class RelationalInput{
 		columnNames=br.readLine().split(",");
 		numberOfColumns=columnNames.length;
 		relationName = file.getName();
-		System.out.println(numberOfColumns);
+//		System.out.println(numberOfColumns);
 	}
 	
 	public boolean hasNext() {

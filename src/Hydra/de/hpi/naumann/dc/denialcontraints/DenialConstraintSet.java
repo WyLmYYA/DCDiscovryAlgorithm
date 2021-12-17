@@ -56,7 +56,7 @@ public class DenialConstraintSet implements Iterable<DenialConstraint> {
 			}
 		}
 		List<Entry<PredicateBitSet, MinimalDCCandidate>> constraints2 = new ArrayList<>(constraintsClosureMap.entrySet());
-		System.out.println("Sym size created " + constraints2.size());
+//		System.out.println("Sym size created " + constraints2.size());
 //		for(int k=0;k<constraints2.size();k++)
 //			System.out.println("value"+constraints2.get(k).getValue().dc.getPredicateSet().getBitset().toBitSet());
 

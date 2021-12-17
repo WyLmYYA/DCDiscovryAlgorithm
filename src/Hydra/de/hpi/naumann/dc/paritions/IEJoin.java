@@ -4,7 +4,9 @@ import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.input.ParsedColumn;
 import Hydra.de.hpi.naumann.dc.predicates.Operator;
+import Hydra.de.hpi.naumann.dc.predicates.PartitionRefiner;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
+import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
 import Hydra.de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 import binaryindextree.BIT;
 import binaryindextree.IndexForBIT;
@@ -306,8 +308,19 @@ public class  IEJoin {
 		}
 
 	}
-
+	public void calcForTest(ClusterPair clusters, PartitionRefiner partitionRefiner, List<ClusterPair> Res){
+		PredicatePair predicatePair = (PredicatePair) partitionRefiner;
+		Predicate p1 = predicatePair.getP1().getInverse();
+		Predicate p2 = predicatePair.getP2().getInverse();
+		calcForBIT(clusters, p1, p2, Res);
+	}
 	public void calcForTest(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> Res){
+		// in mmcs we need to input inverse of predicate
+		calcForBIT(clusters, p1, p2, Res);
+	}
+	public void calcForBIT(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> Res){
+
+
 
 		/** Phase1: get init structure */
 

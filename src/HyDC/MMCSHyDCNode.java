@@ -3,23 +3,15 @@ package HyDC;
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
-import Hydra.de.hpi.naumann.dc.helpers.IndexProvider;
-import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.paritions.Cluster;
 import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
 import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
-import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
-import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.array.TIntArrayList;
+import utils.TimeCal;
 
-import javax.swing.plaf.basic.BasicListUI;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 /**
  * @Author yoyuan
@@ -49,29 +41,18 @@ public class MMCSHyDCNode {
      * @Description: add attributes for HyDC
      */
 
-    // if predicate of node is not equal, we need to combine another to run BITJoin
-    public boolean isNeedCombine = false;
-
-    public boolean isCombineWithParent = false;
-
-    public int numOfNeedCombinePredicate;
-
-    public List<ClusterPair> clusterPairs;
+    public List<Predicate> predicatesForElement = new ArrayList<>();
 
     // new added evidenceSet from childNode, initial is null
     public HashEvidenceSet newEvidenceSet = null;
-
-    public Predicate lastPredicate;
 
     // maintain evidence set from beg to end
     public HashEvidenceSet completeEvidenceSet;
 
 
-    public MMCSHyDCNode( int lineCount, int numberOfPredicates, HashEvidenceSet evidenceToCover, int numOfNeedCombinePredicate ) {
+    public MMCSHyDCNode( int lineCount, int numberOfPredicates, HashEvidenceSet evidenceToCover ) {
 
         this.numberOfPredicates = numberOfPredicates;
-
-        this.numOfNeedCombinePredicate = numOfNeedCombinePredicate;
 
         element = new LongBitSet();
 
@@ -84,8 +65,6 @@ public class MMCSHyDCNode {
         for(int i = 0; i < lineCount; ++i){
             c.add(i);
         }
-        clusterPairs = new ArrayList<>();
-        clusterPairs.add(new ClusterPair(new Cluster(c), new Cluster(c)));
 
         candidatePredicates = MMCSHyDC.candidatePredicates;
 
@@ -125,57 +104,12 @@ public class MMCSHyDCNode {
         boolean isGlobalMini = childNode.updateContextFromParent(predicateAdded, this);
 
         if (!isGlobalMini) return null;
-        // update clusterPair BITJoin is here
-        childNode.refine(this, ieJoin);
 
         return childNode;
 
     }
 
-    // TODO: 目前只支持大于小于，还没加大于等于以及小于等于
-    private void refine(MMCSHyDCNode parentNode, IEJoin ieJoin){
-        List<ClusterPair> newResult = new ArrayList<>();
-        if (parentNode.isNeedCombine && this.isNeedCombine && !parentNode.isCombineWithParent){
-            // refine use BITJoin,
-            for (ClusterPair clusterPair : clusterPairs){
-                ieJoin.calc(clusterPair,
-                        parentNode.lastPredicate.getInverse(),
-                        this.lastPredicate.getInverse(),
-                        newResult::add
-                );
-            }
-            this.isCombineWithParent = true;
-        }
-        else if ( (!parentNode.isNeedCombine || (parentNode.isNeedCombine && parentNode.isCombineWithParent) ) && this.isNeedCombine){
-            // wait next combine
-            return;
-        }
-        else{
-            // use normal way
-            if (parentNode.isNeedCombine && !parentNode.isCombineWithParent){
-                List<ClusterPair> newResults = new ArrayList<>();
-                for (ClusterPair clusterPair : parentNode.clusterPairs) {
-                    clusterPair.refine(parentNode.lastPredicate.getInverse(), ieJoin, newResults::add);
-                }
-                parentNode.clusterPairs = newResults;
-            }
-            clusterPairs = new ArrayList<>(parentNode.clusterPairs);
-            for (ClusterPair clusterPair : clusterPairs) {
-                clusterPair.refine(lastPredicate.getInverse(), ieJoin, newResult::add);
-            }
-        }
 
-        // only normal join for single predicate
-//        for (ClusterPair clusterPair : clusterPairs) {
-//            clusterPair.refinePsPublic(lastPredicate.getInverse(), ieJoin, newResult);
-//        }
-
-        // Result may be duplicated, however can't refine
-//        refineClusterPairs(newResult);
-
-        clusterPairs = newResult;
-//        clusterPairs.stream().filter(clusterPair -> !clusterPair.isEmpty());
-    }
     private boolean updateContextFromParent(int predicateAdded, MMCSHyDCNode node) {
 
         //TODO: we can change TroveEvidenceSet to see which one is more suitable
@@ -205,33 +139,30 @@ public class MMCSHyDCNode {
         */
         element.set(predicateAdded, true);
 
-        lastPredicate = PredicateBitSet.getPredicate(predicateAdded);
-
-        if (lastPredicate.needCombine()) {
-            isNeedCombine = true;
-            numOfNeedCombinePredicate -= 1;
-        }
+        predicatesForElement.add(PredicateBitSet.indexProvider.getObject(predicateAdded));
 
         return true;
 
     }
 
     private void cloneContext(IBitSet nextCandidatePredicates, MMCSHyDCNode parentNode) {
+
+
+        /** clone don't time */
         element = parentNode.element.clone();
 
         candidatePredicates = nextCandidatePredicates.clone();
 
-        numOfNeedCombinePredicate = parentNode.numOfNeedCombinePredicate;
+        completeEvidenceSet = parentNode.completeEvidenceSet;
 
-        clusterPairs = new ArrayList<>(parentNode.clusterPairs);
 
-        completeEvidenceSet = new HashEvidenceSet();
-        completeEvidenceSet.add(parentNode.completeEvidenceSet);
 
+        // TODO: can combine with update
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
             crit.add(new ArrayList<>(parentNode.crit.get(i)));
         }
+
 
     }
 
