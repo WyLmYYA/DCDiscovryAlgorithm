@@ -112,7 +112,9 @@ public class Hydra {
 //		dcs.forEach(System.out::println);
 		System.out.println("evidence inversion time: "+ (System.currentTimeMillis() - starttime)+ " ms");
 		starttime = System.currentTimeMillis();
+		System.out.println("dc before minimize " + dcs.size());
 		dcs.minimize();
+		System.out.println("dc after minimize " + dcs.size());
 		System.out.println(" minimize time: "+ (System.currentTimeMillis() - starttime)+ " ms");
 //		for(DenialConstraint dc:dcs){
 //			System.out.println(dc);

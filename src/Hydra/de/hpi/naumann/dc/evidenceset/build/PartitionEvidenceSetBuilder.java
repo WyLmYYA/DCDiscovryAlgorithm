@@ -27,6 +27,7 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 	public void addEvidences(ClusterPair clusterPair, IEvidenceSet evidenceSet) {
 		PredicateBitSet staticSet = null;
 		int lastI = -1;
+		// transform clusterPair  to line pair
 		Iterator<LinePair> iter = clusterPair.getLinePairIterator();
 		while (iter.hasNext()) {
 			LinePair lPair = iter.next();

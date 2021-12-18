@@ -14,6 +14,7 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import gnu.trove.iterator.TIntIterator;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
@@ -45,7 +46,7 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 	}
 
 	// get evidenceSet for clusterPair
-	public HashEvidenceSet getEvidenceSet(ClusterPair clusterPair, MMCSHyDCNode currNode){
+	public HashEvidenceSet getEvidenceSet(ClusterPair clusterPair){
 		Collection<ColumnPair> pairs = predicates.getColumnPairs();
 		createSets(pairs);
 
@@ -67,6 +68,12 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 			}
 		}
 
+		return evidenceSet;
+	}
+
+	public HashEvidenceSet getEvidenceSet(List<ClusterPair> clusterPairs){
+		HashEvidenceSet evidenceSet = new HashEvidenceSet();
+		clusterPairs.forEach(clusterPair -> evidenceSet.add(getEvidenceSet(clusterPair)));
 		return evidenceSet;
 	}
 

@@ -143,7 +143,7 @@ public class Input {
 			}
 		}
 
-		System.out.println("rebuild: " + (System.currentTimeMillis() - time));
+//		System.out.println("rebuild: " + (System.currentTimeMillis() - time));
 		return input2s;
 	}
 

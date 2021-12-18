@@ -140,7 +140,7 @@ public class MMCSHyDC {
                 return currentNode.newEvidenceSet;
             } else {
                 for (ClusterPair clusterPair : clusterPairs) {
-                    HashEvidenceSet evidenceSet = systematicLinearEvidenceSetBuilder.getEvidenceSet(clusterPair, currentNode);
+                    HashEvidenceSet evidenceSet = systematicLinearEvidenceSetBuilder.getEvidenceSet(clusterPair);
                     Set<PredicateBitSet> complete = currentNode.completeEvidenceSet.getSetOfPredicateSets();
                     evidenceSet.forEach(evidence -> {
                         if (complete.add(evidence)) {

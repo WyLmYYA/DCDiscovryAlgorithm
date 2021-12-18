@@ -1,8 +1,10 @@
 package test;
 
 
+import HyDCV3.HyDC;
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
+import Hydra.de.hpi.naumann.dc.algorithms.hybrid.Hydra;
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.ResultCompletion;
 import Hydra.de.hpi.naumann.dc.cover.PrefixMinimalCoverSearch;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
@@ -47,9 +49,12 @@ public class TestMmcsForDC {
     public static void main(String[] args) throws InputIterationException, IOException {
         long DCBegin = System.currentTimeMillis();
         String dataFile ="dataset//Tax10k.csv";
-        int lineSize=30;
+        int lineSize=70;
 
         getPredicates(dataFile, lineSize);
+
+//        Hydra hydra = new Hydra();
+//        DenialConstraintSet dcs = hydra.run(input, predicates, 0 );
 
         IEvidenceSet fullEvidenceSet = getFullEvidenceSet();
 
@@ -57,6 +62,7 @@ public class TestMmcsForDC {
          */
 
         System.out.println("before mmcs cost time: " + (System.currentTimeMillis() - DCBegin));
+
 
         long mmcsTime = System.currentTimeMillis();
         MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullEvidenceSet);

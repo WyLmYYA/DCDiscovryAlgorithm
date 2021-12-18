@@ -20,6 +20,7 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.util.concurrent.AtomicLongMap;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
+import utils.TimeCal;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -96,18 +97,22 @@ public class ResultCompletion {
 		PartitionEvidenceSetBuilder builder = new PartitionEvidenceSetBuilder(predicates, values);
 
 		long startTime = System.nanoTime();//纳秒
-		for (int i = 0; i < 68; ++i){
-			System.out.println(indexProvider.getObject(i));
-		}
 		walker.walk((inter) -> {
 			if((System.nanoTime() - startTime) >TimeUnit.MINUTES.toNanos(120))
 				return;
 
 			Consumer<ClusterPair> consumer = (clusterPair) -> {
+				// this predicateDCMap is mean that this predicate is the last one
+//				if (!clusterPair.containsLinePair()){
+//					System.out.println("s");
+//				}
 				List<DenialConstraint> currentDCs = predicateDCMap.get(inter.currentBits);
 				if (currentDCs != null) {
 					// EtmPoint point = etmMonitor.createPoint("EVIDENCES");
+					//
+					long l1 = System.currentTimeMillis();
 					builder.addEvidences(clusterPair, resultEv);
+					TimeCal.add((System.currentTimeMillis() - l1) , 3);
 					// point.collect();
 				} else {
 					inter.nextRefiner.accept(clusterPair);
@@ -271,5 +276,79 @@ public class ResultCompletion {
 		return selectivityCount;
 	}
 
+	public void completeForHyDC(ClusterPair startPartition, DenialConstraintSet set, IEvidenceSet sampleEvidence, Map<DenialConstraint, List<ClusterPair>> dcClusterPairMap) {
+//		System.out.println("Checking " + set.size() + " DCs.");
+//
+//		System.out.println("Building selectivity estimation");//选择性估计计算
+
+		// frequency estimation predicate pairs
+		Multiset<PredicatePair> paircountDC = frequencyEstimationForPredicatePairs(set);
+
+		// selectivity estimation for predicates & predicate pairs
+		AtomicLongMap<PartitionRefiner> selectivityCount = createSelectivityEstimation(sampleEvidence,
+				paircountDC.elementSet());
+
+		ArrayList<PredicatePair> sortedPredicatePairs = getSortedPredicatePairs(paircountDC, selectivityCount);
+
+		IndexProvider<PartitionRefiner> indexProvider = new IndexProvider<>();
+
+//		System.out.println("Grouping DCs..");
+		Map<IBitSet, List<DenialConstraint>> predicateDCMap = groupDCs(set, sortedPredicatePairs, indexProvider,
+				selectivityCount);
+
+		int[] refinerPriorities = getRefinerPriorities(selectivityCount, indexProvider, predicateDCMap);
+
+		SuperSetWalker walker = new SuperSetWalker(predicateDCMap.keySet(), refinerPriorities);
+
+//		System.out.println("Calculating partitions..");
+
+		//Evidence Inversion
+//		HashEvidenceSet resultEv = new HashEvidenceSet();
+//		for (PredicateBitSet i : fullEvidence)
+//			resultEv.add(i);
+
+//		ClusterPair startPartition = StrippedPartition.getFullParition(input.getLineCount());
+		int[][] values = input.getInts();
+		IEJoin iejoin = new IEJoin(values);
+//		PartitionEvidenceSetBuilder builder = new PartitionEvidenceSetBuilder(predicates, values);
+
+		long startTime = System.nanoTime();//纳秒
+		walker.walk((inter) -> {
+//			if((System.nanoTime() - startTime) >TimeUnit.MINUTES.toNanos(120))
+//				return;
+
+			Consumer<ClusterPair> consumer = (clusterPair) -> {
+				// this predicateDCMap is mean that this predicate is the last one
+				List<DenialConstraint> currentDCs = predicateDCMap.get(inter.currentBits);
+				if (currentDCs != null) {
+//					long l1 = System.currentTimeMillis();
+//					builder.addEvidences(clusterPair, resultEv);
+//					TimeCal.add((System.currentTimeMillis() - l1) , 3);
+					//TODO: this cluster pair is the last result or only for cur predicate or predicate pair?
+					currentDCs.forEach(denialConstraint -> {
+						if (dcClusterPairMap.containsKey(denialConstraint)){
+							dcClusterPairMap.get(denialConstraint).add(new ClusterPair(clusterPair.getC1(), clusterPair.getC2()));
+						}else {
+							List<ClusterPair> tmp = new ArrayList<>();
+							tmp.add(new ClusterPair(clusterPair.getC1(), clusterPair.getC2()));
+							dcClusterPairMap.put(denialConstraint, tmp);
+						}
+					});
+				} else {
+					inter.nextRefiner.accept(clusterPair);
+				}
+			};
+
+			//refiner是一系列谓词对
+			PartitionRefiner refiner = indexProvider.getObject(inter.newRefiner);
+//			System.out.println(refiner);
+			ClusterPair partition = inter.clusterPair != null ? inter.clusterPair : startPartition;
+			partition.refine(refiner, iejoin, consumer);
+
+		});
+
+//		return resultEv;
+
+	}
 
 }

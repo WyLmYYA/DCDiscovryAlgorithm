@@ -94,8 +94,14 @@ public class DenialConstraintSet implements Iterable<DenialConstraint> {
 		// etmMonitor.render(new SimpleTextRenderer());
 	}
 
-	public void add(DenialConstraint dc) {
-		constraints.add(dc);
+//	public void add(DenialConstraint dc) {
+//		constraints.add(dc);
+//	}
+
+	// in HyDC transform mmcs node to dc we need judge is there had the same one
+	// so we need return boolean type
+	public boolean add(DenialConstraint dc) {
+		return constraints.add(dc);
 	}
 
 

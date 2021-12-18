@@ -27,7 +27,7 @@ public class RunHydra {
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
 		String line ="dataset//Tax10k.csv";
-		String sizeline ="200";
+		String sizeline ="10";
 
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);
@@ -47,7 +47,9 @@ public class RunHydra {
 		long endtime=System.currentTimeMillis();
 		System.out.println("Used time: "+ (endtime - starttime)+ " ms");
 
+		// time 3 is calculate evidence O(n2*R) in complete
 		TimeCal.time.forEach(System.out::println);
+
 
 //		dcs.forEach(System.out::println);
 //		String od="";
@@ -60,6 +62,5 @@ public class RunHydra {
 
 
 //		System.out.println(od);
-		Scanner in = new Scanner(System.in);
 	}
 }
