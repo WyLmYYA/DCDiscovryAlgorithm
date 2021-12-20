@@ -143,6 +143,10 @@ public class MMCSNode {
         return true;
     }
 
+    public void clearCrit(){
+        for (List<PredicateBitSet> c : crit)
+            c.clear();
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

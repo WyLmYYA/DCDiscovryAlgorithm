@@ -23,3 +23,8 @@
 可以重复第一步的选择性计算，排序，然后进行验证，然后又产生一批新的dc节点
 - 重复第二步，进行子循环，直到cluster pair为空
 - 套娃
+
+Version3 optimistic
+- 可以选择是直接计算evidence 还是继续使用验证，如果cluster pair比较小的话，明显直接计算要更好，valid比较慢
+- 有些节点inverse之后会产生一样的dc，这样的节点可以删除
+- 抽样可以尽量少但也不能太少，因为抽样得到的第一轮evidence的mmcs得到的dc是必须验证的，这个时间会很长，跟hydra差不多

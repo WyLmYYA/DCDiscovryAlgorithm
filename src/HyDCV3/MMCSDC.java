@@ -6,9 +6,7 @@ import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 /**
@@ -58,7 +56,7 @@ public class MMCSDC {
 
     }
 
-    public MMCSDC( MMCSNode root){
+    public MMCSDC( MMCSNode root, Set<IBitSet> walkedNode){
         this.numberOfPredicates = root.numberOfPredicates;
         candidatePredicates = root.candidatePredicates;
         hasEmptySubset = root.uncoverEvidenceSet.getSetOfPredicateSets().stream().anyMatch(predicates -> predicates.getBitset().isEmpty());
@@ -66,7 +64,7 @@ public class MMCSDC {
         for (int i = 0; i < numberOfPredicates; ++i){
             mask.set(i);
         }
-        coverNodes = walkDown(root);
+        coverNodes = walkDown(root, walkedNode);
     }
 
 
@@ -92,11 +90,59 @@ public class MMCSDC {
         return currentCovers;
     }
 
+    List<MMCSNode>  walkDown(MMCSNode root, Set<IBitSet> walkedNode){
+
+        List<MMCSNode> currentCovers = new ArrayList<>();
+
+        walkDown(root, currentCovers, walkedNode);
+
+        return currentCovers;
+    }
+    public  void walkDown(MMCSNode currentNode, List<MMCSNode> currentCovers, Set<IBitSet> walkedNode){
+        if (!walkedNode.add(currentNode.getElement())) return;
+
+        if (currentNode.canCover()){
+            currentNode.resetCandidatePredicates(mask);
+//            currentNode.clearCrit();
+            currentCovers.add(currentNode);
+            return;
+        }
+
+        /**
+         *  chosenEvidence = F ∩ cand， F is next Evidence needs to be covered
+         */
+        PredicateBitSet nextPredicates =  currentNode.getNextEvidence();
+
+        IBitSet chosenEvidence = currentNode.candidatePredicates.getAnd(nextPredicates.getBitset());
+
+
+        /**
+         *  cand = cand \ C, we don't change the candidatePredicates of current node
+         */
+
+        IBitSet nextCandidatePredicates = currentNode.candidatePredicates.getAndNot(chosenEvidence);
+
+
+        /**
+         * try every CandidatePredicates to add, and walkDown
+         */
+        for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
+
+            /** get Trivial prune */
+            IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
+
+            MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
+            if(childNode.isGlobalMinimal()){
+                walkDown(childNode, currentCovers, walkedNode);
+                nextCandidatePredicates.set(next);
+            }
+        }
+    }
 
     public  void walkDown(MMCSNode currentNode, List<MMCSNode> currentCovers){
         if (currentNode.canCover()){
             //TODO: why we should reset: to dynamic usage
-            currentNode.resetCandidatePredicates(candidatePredicates);
+            currentNode.resetCandidatePredicates(mask);
             currentCovers.add(currentNode);
             return;
         }
@@ -130,9 +176,6 @@ public class MMCSDC {
                 nextCandidatePredicates.set(next);
             }
         }
-
-
-
     }
 
     private IBitSet PruneNextPredicates(IBitSet nextCandidatePredicates, int next) {

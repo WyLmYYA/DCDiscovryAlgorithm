@@ -169,5 +169,4 @@ public class Predicate implements PartitionRefiner {
 				op == Operator.LESS_EQUAL;
 	}
 
-
 }

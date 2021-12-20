@@ -45,6 +45,26 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 		return evidenceSet;
 	}
 
+	public IEvidenceSet buildEvidenceSet(Input input, int rate) {
+		Collection<ColumnPair> pairs = predicates.getColumnPairs();
+		createSets(pairs);
+
+		IEvidenceSet evidenceSet = new TroveEvidenceSet();
+
+		Random r = new Random();
+		for (int i = 0; i < input.getLineCount() / rate; ++i) {
+			PredicateBitSet staticSet = getStatic(pairs, i);
+			for (int count = 0; count < factor; ++count) {
+				int j = r.nextInt(input.getLineCount() - 1);
+				if (j >= i)
+					j++;
+				PredicateBitSet set = getPredicateSet(staticSet, pairs, i, j);
+				evidenceSet.add(set);
+			}
+		}
+		return evidenceSet;
+	}
+
 	// get evidenceSet for clusterPair
 	public HashEvidenceSet getEvidenceSet(ClusterPair clusterPair){
 		Collection<ColumnPair> pairs = predicates.getColumnPairs();
