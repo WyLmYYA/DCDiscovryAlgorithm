@@ -1,6 +1,6 @@
 package test;
 
-import HyDC.MMCSHyDC;
+import HyDCNoSort.MMCSHyDC;
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
-public class RunHyDC {
+public class RunHyDCV1 {
 
     //sampling efficiency : growth/total
     protected static double efficiencyThreshold = 0.005d;
@@ -34,20 +34,18 @@ public class RunHyDC {
         //Initial: get predicates
 
         String line ="dataset//Tax10k.csv";
-        String sizeLine ="30";
+        String sizeLine ="100";
         //        line ="dataset//Test.csv";
         //        sizeLine ="7";
+        //                Hydra HyDC(BIT)   HyDC(IEJoin Single Valid)
+        // 40    dc 14109 t1:21s            t2:
+        // 50    dc 26396 t1:34s
+        // 100   dc 34489 t1:57s
+        // 200   dc 41150 t1:80s
+        // 1000  dc 84150 t1:171s
+        // 10000 dc 85360 t1:525s
 
-        //             Hydra                        HyDC(BIT)      HyDC(IEJoin)
-        // 40    dc 14109 t1:21s                                   t3:  12.7s(combine) mmcs 6s[refine:2s, clone: 1.5s, update 2s] + inverse 6s
-        // 50    dc 26396 t1:34s                                   t3:  21s(combine) mmcs 10s[refine:3.5s, clone 1.7s, update 3.2s] + inverse 10s
-        // 100   dc 34489 t1:57s   complete:                       t3:  42s(combine) mmcs 25s[refine:12.6s, clone 2.7s, update 7s] + inverse 17s
-        // 200   dc 41150 t1:80s   complete: 5.4s  109s refine 75s t3:  130s(combine) mmcs 104s[refine:72s, clone 4.4s, update 20.7s] + inverse 30s
-
-        // 1000  dc 84150 t1:171s  complete: 18s
-        // 10000 dc 85360 t1:525s  complete: 227s                  t3:
-
-         int sampleRounds = 5;
+        int sampleRounds = 5;
 
         int size=Integer.parseInt(sizeLine);
         File datafile = new File(line);
@@ -62,24 +60,24 @@ public class RunHyDC {
 
         // create indexProvider for predicates in order by = <> and needCombine
 
-        Set<Predicate> equal = new HashSet<>();
-        Set<Predicate> unEqual = new HashSet<>();
-        Set<Predicate> needConbine = new HashSet<>();
-        Set<Predicate> noConbine = new HashSet<>();
-        predicates.getPredicates().forEach(predicate -> {
-            if (predicate.getOperator() == Operator.EQUAL)equal.add(predicate);
-
-            else if (predicate.getOperator() == Operator.UNEQUAL)unEqual.add(predicate);
-
-            else if (predicate.needCombine())needConbine.add(predicate);
-
-            else noConbine.add(predicate);
-        });
-        //TODO: next we can order every set. so we can change to List
-        indexAddSet(unEqual, indexProvider);
-        indexAddSet(equal, indexProvider);
-        indexAddSet(noConbine, indexProvider);
-        indexAddSet(needConbine, indexProvider);
+//        Set<Predicate> equal = new HashSet<>();
+//        Set<Predicate> unEqual = new HashSet<>();
+//        Set<Predicate> needConbine = new HashSet<>();
+//        Set<Predicate> noConbine = new HashSet<>();
+//        predicates.getPredicates().forEach(predicate -> {
+//            if (predicate.getOperator() == Operator.EQUAL)equal.add(predicate);
+//
+//            else if (predicate.getOperator() == Operator.UNEQUAL)unEqual.add(predicate);
+//
+//            else if (predicate.needCombine())needConbine.add(predicate);
+//
+//            else noConbine.add(predicate);
+//        });
+//        //TODO: next we can order every set. so we can change to List
+//        indexAddSet(unEqual, indexProvider);
+//        indexAddSet(equal, indexProvider);
+//        indexAddSet(noConbine, indexProvider);
+//        indexAddSet(needConbine, indexProvider);
 
         // Sampling
         IEvidenceSet sampleEvidenceSet = new SystematicLinearEvidenceSetBuilder(predicates,
@@ -91,7 +89,7 @@ public class RunHyDC {
 
         // HyDC MMCS begin
 
-        MMCSHyDC mmcsHyDC = new MMCSHyDC(input, predicates, (HashEvidenceSet) fullSamplingEvidenceSet);
+        MMCSHyDC mmcsHyDC = new MMCSHyDC(predicates.getPredicates().size(),input, predicates, (HashEvidenceSet) fullSamplingEvidenceSet);
 
         System.out.println("mmcs end: " + (System.currentTimeMillis() - beg));
         // Transform cover to dc
