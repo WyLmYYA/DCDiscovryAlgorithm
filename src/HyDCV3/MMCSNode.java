@@ -32,6 +32,8 @@ public class MMCSNode {
     }
 
     public List<ClusterPair> clusterPairs;
+
+    public HashEvidenceSet hashEvidenceSet;
     //TODO: we can remain dc in every node, may be can accelerate process
     public PredicateBitSet denialConstraint = new PredicateBitSet();
 

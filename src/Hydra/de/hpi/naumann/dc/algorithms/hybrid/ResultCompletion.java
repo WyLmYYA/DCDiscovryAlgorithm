@@ -28,8 +28,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
-
 public class ResultCompletion {
 
 	private Input input;
@@ -176,11 +174,16 @@ public class ResultCompletion {
 			Set<PartitionRefiner> refinerSet = getRefinerSet(prios, dc);
 			predicateDCMap.computeIfAbsent(indexProvider.getBitSet(refinerSet), (Set) -> new ArrayList<>()).add(dc);
 		}
+		Set<DenialConstraint> denialConstraints = new HashSet<>();
+		for (IBitSet predicates : predicateDCMap.keySet()){
+			if ( !denialConstraints.add( predicateDCMap.get(predicates).get(0))){
+				System.out.println("s");
+			}
+		}
 		return predicateDCMap;
 	}
 
 	private Set<PartitionRefiner> getRefinerSet(HashMap<PredicatePair, Integer> prios, DenialConstraint dc) {
-		//refinement strategy 可以得到满足给定谓词的元组对的partition
 		// a refinement strategy takes as input a predicate and a partition
 		// outputs a refined partition that contains only tuple pairs that satisfy the given predicate
 		Set<PartitionRefiner> refinerSet = new HashSet<>();
@@ -276,7 +279,7 @@ public class ResultCompletion {
 		return selectivityCount;
 	}
 
-	public void completeForHyDC(ClusterPair startPartition, DenialConstraintSet set, IEvidenceSet sampleEvidence, Map<DenialConstraint, List<ClusterPair>> dcClusterPairMap) {
+	public void completeForHyDC(ClusterPair startPartition, DenialConstraintSet set, IEvidenceSet sampleEvidence, Map<DenialConstraint, IEvidenceSet> dcClusterPairMap) {
 //		System.out.println("Checking " + set.size() + " DCs.");
 //
 //		System.out.println("Building selectivity estimation");//选择性估计计算
@@ -292,14 +295,25 @@ public class ResultCompletion {
 
 		IndexProvider<PartitionRefiner> indexProvider = new IndexProvider<>();
 
+
+
 //		System.out.println("Grouping DCs..");
+
+		// IBitSet is predicate or predicate pair in dc, predicate ∩ predicate pair = dc
 		Map<IBitSet, List<DenialConstraint>> predicateDCMap = groupDCs(set, sortedPredicatePairs, indexProvider,
 				selectivityCount);
+
 
 		int[] refinerPriorities = getRefinerPriorities(selectivityCount, indexProvider, predicateDCMap);
 
 		SuperSetWalker walker = new SuperSetWalker(predicateDCMap.keySet(), refinerPriorities);
 
+		int index = 0;
+		for (int i = 0 ; i < indexProvider.size(); ++i){
+			if (indexProvider.getObject(i) instanceof Predicate){
+				index ++;
+			}
+		}
 //		System.out.println("Calculating partitions..");
 
 		//Evidence Inversion
@@ -310,29 +324,29 @@ public class ResultCompletion {
 //		ClusterPair startPartition = StrippedPartition.getFullParition(input.getLineCount());
 		int[][] values = input.getInts();
 		IEJoin iejoin = new IEJoin(values);
-//		PartitionEvidenceSetBuilder builder = new PartitionEvidenceSetBuilder(predicates, values);
+		PartitionEvidenceSetBuilder builder = new PartitionEvidenceSetBuilder(predicates, values);
 
 		long startTime = System.nanoTime();//纳秒
+		// 1. cal selectivity for all predicate pair and predicate
+		// 2. sorted according to selectivity
+		// 3. map predicate and predicate pair to dc
 		walker.walk((inter) -> {
 //			if((System.nanoTime() - startTime) >TimeUnit.MINUTES.toNanos(120))
 //				return;
 
 			Consumer<ClusterPair> consumer = (clusterPair) -> {
-				// this predicateDCMap is mean that this predicate is the last one
 				List<DenialConstraint> currentDCs = predicateDCMap.get(inter.currentBits);
 				if (currentDCs != null) {
 //					long l1 = System.currentTimeMillis();
 //					builder.addEvidences(clusterPair, resultEv);
 //					TimeCal.add((System.currentTimeMillis() - l1) , 3);
 					//TODO: this cluster pair is the last result or only for cur predicate or predicate pair?
+					HashEvidenceSet hashEvidenceSet = new HashEvidenceSet();
+					builder.addEvidences(clusterPair, hashEvidenceSet);
 					currentDCs.forEach(denialConstraint -> {
-						if (dcClusterPairMap.containsKey(denialConstraint)){
-							dcClusterPairMap.get(denialConstraint).add(new ClusterPair(clusterPair.getC1(), clusterPair.getC2()));
-						}else {
-							List<ClusterPair> tmp = new ArrayList<>();
-							tmp.add(new ClusterPair(clusterPair.getC1(), clusterPair.getC2()));
-							dcClusterPairMap.put(denialConstraint, tmp);
-						}
+						HashEvidenceSet tmp = (HashEvidenceSet) dcClusterPairMap.getOrDefault(denialConstraint, new HashEvidenceSet());
+						tmp.add(hashEvidenceSet);
+						dcClusterPairMap.put(denialConstraint, tmp);
 					});
 				} else {
 					inter.nextRefiner.accept(clusterPair);

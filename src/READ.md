@@ -32,5 +32,7 @@ Version3 optimistic
   
 
 
-1.看明白hydra的complete所添加的clusterPair到底是不是最终的结果
-2.得到的clusterpair所产生的evidence set是否是完整的
+Version3的结果是不完整的，会缺少结果，因为每个节点都是局部最优，在抽样mmcs
+走不到的分支可能后面就不会出现了。
+
+所以只能在第一版上继续用hydra 的complete函数改进
