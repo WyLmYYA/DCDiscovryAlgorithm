@@ -9,20 +9,21 @@ import Hydra.de.hpi.naumann.dc.input.ColumnPair;
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.paritions.Cluster;
 import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
+import Hydra.de.hpi.naumann.dc.paritions.LinePair;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import gnu.trove.iterator.TIntIterator;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 	private final int factor;
 
+	private Map<LinePair, PredicateBitSet> linePairPredicateBitSetMap;
 	public SystematicLinearEvidenceSetBuilder(PredicateBuilder pred, int factor) {
 		super(pred);
 		this.factor = factor;
+		linePairPredicateBitSetMap = new HashMap<>();
 	}
 
 	public IEvidenceSet buildEvidenceSet(Input input) {
@@ -38,8 +39,15 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 				int j = r.nextInt(input.getLineCount() - 1);
 				if (j >= i)
 					j++;
+				LinePair linePair = new LinePair(i, j);
+				if (linePairPredicateBitSetMap.containsKey(linePair) ){
+					evidenceSet.add(linePairPredicateBitSetMap.get(linePair));
+					continue;
+				}
 				PredicateBitSet set = getPredicateSet(staticSet, pairs, i, j);
+				linePairPredicateBitSetMap.put(linePair, set);
 				evidenceSet.add(set);
+
 			}
 		}
 		return evidenceSet;
@@ -58,7 +66,14 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 				int j = r.nextInt(input.getLineCount() - 1);
 				if (j >= i)
 					j++;
+
+				LinePair linePair = new LinePair(i, j);
+				if (linePairPredicateBitSetMap.containsKey(linePair) ){
+					evidenceSet.add(linePairPredicateBitSetMap.get(linePair));
+					continue;
+				}
 				PredicateBitSet set = getPredicateSet(staticSet, pairs, i, j);
+				linePairPredicateBitSetMap.put(linePair, set);
 				evidenceSet.add(set);
 			}
 		}

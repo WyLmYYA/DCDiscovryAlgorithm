@@ -51,7 +51,7 @@ public class TestMmcsForDC {
     public static void main(String[] args) throws InputIterationException, IOException {
         long DCBegin = System.currentTimeMillis();
         String dataFile ="dataset//Tax10k.csv";
-        int lineSize=40;
+        int lineSize=1000;
 
         getPredicates(dataFile, lineSize);
 
@@ -117,12 +117,12 @@ public class TestMmcsForDC {
         sampleEvidenceSet.getSetOfPredicateSets().forEach(i -> set.add(i));
 
         samplingEvidenceSet = set;
-        IEvidenceSet approEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
+//        IEvidenceSet approEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
 
         /** get approximate DCs
         */
-        DenialConstraintSet dcsApprox = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(approEvidenceSet);
+        DenialConstraintSet dcsApprox = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(sampleEvidenceSet);
         System.out.println("DC before minimize count approx:" + dcsApprox.size());
         dcsApprox.minimize();
         System.out.println("DC count approx after minimize:" + dcsApprox.size());
@@ -131,7 +131,7 @@ public class TestMmcsForDC {
         /** get fullEvidenceSet
         */
         IEvidenceSet result = new ResultCompletion(input, predicates).complete(dcsApprox, sampleEvidenceSet,
-                approEvidenceSet);
+                sampleEvidenceSet);
         System.out.println(" get full EvidenceSet : " + result.size());
 //        result.forEach(predicates1 -> {
 //            System.out.println(predicates1);

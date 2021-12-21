@@ -14,6 +14,7 @@ import Hydra.de.hpi.naumann.dc.paritions.StrippedPartition;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +27,7 @@ import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvi
  * @DateTime: 2021/12/18 23:15
  */
 public class HyDC {
-    SystematicLinearEvidenceSetBuilder systematicLinearEvidenceSetBuilder;
+    PartitionEvidenceSetBuilder partitionEvidenceSetBuilder;
 
     int numberOfPredicates;
 
@@ -36,19 +37,23 @@ public class HyDC {
 
     HashEvidenceSet initSampleEvidence;
 
+    HashEvidenceSet fullEvidence;
+
     HashEvidenceSet newAddedEvidence = new HashEvidenceSet();
 
     PartitionEvidenceSetBuilder builder;
 
     public void run(PredicateBuilder predicates, IEvidenceSet sampleEvidenceSet, IEvidenceSet fullSamplingEvidenceSet, Input input) {
 
-        systematicLinearEvidenceSetBuilder = new SystematicLinearEvidenceSetBuilder(predicates, 0);
+        long l1 = System.currentTimeMillis();
+        partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(predicates, input.getInts());
 //        HashEvidenceSet newEvidence = systematicLinearEvidenceSetBuilder.getEvidenceSet(StrippedPartition.getFullParition(input.getLineCount()));
         this.numberOfPredicates = predicates.getPredicates().size();
         this.input = input;
         this.predicates = predicates;
         this.initSampleEvidence = (HashEvidenceSet) sampleEvidenceSet;
         this.builder = new PartitionEvidenceSetBuilder(predicates, input.getInts());
+        this.fullEvidence = (HashEvidenceSet) fullSamplingEvidenceSet;
 
         // get Initial nodeList
         System.out.println(fullSamplingEvidenceSet.size());
@@ -59,18 +64,28 @@ public class HyDC {
 
         System.out.println(mmcsdc.getCoverNodes().size());
 
+        System.out.println("first mmcs cost: " + (System.currentTimeMillis() - l1));
         List<ClusterPair> startPartition = new ArrayList<>();
         startPartition.add(StrippedPartition.getFullParition(input.getLineCount()));
 
+        l1 = System.currentTimeMillis();
         validNodeList(startPartition, mmcsNodeList, new DenialConstraintSet(), new ConcurrentHashMap<>());
+        System.out.println("first valid cost: " + (System.currentTimeMillis() - l1));
 
         // 4. iterator for every node
         DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
+
+
+        l1 = System.currentTimeMillis();
         triangleOperation(mmcsNodeList, denialConstraintSet);
 //        singleValidMMCS(mmcsNodeList, denialConstraintSet);
+        System.out.println("second mmcs cost: " + (System.currentTimeMillis() - l1));
+
+        l1 = System.currentTimeMillis();
         denialConstraintSet.minimize();
         System.out.println(denialConstraintSet.size());
-        System.out.println("full evidence set" + ( newAddedEvidence.size() + fullSamplingEvidenceSet.size()));
+        System.out.println("minimize cost: " + (System.currentTimeMillis() - l1));
+//        System.out.println("full evidence set" + ( newAddedEvidence.size() + fullSamplingEvidenceSet.size()));
 
     }
 
@@ -89,8 +104,8 @@ public class HyDC {
                 // optimistic1: we can choose calculate cluster pair or valid, this can be set a threshold may not be 100
                 int count = mmcsNode.clusterPairs.stream().mapToInt(clusterPair -> (int) clusterPair.getLinePairCount()).sum();
 
-                if (newEvidence.size() == 0 || count < 100) {
-                    newEvidence.add(systematicLinearEvidenceSetBuilder.getEvidenceSet(mmcsNode.clusterPairs));
+                if (newEvidence.size() == 0 || count < 1000) {
+                    partitionEvidenceSetBuilder.addEvidences(mmcsNode.clusterPairs, newEvidence);
                     hasNext = false;
                 }
 
@@ -113,6 +128,12 @@ public class HyDC {
                     newEvidence.add(triangleOperation(mmcsdc.getCoverNodes(), denialConstraintSet));
                 }else {
                     mmcsdc.getCoverNodes().forEach(node -> denialConstraintSet.add(getDenialConstraint(node)));
+//                    validNodeList(mmcsNode.clusterPairs, mmcsdc.getCoverNodes(),new DenialConstraintSet(), new ConcurrentHashMap<>());
+//                    for (MMCSNode coverNode : mmcsdc.getCoverNodes()) {
+//                        if (coverNode.clusterPairs != null && coverNode.clusterPairs.size() != 0 && new SystematicLinearEvidenceSetBuilder(predicates, 0).getEvidenceSet(coverNode.clusterPairs).size() != 0){
+//                            System.out.println("s");
+//                        }
+//                    }
                 }
 
             }
@@ -125,25 +146,35 @@ public class HyDC {
         // valid once and then calculate new evidence for all nodes
         Set<IBitSet> walkedNode = new HashSet<>();
         mmcsNodeList.forEach(node -> {
-            if (node.clusterPairs == null || node.clusterPairs.size() == 0) {
-                denialConstraintSet.add(getDenialConstraint(node));
-            }else{
-                HashEvidenceSet newEvidence = systematicLinearEvidenceSetBuilder.getEvidenceSet(node.clusterPairs);
-                newAddedEvidence.add(newEvidence);
-                if (newEvidence.size() == 0)denialConstraintSet.add(getDenialConstraint(node));
-                else {
-                    for (PredicateBitSet iEvidenceSet : newAddedEvidence.getSetOfPredicateSets()) {
-                        IBitSet coverBy = iEvidenceSet.getBitset().getAnd(node.getElement());
-                        if (coverBy.cardinality() == 1) {
-                            node.crit.get(coverBy.nextSetBit(0)).add(iEvidenceSet);
-                        }else if (coverBy.cardinality() == 0){
-                            node.uncoverEvidenceSet.add(iEvidenceSet);
-                        }
-                    }
-                    MMCSDC mmcsdc = new MMCSDC(node, walkedNode);
-                    mmcsdc.getCoverNodes().forEach(mmcsNode -> denialConstraintSet.add(getDenialConstraint(mmcsNode)));
+            for (PredicateBitSet iEvidenceSet : newAddedEvidence.getSetOfPredicateSets()) {
+                IBitSet coverBy = iEvidenceSet.getBitset().getAnd(node.getElement());
+                if (coverBy.cardinality() == 1) {
+                    node.crit.get(coverBy.nextSetBit(0)).add(iEvidenceSet);
+                }else if (coverBy.cardinality() == 0){
+                    node.uncoverEvidenceSet.add(iEvidenceSet);
                 }
             }
+            MMCSDC mmcsdc = new MMCSDC(node, walkedNode);
+            mmcsdc.getCoverNodes().forEach(mmcsNode -> denialConstraintSet.add(getDenialConstraint(mmcsNode)));
+//            if (node.clusterPairs == null || node.clusterPairs.size() == 0) {
+//                denialConstraintSet.add(getDenialConstraint(node));
+//            }else{
+//                HashEvidenceSet newEvidence = systematicLinearEvidenceSetBuilder.getEvidenceSet(node.clusterPairs);
+//                newAddedEvidence.add(newEvidence);
+//                if (newEvidence.size() == 0)denialConstraintSet.add(getDenialConstraint(node));
+//                else {
+//                    for (PredicateBitSet iEvidenceSet : newAddedEvidence.getSetOfPredicateSets()) {
+//                        IBitSet coverBy = iEvidenceSet.getBitset().getAnd(node.getElement());
+//                        if (coverBy.cardinality() == 1) {
+//                            node.crit.get(coverBy.nextSetBit(0)).add(iEvidenceSet);
+//                        }else if (coverBy.cardinality() == 0){
+//                            node.uncoverEvidenceSet.add(iEvidenceSet);
+//                        }
+//                    }
+//                    MMCSDC mmcsdc = new MMCSDC(node, walkedNode);
+//                    mmcsdc.getCoverNodes().forEach(mmcsNode -> denialConstraintSet.add(getDenialConstraint(mmcsNode)));
+//                }
+//            }
         });
     }
 
@@ -174,8 +205,9 @@ public class HyDC {
 
         // 2.valid
         Map<DenialConstraint, List<ClusterPair>> dcClusterPairMap = new ConcurrentHashMap<>();
+//        this.newAddedEvidence = new ResultCompletion(input, predicates).complete( denialConstraintSet, initSampleEvidence, fullEvidence);
         ResultCompletion resultCompletion = new ResultCompletion(input, predicates);
-        new ArrayList<>(clusterPairs).forEach(clusterPair -> resultCompletion.completeForHyDC(clusterPair, denialConstraintSet, initSampleEvidence, dcClusterPairMap));
+        new ArrayList<>(clusterPairs).forEach(clusterPair -> resultCompletion.completeForHyDC(clusterPair, denialConstraintSet, initSampleEvidence, dcClusterPairMap) );
 //        new ResultCompletion(input, predicates).completeForHyDC(clusterPairs, denialConstraintSet, initSampleEvidence, dcClusterPairMap);
         // 3. add left cluster pair to node list
         dcClusterPairMap.forEach((dc, clusterPairs1) -> {
@@ -183,6 +215,7 @@ public class HyDC {
                 mmcsNode.clusterPairs = new ArrayList<>(clusterPairs1);
             });
         });
+
     }
 
 }

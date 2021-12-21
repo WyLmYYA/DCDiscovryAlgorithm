@@ -4,6 +4,7 @@ import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;
 import Hydra.de.hpi.naumann.dc.input.ColumnPair;
 import Hydra.de.hpi.naumann.dc.input.Input;
+import Hydra.de.hpi.naumann.dc.paritions.Cluster;
 import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
 import Hydra.de.hpi.naumann.dc.paritions.LinePair;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
@@ -12,6 +13,7 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 	private Collection<ColumnPair> pairs;
@@ -49,6 +51,9 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 			lastI = i;
 
 		}
+	}
+	public void addEvidences(List<ClusterPair> clusterPair, IEvidenceSet evidenceSet){
+		clusterPair.forEach(clusterPair1 -> addEvidences(clusterPair1, evidenceSet));
 	}
 
 	public IEvidenceSet buildEvidenceSet(Input input) {

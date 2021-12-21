@@ -61,6 +61,7 @@ public class RunHyDCV3 {
 
 
         // Get meta data
+
         RelationalInput data = new RelationalInput(datafile);
         Input input = new Input(data,size);
 
@@ -73,13 +74,15 @@ public class RunHyDCV3 {
         long l1 = System.currentTimeMillis();
         // Sampling
         IEvidenceSet sampleEvidenceSet = new SystematicLinearEvidenceSetBuilder(predicates,
-                sampleRounds).buildEvidenceSet(input, 2);
+                sampleRounds).buildEvidenceSet(input);
         HashEvidenceSet set = new HashEvidenceSet();
         sampleEvidenceSet.getSetOfPredicateSets().forEach(i -> set.add(i));
 
         //get the sampling  evidence set
         IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
+        System.out.println(set.size());
+        System.out.println("sampling cost: " + (System.currentTimeMillis() - l1));
         new HyDC().run(predicates, set, fullSamplingEvidenceSet, input);
 
         System.out.println("hydc cost " + (System.currentTimeMillis() - l1));

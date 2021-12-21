@@ -32,90 +32,54 @@ public class Hydra {
 		//preliminary evidence set
 		IEvidenceSet sampleEvidenceSet = new SystematicLinearEvidenceSetBuilder(predicates,
 				sampleRounds).buildEvidenceSet(input);
-		System.out.println("Estimation size systematic sampling:" + sampleEvidenceSet.size());
+
+//		System.out.println("Estimation size systematic sampling:" + sampleEvidenceSet.size());
 
 		HashEvidenceSet set = new HashEvidenceSet();
 		sampleEvidenceSet.getSetOfPredicateSets().forEach(i -> set.add(i));
 		//get the full evidence set
 		IEvidenceSet fullEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
-		System.out.println("Evidence set size deterministic sampler: " + fullEvidenceSet.size());
+//		System.out.println("Evidence set size deterministic sampler: " + fullEvidenceSet.size());
 
-		System.out.println("fullEvidenceSet");
-//		Iterator<PredicateBitSet> iterator= fullEvidenceSet.iterator();
-//		while(iterator.hasNext())
-//			System.out.println(iterator.next().getBitset().toBitSet());
-
+		System.out.println("sampling cost" + (System.currentTimeMillis() - hydraBegin));
 
 		//得到DC之后都需要check 防止冗余
 		long t2 = System.currentTimeMillis();
 		DenialConstraintSet dcsApprox = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(fullEvidenceSet);
-		System.out.println("first Inversion :" + (System.currentTimeMillis() - t2));
+		System.out.println("first Inversion cost:" + (System.currentTimeMillis() - t2));
 
 //		for(DenialConstraint dcset:dcsApprox)
 //			System.out.println(dcset.getPredicateSet().getBitset().toBitSet());
 
+		t2 = System.currentTimeMillis();
 		System.out.println("DC count approx:" + dcsApprox.size());
 		dcsApprox.minimize();
 		System.out.println("DC count approx after minimize:" + dcsApprox.size());
+		System.out.println("first minimize cost: " + (System.currentTimeMillis() - t2));
 
 
 		//complete之后得到set 利用set得到DC
 		long t1 = System.currentTimeMillis();
-		for (int i = 0; i < 68; ++i){
-			System.out.println(indexProvider.getObject(i));
-		}
 		IEvidenceSet result = new ResultCompletion(input, predicates).complete(dcsApprox, sampleEvidenceSet,
 				fullEvidenceSet);
 		this.fullEvidenceSet = result;
-		System.out.println("full EvidenceSet : " + result.size());
-//		result.forEach(predicates1 -> {
-//			System.out.println(predicates1);
-//			System.out.println(predicates1.getBitset().toBitSet());
-//		});
-		System.out.println("complete time :" + (System.currentTimeMillis() - t1));
-//
-//		for(PredicateBitSet pre:result){
-//			System.out.println(pre.getBitset().toBitSet());
-//		}
-
-		//写index文件
-		/*System.out.println(indexProvider);
-
-		try{
-			System.out.println("Writting dc...");
-			File file =new File("dataset/index.txt");
-			FileWriter fileWritter = new FileWriter(file);
-			for(int i=0;i<predicates.getPredicates().size();i++){
-				System.out.println(indexProvider.getObject(i));
-				fileWritter.write(indexProvider.getObject(i).toString()+"\r\n");
-			}
-
-			if(!file.exists()){
-				file.createNewFile();
-			}
-			fileWritter.close();
-			System.out.println("Write dc Done");
-		}catch(IOException e){
-			e.printStackTrace();
-		}
-*/
-//		for (int i = 0; i < 20; ++i){
-//			System.out.println(indexProvider.getObject(i));
-//		}
+//		System.out.println("full EvidenceSet : " + result.size());
+		System.out.println("complete dc size:" + dcsApprox.size());
+		System.out.println("complete from sampling evidence cost :" + (System.currentTimeMillis() - t1));
 
 
-		System.out.println("before second inversion cost : " + (System.currentTimeMillis() - hydraBegin + timebefore));
+//		System.out.println("before second inversion cost : " + (System.currentTimeMillis() - hydraBegin + timebefore));
 
 		long starttime = System.currentTimeMillis();
 		DenialConstraintSet dcs = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(result);
 
 //		dcs.forEach(System.out::println);
-		System.out.println("evidence inversion time: "+ (System.currentTimeMillis() - starttime)+ " ms");
+		System.out.println("second inversion cost: "+ (System.currentTimeMillis() - starttime));
 		starttime = System.currentTimeMillis();
 		System.out.println("dc before minimize " + dcs.size());
 		dcs.minimize();
 		System.out.println("dc after minimize " + dcs.size());
-		System.out.println(" minimize time: "+ (System.currentTimeMillis() - starttime)+ " ms");
+		System.out.println(" second minimize time: "+ (System.currentTimeMillis() - starttime)+ " ms");
 //		for(DenialConstraint dc:dcs){
 //			System.out.println(dc);
 //		}
