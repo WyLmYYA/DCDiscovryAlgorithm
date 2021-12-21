@@ -40,7 +40,7 @@ public class RunHyDCV3 {
         //Initial: get predicates
 
         String file ="dataset//Tax10k.csv";
-        int size = 50;
+        int size = 200;
         File datafile = new File(file);
 
         // single valid for mmcs used IEJoin, use calculate O(n2*R) replace valid, same as  Hydra
@@ -79,7 +79,7 @@ public class RunHyDCV3 {
         sampleEvidenceSet.getSetOfPredicateSets().forEach(i -> set.add(i));
 
         //get the sampling  evidence set
-//        IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
+        IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
         System.out.println(set.size());
         System.out.println("sampling cost: " + (System.currentTimeMillis() - l1));

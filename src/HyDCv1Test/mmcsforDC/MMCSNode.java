@@ -1,21 +1,25 @@
-package HyDCV3;
+package HyDCv1Test.mmcsforDC;
 
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
-import Hydra.de.hpi.naumann.dc.paritions.Cluster;
-import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 
 import java.util.*;
 
+import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
+/**
+ * @Author yoyuan
+ * @Description:   tree node in the deep transversal of MMCS for DC
+ * @DateTime: 2021/9/26 14:56
+ */
 public class MMCSNode {
 
-    public int numberOfPredicates;
+    private int numberOfPredicates;
     /**
      *  the set of predicates which can cover the evidence set
     */
@@ -23,35 +27,26 @@ public class MMCSNode {
 
     IBitSet candidatePredicates;
 
-    public HashEvidenceSet uncoverEvidenceSet = new HashEvidenceSet();
+    public HashEvidenceSet uncoverEvidenceSet;
 
-    public List<List<PredicateBitSet>> crit;
+    private List<List<PredicateBitSet>> crit;
 
     public IBitSet getElement() {
         return element;
     }
 
-    public List<ClusterPair> clusterPairs;
+    public HashEvidenceSet newEvidenceSet = new HashEvidenceSet();
 
-    public HashEvidenceSet completeEvidenceSet;
-    //TODO: we can remain dc in every node, may be can accelerate process
-    public PredicateBitSet denialConstraint = new PredicateBitSet();
 
-    public MMCSNode(int numberOfPredicates, IEvidenceSet evidenceToCover) {
+    public MMCSNode(int numberOfPredicates, HashEvidenceSet evidenceToCover) {
 
         this.numberOfPredicates = numberOfPredicates;
 
         element = new LongBitSet();
 
-        uncoverEvidenceSet = (HashEvidenceSet) evidenceToCover;
+        uncoverEvidenceSet = evidenceToCover;
 
-        if (MMCSDC.candidatePredicates != null) candidatePredicates = MMCSDC.candidatePredicates;
-        else {
-            candidatePredicates = new LongBitSet();
-            for (int i = 0; i < numberOfPredicates; ++i) {
-                candidatePredicates.set(i);
-            }
-        }
+        candidatePredicates = MMCSDC.candidatePredicates;
 
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
@@ -62,26 +57,6 @@ public class MMCSNode {
     public MMCSNode(int numberOfPredicates) {
 
         this.numberOfPredicates = numberOfPredicates;
-
-    }
-    public MMCSNode(MMCSNode mmcsNode) {
-
-        this.numberOfPredicates = mmcsNode.numberOfPredicates;
-
-        element = mmcsNode.getElement().clone();
-
-        uncoverEvidenceSet.add(mmcsNode.uncoverEvidenceSet);
-
-        candidatePredicates = mmcsNode.candidatePredicates.clone();
-
-        if (mmcsNode.completeEvidenceSet != null){
-            completeEvidenceSet = new HashEvidenceSet();
-
-            completeEvidenceSet.add(mmcsNode.completeEvidenceSet);
-        }
-
-
-        crit = new ArrayList<>(mmcsNode.crit);
 
     }
 
@@ -138,10 +113,6 @@ public class MMCSNode {
         */
         element.set(predicateAdded, true);
 
-        // update denialConstraint in time
-        Predicate inverse = PredicateBitSet.indexProvider.getObject(predicateAdded).getInverse();
-        denialConstraint.getBitset().set(PredicateBitSet.indexProvider.getIndex(inverse), true);
-
     }
 
     private void cloneContext(IBitSet nextCandidatePredicates, MMCSNode parentNode) {
@@ -164,11 +135,15 @@ public class MMCSNode {
             if(crit.get(next).isEmpty()) return false;
         return true;
     }
-
-    public void clearCrit(){
-        for (List<PredicateBitSet> c : crit)
-            c.clear();
+    public DenialConstraint getDenialConstraint() {
+        PredicateBitSet inverse = new PredicateBitSet();
+        for (int next = element.nextSetBit(0); next >= 0; next = element.nextSetBit(next + 1)) {
+            Predicate predicate = indexProvider.getObject(next); //1
+            inverse.add(predicate.getInverse());
+        }
+        return new DenialConstraint(inverse);
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -181,5 +156,4 @@ public class MMCSNode {
     public int hashCode() {
         return Objects.hash(numberOfPredicates, element, candidatePredicates, uncoverEvidenceSet, crit);
     }
-
 }

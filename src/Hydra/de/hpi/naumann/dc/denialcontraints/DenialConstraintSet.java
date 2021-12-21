@@ -11,7 +11,12 @@ import java.util.Map.Entry;
 
 public class DenialConstraintSet implements Iterable<DenialConstraint> {
 
-	private Set<DenialConstraint> constraints = new HashSet<>();
+	public Set<DenialConstraint> constraints = new HashSet<>();
+
+	public DenialConstraintSet(DenialConstraint denialConstraint) {
+		constraints.add(denialConstraint);
+	}
+	public DenialConstraintSet() {}
 
 	public boolean contains(DenialConstraint dc) {
 		return constraints.contains(dc);

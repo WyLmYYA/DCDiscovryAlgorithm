@@ -34,5 +34,11 @@ Version3 optimistic
 
 Version3的结果是不完整的，会缺少结果，因为每个节点都是局部最优，在抽样mmcs
 走不到的分支可能后面就不会出现了。
-
 所以只能在第一版上继续用hydra 的complete函数改进
+
+
+Version3 结果是完整的，可以证明，所以还是Version3吧，Version3统一验证肯定
+比Version1快
+在Version3中，所有的结果一定是在第一次采样所得到的节点后面产生的，因为最少要先
+覆盖到抽样得到的EvidenceSet所以这些前缀不能少
+
