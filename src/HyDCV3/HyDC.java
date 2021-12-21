@@ -91,13 +91,13 @@ public class HyDC {
 
     }
 
-    public HashEvidenceSet triangleOperation(List<MMCSNode> mmcsNodeList, DenialConstraintSet denialConstraintSet) {
+    public void triangleOperation(List<MMCSNode> mmcsNodeList, DenialConstraintSet denialConstraintSet) {
 
 //        HashEvidenceSet newEvidence = new HashEvidenceSet();
         Set<IBitSet> walkedNode = new HashSet<>();
         for (MMCSNode mmcsNode : mmcsNodeList) {
             // TODO: {16, 16} : {16} can return immediately
-            if (mmcsNode.clusterPairs == null || mmcsNode.clusterPairs.size() == 0 ){
+            if ( (mmcsNode.clusterPairs == null || mmcsNode.clusterPairs.size() == 0 ) && mmcsNode.isGlobalMinimal()){
                 denialConstraintSet.add(getDenialConstraint(mmcsNode));
 
             }else {
@@ -111,11 +111,6 @@ public class HyDC {
                     hasNext = false;
                 }
 
-                if (newAddedEvidence.size() == 0){
-                    denialConstraintSet.add(getDenialConstraint(mmcsNode));
-                    continue;
-                }
-
                 for (PredicateBitSet iEvidenceSet : newAddedEvidence.getSetOfPredicateSets()) {
                     IBitSet coverBy = iEvidenceSet.getBitset().getAnd(mmcsNode.getElement());
                     if (coverBy.cardinality() == 1) {
@@ -124,10 +119,15 @@ public class HyDC {
                         mmcsNode.uncoverEvidenceSet.add(iEvidenceSet);
                     }
                 }
+                if (mmcsNode.uncoverEvidenceSet.size() == 0 && mmcsNode.isGlobalMinimal()){
+                    denialConstraintSet.add(getDenialConstraint(mmcsNode));
+                    continue;
+                }
+                if (!mmcsNode.isGlobalMinimal()) continue;
                 MMCSDC mmcsdc = new MMCSDC(mmcsNode, walkedNode);
                 if (hasNext){
                     validNodeList(mmcsNode.clusterPairs, mmcsdc.getCoverNodes(),new DenialConstraintSet(), new ConcurrentHashMap<>());
-                    newAddedEvidence.add(triangleOperation(mmcsdc.getCoverNodes(), denialConstraintSet));
+                    triangleOperation(mmcsdc.getCoverNodes(), denialConstraintSet);
                 }else {
                     mmcsdc.getCoverNodes().forEach(node -> denialConstraintSet.add(getDenialConstraint(node)));
 //                    validNodeList(mmcsNode.clusterPairs, mmcsdc.getCoverNodes(),new DenialConstraintSet(), new ConcurrentHashMap<>());
@@ -140,7 +140,7 @@ public class HyDC {
 
             }
         }
-        return newAddedEvidence;
+//        return newAddedEvidence;
 
     }
 
@@ -210,6 +210,8 @@ public class HyDC {
         Map<DenialConstraint, List<ClusterPair>> dcClusterPairMap = new ConcurrentHashMap<>();
 //        this.newAddedEvidence = new ResultCompletion(input, predicates).complete( denialConstraintSet, initSampleEvidence, fullEvidence);
         ResultCompletion resultCompletion = new ResultCompletion(input, predicates);
+
+        // TODO: threads
         new ArrayList<>(clusterPairs).forEach(clusterPair -> resultCompletion.completeForHyDC(clusterPair, denialConstraintSet, initSampleEvidence, dcClusterPairMap) );
 //        new ResultCompletion(input, predicates).completeForHyDC(clusterPairs, denialConstraintSet, initSampleEvidence, dcClusterPairMap);
         // 3. add left cluster pair to node list

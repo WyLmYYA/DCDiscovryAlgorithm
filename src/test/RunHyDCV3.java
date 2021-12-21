@@ -32,7 +32,7 @@ import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvi
 public class RunHyDCV3 {
 
     //sampling efficiency : growth/total
-    protected static int sampleRounds = 20;
+    protected static int sampleRounds = 5;
     protected static double efficiencyThreshold = 0.005d;
 
 
@@ -79,11 +79,11 @@ public class RunHyDCV3 {
         sampleEvidenceSet.getSetOfPredicateSets().forEach(i -> set.add(i));
 
         //get the sampling  evidence set
-        IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
+//        IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
         System.out.println(set.size());
         System.out.println("sampling cost: " + (System.currentTimeMillis() - l1));
-        new HyDC().run(predicates, set, fullSamplingEvidenceSet, input);
+        new HyDC().run(predicates, set, set, input);
 
         System.out.println("hydc cost " + (System.currentTimeMillis() - l1));
 

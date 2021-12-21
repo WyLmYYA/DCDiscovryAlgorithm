@@ -29,3 +29,8 @@ Version3 optimistic
 - 有些节点inverse之后会产生一样的dc，这样的节点可以删除,并且可以直接minimize之后得到的dc对应的节点保留，其他的删除（要验证正确性）
 - 抽样可以尽量少但也不能太少，因为抽样得到的第一轮evidence的mmcs得到的dc是必须验证的，这个时间会很长，跟hydra差不多
 但是hydra在验证前会进行minimize，在mmcs上minimize是否能得到正确结果还不知道
+  
+
+
+1.看明白hydra的complete所添加的clusterPair到底是不是最终的结果
+2.得到的clusterpair所产生的evidence set是否是完整的
