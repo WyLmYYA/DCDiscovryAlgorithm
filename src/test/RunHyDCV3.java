@@ -40,7 +40,7 @@ public class RunHyDCV3 {
         //Initial: get predicates
 
         String file ="dataset//Tax10k.csv";
-        int size = 200;
+        int size = 100;
         File datafile = new File(file);
 
         // single valid for mmcs used IEJoin, use calculate O(n2*R) replace valid, same as  Hydra

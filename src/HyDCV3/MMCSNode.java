@@ -81,7 +81,11 @@ public class MMCSNode {
         }
 
 
-        crit = new ArrayList<>(mmcsNode.crit);
+        // TODO: crit的问题
+        crit = new ArrayList<>(mmcsNode.crit.size());
+        for (List<PredicateBitSet> predicateBitSets : mmcsNode.crit) {
+            crit.add(new ArrayList<>(predicateBitSets));
+        }
 
     }
 
