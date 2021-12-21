@@ -32,7 +32,7 @@ import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvi
 public class RunHyDCV3 {
 
     //sampling efficiency : growth/total
-    protected static int sampleRounds = 5;
+    protected static int sampleRounds = 20;
     protected static double efficiencyThreshold = 0.005d;
 
 

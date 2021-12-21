@@ -129,7 +129,7 @@ public class ColumnAwareEvidenceSetBuilder extends EvidenceSetBuilder {
 			for (SamplingType type : types) {
 				SamplingMethod method = new SamplingMethod(d, type);
 				method.execute(input, evidenceSet);
-				if (method.efficiency > efficiencyThreshold)
+				if (method.efficiency > efficiencyThreshold && evidenceSet.size() < 100)
 					methods.add(method);
 			}
 		}
@@ -137,7 +137,7 @@ public class ColumnAwareEvidenceSetBuilder extends EvidenceSetBuilder {
 		while (!methods.isEmpty()) {
 			SamplingMethod method = methods.poll();
 			method.execute(input, evidenceSet);
-			if (method.efficiency > efficiencyThreshold)
+			if (method.efficiency > efficiencyThreshold && evidenceSet.size() < 100)
 				methods.add(method);
 		}
 
