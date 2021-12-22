@@ -169,6 +169,18 @@ public class ClusterPair {
 			fullCheck(pList, consumer);
 		}
 	}
+	public void refinePPPublic(PredicatePair predicate, IEJoin iejoin, Consumer<ClusterPair> consumer) {
+
+
+		if (getLinePairCount() > 100) {
+			iejoin.calc(this, predicate.getP1(), predicate.getP2(), consumer);
+		} else {
+			List<Predicate> pList = new ArrayList<Predicate>();
+			pList.add(predicate.getP1());
+			pList.add(predicate.getP2());
+			fullCheck(pList, consumer);
+		}
+	}
 
 	private void refinePs(Predicate p, IEJoin iejoin, Consumer<ClusterPair> consumer) {
 			ColumnOperand<?> o1 = p.getOperand1();
@@ -370,6 +382,7 @@ public class ClusterPair {
 			consumer.accept(this);
 		}
 	}
+
 
 	/**
 	 * @Author yongan.yuan

@@ -86,8 +86,8 @@ public class ResultCompletion {
 
 		//Evidence Inversion
 		HashEvidenceSet resultEv = new HashEvidenceSet();
-//		for (PredicateBitSet i : fullEvidence)
-//			resultEv.add(i);
+		for (PredicateBitSet i : fullEvidence)
+			resultEv.add(i);
 
 		ClusterPair startPartition = StrippedPartition.getFullParition(input.getLineCount());
 		int[][] values = input.getInts();

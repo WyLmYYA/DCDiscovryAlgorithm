@@ -1,10 +1,7 @@
 package test;
 
 
-import HyDCV3.HyDC;
 import Hydra.ch.javasoft.bitset.IBitSet;
-import Hydra.ch.javasoft.bitset.LongBitSet;
-import Hydra.de.hpi.naumann.dc.algorithms.hybrid.Hydra;
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.ResultCompletion;
 import Hydra.de.hpi.naumann.dc.cover.PrefixMinimalCoverSearch;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
@@ -22,7 +19,6 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import mmcsforDC.MMCSDC;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
@@ -51,7 +47,7 @@ public class TestMmcsForDC {
     public static void main(String[] args) throws InputIterationException, IOException {
         long DCBegin = System.currentTimeMillis();
         String dataFile ="dataset//Tax10k.csv";
-        int lineSize=1000;
+        int lineSize=50;
 
         getPredicates(dataFile, lineSize);
 
@@ -60,52 +56,46 @@ public class TestMmcsForDC {
 
         IEvidenceSet fullEvidenceSet = getFullEvidenceSet();
 
-        /** get covers
-         */
 
-        System.out.println("before mmcs cost time: " + (System.currentTimeMillis() - DCBegin));
+        long mmcsTime = System.currentTimeMillis();
+        MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullEvidenceSet);
 
-        new HyDC().run(predicates, samplingEvidenceSet, fullEvidenceSet, input);
+        System.out.println(mmcsdc.getCoverNodes().size());
 
-//        long mmcsTime = System.currentTimeMillis();
-//        MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullEvidenceSet);
-//
-//        System.out.println(mmcsdc.getCoverNodes().size());
-//
-//        System.out.println("mmcs get cover cost time :" + (System.currentTimeMillis() - mmcsTime));
-//
-//
-//        /** transform covers to DCs
-//        */
-//        DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
-//
-//        mmcsdc.getCoverNodes().forEach(node -> {
-//            IBitSet bitSet = node.getElement();
-//            PredicateBitSet inverse = new PredicateBitSet();
-//            for (int next = bitSet.nextSetBit(0); next >= 0; next = bitSet.nextSetBit(next + 1)){
-//                Predicate predicate = indexProvider.getObject(next);
-//                inverse.add(predicate.getInverse());
-//            }
-////            System.out.println(inverse.getBitset().toBitSet());
-//            denialConstraintSet.add(new DenialConstraint(inverse));
-//
+        System.out.println("mmcs get cover cost time :" + (System.currentTimeMillis() - mmcsTime));
+
+
+        /** transform covers to DCs
+        */
+        DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
+
+        mmcsdc.getCoverNodes().forEach(node -> {
+            IBitSet bitSet = node.getElement();
+            PredicateBitSet inverse = new PredicateBitSet();
+            for (int next = bitSet.nextSetBit(0); next >= 0; next = bitSet.nextSetBit(next + 1)){
+                Predicate predicate = indexProvider.getObject(next);
+                inverse.add(predicate.getInverse());
+            }
+//            System.out.println(inverse.getBitset().toBitSet());
+            denialConstraintSet.add(new DenialConstraint(inverse));
+
+        });
+        System.out.println("mmcs all cost time :" + (System.currentTimeMillis() - mmcsTime));
+
+        /** output
+        */
+        System.out.println("before minimize: ");
+        System.out.println(denialConstraintSet.size());
+//        denialConstraintSet.forEach(System.out::println);
+        denialConstraintSet.minimize();
+        System.out.println("after minimize ");
+        System.out.println(denialConstraintSet.size());
+//        denialConstraintSet.forEach(denialConstraint -> {
+//            System.out.println(denialConstraint);
+//            System.out.println(denialConstraint.getPredicateSet().getBitset().toBitSet());
 //        });
-//        System.out.println("mmcs all cost time :" + (System.currentTimeMillis() - mmcsTime));
-//
-//        /** output
-//        */
-//        System.out.println("before minimize: ");
-//        System.out.println(denialConstraintSet.size());
-////        denialConstraintSet.forEach(System.out::println);
-//        denialConstraintSet.minimize();
-//        System.out.println("after minimize ");
-//        System.out.println(denialConstraintSet.size());
-////        denialConstraintSet.forEach(denialConstraint -> {
-////            System.out.println(denialConstraint);
-////            System.out.println(denialConstraint.getPredicateSet().getBitset().toBitSet());
-////        });
-//
-//        System.out.println("all time :" + (System.currentTimeMillis() - DCBegin));
+
+        System.out.println("all time :" + (System.currentTimeMillis() - DCBegin));
     }
 
     private static IEvidenceSet getFullEvidenceSet() {
@@ -117,7 +107,7 @@ public class TestMmcsForDC {
         sampleEvidenceSet.getSetOfPredicateSets().forEach(i -> set.add(i));
 
         samplingEvidenceSet = set;
-//        IEvidenceSet approEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
+        IEvidenceSet approEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
 
         /** get approximate DCs
