@@ -13,6 +13,7 @@ import Hydra.de.hpi.naumann.dc.input.RelationalInput;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import utils.TimeCal;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,11 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RunHyDCFinalVersion {
-    protected static int sampleRounds = 5;
+    protected static int sampleRounds = 20;
     protected static double efficiencyThreshold = 0.005d;
     public static void main(String[] args) throws IOException, InputIterationException {
+        long l1 = System.currentTimeMillis();
         String file ="dataset//Tax10k.csv";
-        int size = 20;
+        int size = 200;
         File datafile = new File(file);
         RelationalInput data = new RelationalInput(datafile);
         Input input = new Input(data,size);
@@ -49,14 +51,20 @@ public class RunHyDCFinalVersion {
 
 
 
-
         DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
         System.out.println(mmcsdc.getCoverNodes().size());
         mmcsdc.getCoverNodes().forEach(mmcsNode -> {
             denialConstraintSet.add(mmcsNode.getDenialConstraint());
         });
+
+        System.out.println("mmcs and get dcs cost:" + (System.currentTimeMillis() - l1));
+
+        l1 = System.currentTimeMillis();
         denialConstraintSet.minimize();
         System.out.println("dcs :" + denialConstraintSet.size());
+        System.out.println("minimize cost:" + (System.currentTimeMillis() - l1));
+
+        System.out.println("valid time " + TimeCal.getTime(0));
 
     }
 
@@ -91,6 +99,18 @@ public class RunHyDCFinalVersion {
         for (Predicate predicate : sortedPredicates){
             sortedIndexProvider.getIndex(predicate);
         }
+        for (Predicate predicate : predicates){
+            sortedIndexProvider.getIndex(predicate);
+        }
+
+        // sampling evidence need to rehash from indexiProvideer to sortedProvider
+        sampleEvidenceSet.getSetOfPredicateSets().forEach(predicates1 -> {
+            PredicateBitSet predicates2 = new PredicateBitSet();
+            predicates1.forEach(predicate -> {
+                predicates2.getBitset().set(sortedIndexProvider.getIndex(predicate));
+            });
+            predicates1 = predicates2;
+        });
         PredicateBitSet.indexProvider = sortedIndexProvider;
     }
 }

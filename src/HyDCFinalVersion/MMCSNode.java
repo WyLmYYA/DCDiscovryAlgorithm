@@ -12,6 +12,7 @@ import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import utils.TimeCal;
 
 import java.util.*;
 
@@ -171,21 +172,24 @@ public class MMCSNode {
 
     }
     public void refinePS(Predicate predicate, IEJoin ieJoin){
+        long l1 = System.currentTimeMillis();
         // refine by single predicate
         List<ClusterPair> newResult = new ArrayList<>();
         clusterPairs.forEach(clusterPair -> {
             clusterPair.refinePsPublic(predicate.getInverse(), ieJoin, newResult);
         });
         clusterPairs = newResult;
+        TimeCal.add((System.currentTimeMillis() - l1), 0);
     }
     public void refinePP(Predicate p1,  Predicate p2){
         // refine by Join
-
+        long l1 = System.currentTimeMillis();
         List<ClusterPair> newResult = new ArrayList<>();
         clusterPairs.forEach(clusterPair -> {
             clusterPair.refinePPPublic(new PredicatePair(p1.getInverse(), p2.getInverse()), MMCSDC.ieJoin, pair -> newResult.add(pair));
         });
         clusterPairs = newResult;
+        TimeCal.add((System.currentTimeMillis() - l1), 0);
     }
 
     private void cloneContext(IBitSet nextCandidatePredicates, MMCSNode parentNode) {
@@ -211,29 +215,22 @@ public class MMCSNode {
         return true;
     }
 
-    /**
-     * valid current node
-     */
-    public void valid(){
-//        if ()
-    }
 
     public void getAddedEvidenceSet(PredicateBuilder predicates, Input input){
+        HashEvidenceSet newEvi = new HashEvidenceSet();
         clusterPairs.forEach(clusterPair -> {
-            new PartitionEvidenceSetBuilder(predicates, input.getInts()).addEvidences(clusterPair, addEvidences);
+            new PartitionEvidenceSetBuilder(predicates, input.getInts()).addEvidences(clusterPair, newEvi);
         });
-        Iterator iterable = addEvidences.getSetOfPredicateSets().iterator();
+        Iterator iterable = newEvi.getSetOfPredicateSets().iterator();
         while (iterable.hasNext()){
             PredicateBitSet predicates1 = (PredicateBitSet) iterable.next();
             if (predicates1.getBitset().getAnd(element).cardinality() != 0){
-                System.out.println("s");
+                iterable.remove();
             }
-            iterable.remove();
-        }
-        addEvidences.forEach(predicates1 -> {
 
-        });
-        uncoverEvidenceSet.add(addEvidences);
+        }
+        uncoverEvidenceSet.add(newEvi);
+        addEvidences.add(newEvi);
         clusterPairs = new ArrayList<>();
     }
     public boolean isValidResult(){

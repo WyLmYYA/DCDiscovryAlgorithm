@@ -59,7 +59,7 @@ public class MMCSDC {
 
     public static IEJoin ieJoin;
 
-    public HashEvidenceSet all = new HashEvidenceSet();
+//    public HashEvidenceSet all = new HashEvidenceSet();
 
     public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover, PredicateBuilder predicates, Input input){
 
@@ -74,8 +74,8 @@ public class MMCSDC {
             candidatePredicates.set(i);
         }
 
-        PartitionEvidenceSetBuilder partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(predicates, input.getInts());
-        partitionEvidenceSetBuilder.addEvidences(StrippedPartition.getFullParition(input.getLineCount()), all );
+//        PartitionEvidenceSetBuilder partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(predicates, input.getInts());
+//        partitionEvidenceSetBuilder.addEvidences(StrippedPartition.getFullParition(input.getLineCount()), all );
 
         initiate(evidenceSetToCover);
 
@@ -107,22 +107,9 @@ public class MMCSDC {
 
     public  void walkDown(MMCSNode currentNode, List<MMCSNode> currentCovers){
         if (currentNode.canCover()){
-//            for (int next = currentNode.element.nextSetBit(0); next >= 0; next = currentNode.element.nextSetBit(next + 1)){
-//                System.out.println(indexProvider.getObject(next));
-//            }
-//                currentCovers.add(currentNode);
-//            return;
-//        }
             // we need to valid current partial dc is valid dc or not
 
             //  check is there any predicate needed combination not be refined, and update cluster pair
-            boolean cover = true;
-            for (PredicateBitSet setOfPredicateSet : all.getSetOfPredicateSets()) {
-                if (setOfPredicateSet.getBitset().getAnd(currentNode.element).cardinality() == 0){
-                    cover = false;
-                    break;
-                }
-            }
 
             if (currentNode.lastNeedCombinationPredicate != null && currentNode.clusterPairs.size() != 0){
                 currentNode.refinePS(currentNode.lastNeedCombinationPredicate, ieJoin);
@@ -132,33 +119,12 @@ public class MMCSDC {
             }else{
                 // not a valid result means cluster pair not empty, we need get added evidence set
                 // after this func, uncover update, and is a complete evidence for currNode, so cluster pair will be null
-//                if (cover){
-//                    System.out.println("s");
-//                }
-                if (cover){
-                    System.out.println("s");
-                }
                 currentNode.getAddedEvidenceSet(predicates, input);
                 if (currentNode.uncoverEvidenceSet.size() == 0)
                     currentCovers.add(currentNode);
-                else{
+                else
                     // get Result, this step clusterPair is empty, so we can get valid result
-                    int before = currentCovers.size();
                     walkDown(currentNode, currentCovers);
-//                    System.out.println("add covers: " + (currentCovers.size() - before));
-//                    HashEvidenceSet tmp = new HashEvidenceSet();
-//                    tmp.add(currentNode.uncoverEvidenceSet);
-//                    currentNode.uncoverEvidenceSet.add(all);
-//
-//                    List<MMCSNode> res = new ArrayList<>();
-//                    walkDown(currentNode, res);
-//                    System.out.println(res.size());
-//                    if (res.size() != (currentCovers.size() - before)){
-//                        System.out.println("s");
-//                    }
-//                    currentNode.uncoverEvidenceSet = tmp;
-
-                }
 
             }
             return;
