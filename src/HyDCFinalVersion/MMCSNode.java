@@ -2,20 +2,20 @@ package HyDCFinalVersion;
 
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
+import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.PartitionEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.input.Input;
-import Hydra.de.hpi.naumann.dc.paritions.Cluster;
-import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
-import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
-import Hydra.de.hpi.naumann.dc.paritions.LinePair;
+import Hydra.de.hpi.naumann.dc.paritions.*;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 
 import java.util.*;
+
+import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 public class MMCSNode {
 
@@ -46,7 +46,7 @@ public class MMCSNode {
 
     public HashEvidenceSet addEvidences = new HashEvidenceSet();
 
-    public MMCSNode(int numberOfPredicates, IEvidenceSet evidenceToCover) {
+    public MMCSNode(int numberOfPredicates, IEvidenceSet evidenceToCover, int lineCount) {
 
         this.numberOfPredicates = numberOfPredicates;
 
@@ -55,6 +55,8 @@ public class MMCSNode {
         uncoverEvidenceSet = (HashEvidenceSet) evidenceToCover;
 
         candidatePredicates = MMCSDC.candidatePredicates;
+
+        clusterPairs.add(StrippedPartition.getFullParition(lineCount));
 
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
@@ -81,6 +83,25 @@ public class MMCSNode {
         Comparator<PredicateBitSet> cmp = Comparator.comparing(predicates -> predicates.getBitset().getAnd(candidatePredicates));
 
         return Collections.min(uncoverEvidenceSet.getSetOfPredicateSets(), cmp);
+
+    }
+    public MMCSNode(MMCSNode mmcsNode) {
+
+        this.numberOfPredicates = mmcsNode.numberOfPredicates;
+
+        element = mmcsNode.getElement().clone();
+
+        uncoverEvidenceSet.add(mmcsNode.uncoverEvidenceSet);
+
+        candidatePredicates = mmcsNode.candidatePredicates.clone();
+
+        clusterPairs = mmcsNode.clusterPairs;
+
+        // TODO: crit的问题
+        crit = new ArrayList<>(mmcsNode.crit.size());
+        for (List<PredicateBitSet> predicateBitSets : mmcsNode.crit) {
+            crit.add(new ArrayList<>(predicateBitSets));
+        }
 
     }
 
@@ -153,7 +174,7 @@ public class MMCSNode {
         // refine by single predicate
         List<ClusterPair> newResult = new ArrayList<>();
         clusterPairs.forEach(clusterPair -> {
-            clusterPair.refinePsPublic(predicate, ieJoin, newResult);
+            clusterPair.refinePsPublic(predicate.getInverse(), ieJoin, newResult);
         });
         clusterPairs = newResult;
     }
@@ -162,7 +183,7 @@ public class MMCSNode {
 
         List<ClusterPair> newResult = new ArrayList<>();
         clusterPairs.forEach(clusterPair -> {
-            clusterPair.refinePPPublic(new PredicatePair(p1, p2), MMCSDC.ieJoin, pair -> newResult.add(pair));
+            clusterPair.refinePPPublic(new PredicatePair(p1.getInverse(), p2.getInverse()), MMCSDC.ieJoin, pair -> newResult.add(pair));
         });
         clusterPairs = newResult;
     }
@@ -201,12 +222,22 @@ public class MMCSNode {
         clusterPairs.forEach(clusterPair -> {
             new PartitionEvidenceSetBuilder(predicates, input.getInts()).addEvidences(clusterPair, addEvidences);
         });
+        Iterator iterable = addEvidences.getSetOfPredicateSets().iterator();
+        while (iterable.hasNext()){
+            PredicateBitSet predicates1 = (PredicateBitSet) iterable.next();
+            if (predicates1.getBitset().getAnd(element).cardinality() != 0){
+                System.out.println("s");
+            }
+            iterable.remove();
+        }
+        addEvidences.forEach(predicates1 -> {
+
+        });
         uncoverEvidenceSet.add(addEvidences);
-        clusterPairs = null;
+        clusterPairs = new ArrayList<>();
     }
     public boolean isValidResult(){
         // there may be {12} : {12, 12}, so need to add one step to judge
-        if (clusterPairs == null)return true;
         for (ClusterPair clusterPair : clusterPairs){
             Iterator<LinePair> iter = clusterPair.getLinePairIterator();
             while (iter.hasNext()) {
@@ -221,6 +252,14 @@ public class MMCSNode {
 
     }
 
+    public DenialConstraint getDenialConstraint() {
+        PredicateBitSet inverse = new PredicateBitSet();
+        for (int next = element.nextSetBit(0); next >= 0; next = element.nextSetBit(next + 1)) {
+            Predicate predicate = indexProvider.getObject(next); //1
+            inverse.add(predicate.getInverse());
+        }
+        return new DenialConstraint(inverse);
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

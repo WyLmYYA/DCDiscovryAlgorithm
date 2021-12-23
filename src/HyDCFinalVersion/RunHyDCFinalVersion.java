@@ -1,7 +1,9 @@
 package HyDCFinalVersion;
 
+import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
+import Hydra.de.hpi.naumann.dc.evidenceset.build.PartitionEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.ColumnAwareEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.SystematicLinearEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.helpers.IndexProvider;
@@ -23,7 +25,7 @@ public class RunHyDCFinalVersion {
     protected static double efficiencyThreshold = 0.005d;
     public static void main(String[] args) throws IOException, InputIterationException {
         String file ="dataset//Tax10k.csv";
-        int size = 100;
+        int size = 20;
         File datafile = new File(file);
         RelationalInput data = new RelationalInput(datafile);
         Input input = new Input(data,size);
@@ -40,17 +42,35 @@ public class RunHyDCFinalVersion {
         IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
         // calculate selectivity and sort for predicate
-        calculateAndSortPredicate(predicates, sampleEvidenceSet);
+//        calculateAndSortPredicate(set);
 
         // HyDC begin
+        MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullSamplingEvidenceSet, predicates, input);
+
+
+
+
+        DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
+        System.out.println(mmcsdc.getCoverNodes().size());
+        mmcsdc.getCoverNodes().forEach(mmcsNode -> {
+            denialConstraintSet.add(mmcsNode.getDenialConstraint());
+        });
+        denialConstraintSet.minimize();
+        System.out.println("dcs :" + denialConstraintSet.size());
 
     }
 
-    private static void calculateAndSortPredicate(PredicateBuilder predicates, IEvidenceSet sampleEvidenceSet) {
+    private static void calculateAndSortPredicate( HashEvidenceSet sampleEvidenceSet) {
+        Set<Predicate> predicates = new HashSet<>();
+        sampleEvidenceSet.getSetOfPredicateSets().forEach(predicates1 -> {
+            predicates1.forEach(predicate -> {
+                predicates.add(predicate);
+            });
+        });
         Map<Integer, Integer> predicateMapSelectivity = new ConcurrentHashMap<>();
         List<Predicate> sortedPredicates = new ArrayList<>();
         IndexProvider<Predicate> sortedIndexProvider = new IndexProvider<>();
-        for (Predicate predicate : predicates.getPredicates()){
+        for (Predicate predicate : predicates){
             AtomicInteger select = new AtomicInteger();
             sortedPredicates.add(predicate);
             sampleEvidenceSet.forEach(predicates1 -> {
