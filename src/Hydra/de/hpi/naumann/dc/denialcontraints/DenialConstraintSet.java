@@ -22,9 +22,9 @@ public class DenialConstraintSet implements Iterable<DenialConstraint> {
 		return constraints.contains(dc);
 	}
 
-	private static class MinimalDCCandidate {
-		DenialConstraint dc;
-		IBitSet bitset;
+	public static class MinimalDCCandidate {
+		public DenialConstraint dc;
+		public IBitSet bitset;
 
 		public MinimalDCCandidate(DenialConstraint dc) {
 			this.dc = dc;

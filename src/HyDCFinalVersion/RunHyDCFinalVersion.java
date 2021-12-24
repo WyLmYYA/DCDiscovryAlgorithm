@@ -27,7 +27,7 @@ public class RunHyDCFinalVersion {
     public static void main(String[] args) throws IOException, InputIterationException {
         long l1 = System.currentTimeMillis();
         String file ="dataset//Tax10k.csv";
-        int size = 200;
+        int size = 10;
         File datafile = new File(file);
         RelationalInput data = new RelationalInput(datafile);
         Input input = new Input(data,size);

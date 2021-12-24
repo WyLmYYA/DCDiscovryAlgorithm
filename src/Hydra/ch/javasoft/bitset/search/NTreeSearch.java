@@ -10,8 +10,8 @@ import java.util.function.Consumer;
 
 public class NTreeSearch implements ISubsetBackend, ITreeSearch {
 
-	private HashMap<Integer, NTreeSearch> subtrees = new HashMap<>();
-	private IBitSet bitset;
+	public HashMap<Integer, NTreeSearch> subtrees = new HashMap<>();
+	public IBitSet bitset;
 
 	/*
 	 * (non-Javadoc)

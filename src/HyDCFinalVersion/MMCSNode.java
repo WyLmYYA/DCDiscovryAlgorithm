@@ -2,7 +2,9 @@ package HyDCFinalVersion;
 
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
+import Hydra.ch.javasoft.bitset.search.NTreeSearch;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
+import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.PartitionEvidenceSetBuilder;
@@ -11,7 +13,9 @@ import Hydra.de.hpi.naumann.dc.paritions.*;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
+import Hydra.de.hpi.naumann.dc.predicates.sets.Closure;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import utils.TimeCal;
 
 import java.util.*;
@@ -43,9 +47,14 @@ public class MMCSNode {
 
     public Predicate lastNeedCombinationPredicate;
 
+
     public List<ClusterPair> clusterPairs = new ArrayList<>();
 
     public HashEvidenceSet addEvidences = new HashEvidenceSet();
+
+    public List<Integer> sortedPredicates = new ArrayList<>();
+
+
 
     public MMCSNode(int numberOfPredicates, IEvidenceSet evidenceToCover, int lineCount) {
 
@@ -152,6 +161,9 @@ public class MMCSNode {
          */
         Predicate predicate = PredicateBitSet.indexProvider.getObject(predicateAdded);
 
+        sortedPredicates.add(predicateAdded);
+
+
         // in clone step, curNode get cluster pair from parent
         if (predicate.needCombine()){
             // 1. if this one is not first predicate need combination, use IEJoin update cluster pair
@@ -200,6 +212,11 @@ public class MMCSNode {
         clusterPairs = new ArrayList<>(parentNode.clusterPairs);
 
         crit = new ArrayList<>(numberOfPredicates);
+
+        sortedPredicates = new ArrayList<>(parentNode.sortedPredicates);
+
+//        neededValidCount = parentNode.neededValidCount;
+
         for (int i = 0; i < numberOfPredicates; ++i){
             crit.add(new ArrayList<>(parentNode.crit.get(i)));
         }
@@ -257,6 +274,70 @@ public class MMCSNode {
         }
         return new DenialConstraint(inverse);
     }
+
+
+    public boolean isTransivityValid(NTreeSearch nTreeSearch, boolean isInverse, int index, boolean[] v){
+
+        // if a valid dc is a subset of element with part of inverse, so this will satisfy Transivity
+        if ( (nTreeSearch.subtrees.size() == 0 && nTreeSearch.bitset != null)  ){
+            return false;
+        }
+
+        Predicate next = indexProvider.getObject(sortedPredicates.get(index));
+        int inverseIndex = indexProvider.getIndex(next.getInverse());
+        v[index] = true;
+        if (nTreeSearch.subtrees.containsKey(sortedPredicates.get(index)) && !isInverse &&
+                !isTransivityValid(nTreeSearch.subtrees.get(sortedPredicates.get(index)), false, index + 1, v )){
+                return false;
+        }
+        boolean isAllCovered = true;
+        for (int i = index + 1; i < v.length; ++i){
+            if(!v[i]){
+                isAllCovered = false;
+                v[i] = true;
+                // after index which is substree, there may be not in order
+                if (nTreeSearch.subtrees.containsKey(inverseIndex) && isInverse &&
+                        !isTransivityValid(nTreeSearch.subtrees.get(inverseIndex), true, index, v )){
+                    return false;
+                }
+                v[i] = false;
+            }
+        }
+        return true;
+
+    }
+
+//    public boolean minimize(Map<PredicateBitSet, DenialConstraintSet.MinimalDCCandidate> constraintsClosureMap, NTreeSearch tree){
+//        PredicateBitSet predicates = new PredicateBitSet(element);
+//
+//        Closure c = new Closure(predicates);
+//        if (c.construct()) {
+//            DenialConstraintSet.MinimalDCCandidate candidate = new DenialConstraintSet.MinimalDCCandidate(getDenialConstraint());
+//            PredicateBitSet closure = c.getClosure();
+//            DenialConstraintSet.MinimalDCCandidate prior = constraintsClosureMap.get(closure);
+//            if (candidate.shouldReplace(prior)) {
+//                constraintsClosureMap.put(closure, candidate);
+//
+//                // search if therr DC.pres ∈ closure， if so, this node is implied
+//                if (tree.containsSubset(closure.getBitset()))
+//                    return false;
+//                DenialConstraint inv = candidate.dc.getInvT1T2DC();
+//                if (inv != null) {
+//                    Closure closure1 = new Closure(inv.getPredicateSet());
+//                    if (!closure1.construct() || tree.containsSubset(PredicateSetFactory.create(closure1.getClosure()).getBitset()))
+//                        return false;
+//                }
+//                tree.add(candidate.bitset);
+//                if(inv != null)
+//                    tree.add(PredicateSetFactory.create(inv.getPredicateSet()).getBitset());
+//                return true;
+//            }
+//
+//        }
+//        return false;
+//
+//    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -1,8 +1,11 @@
 package HyDCFinalVersion;
 
+import HyDC.MMCSHyDCNode;
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
+import Hydra.ch.javasoft.bitset.search.NTreeSearch;
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.ResultCompletion;
+import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.PartitionEvidenceSetBuilder;
@@ -11,11 +14,10 @@ import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
 import Hydra.de.hpi.naumann.dc.paritions.StrippedPartition;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
+import Hydra.de.hpi.naumann.dc.predicates.sets.Closure;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
@@ -59,7 +61,7 @@ public class MMCSDC {
 
     public static IEJoin ieJoin;
 
-//    public HashEvidenceSet all = new HashEvidenceSet();
+    NTreeSearch treeSearch = new NTreeSearch();
 
     public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover, PredicateBuilder predicates, Input input){
 
@@ -106,6 +108,11 @@ public class MMCSDC {
 
 
     public  void walkDown(MMCSNode currentNode, List<MMCSNode> currentCovers){
+        // minimize in mmcs,
+        if (currentNode.sortedPredicates.size() != 0 && !currentNode.isTransivityValid(treeSearch, false, 0, new boolean[currentNode.sortedPredicates.size()])){
+            return;
+        }
+
         if (currentNode.canCover()){
             // we need to valid current partial dc is valid dc or not
 
@@ -115,13 +122,17 @@ public class MMCSDC {
                 currentNode.refinePS(currentNode.lastNeedCombinationPredicate, ieJoin);
             }
             if (currentNode.isValidResult()){
+                treeSearch.add(currentNode.element);
                 currentCovers.add(currentNode);
             }else{
                 // not a valid result means cluster pair not empty, we need get added evidence set
                 // after this func, uncover update, and is a complete evidence for currNode, so cluster pair will be null
                 currentNode.getAddedEvidenceSet(predicates, input);
-                if (currentNode.uncoverEvidenceSet.size() == 0)
+                if (currentNode.uncoverEvidenceSet.size() == 0){
+                    treeSearch.add(currentNode.element);
                     currentCovers.add(currentNode);
+                }
+
                 else
                     // get Result, this step clusterPair is empty, so we can get valid result
                     walkDown(currentNode, currentCovers);
@@ -158,6 +169,7 @@ public class MMCSDC {
 
             if(childNode.isGlobalMinimal()){
                 walkDown(childNode, currentCovers);
+//                currentNode.neededValidCount = Math.max(childNode.neededValidCount + 1, currentNode.neededValidCount);
                 currentNode.uncoverEvidenceSet.add(childNode.addEvidences);
                 currentNode.addEvidences.add(childNode.addEvidences);
                 nextCandidatePredicates.set(next);
@@ -180,6 +192,8 @@ public class MMCSDC {
             if (redundantIndex < numberOfPredicates)
                 tmp.set(indexProvider.getIndex(predicate1), false);
         });
+
+
 
 
         return tmp;
