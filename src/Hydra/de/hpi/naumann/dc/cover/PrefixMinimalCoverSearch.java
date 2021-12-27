@@ -49,6 +49,7 @@ public class PrefixMinimalCoverSearch {
 	private Collection<IBitSet> getBitsets(IEvidenceSet evidenceSet) {
 		System.out.println("Evidence Set size: " + evidenceSet.size());
 		if (posCover == null) {
+			// 每个谓词覆盖多少证据集
 			int[] counts = getCounts(evidenceSet);
 			posCover = new TranslatingTreeSearch(counts, bitsetList);
 		}

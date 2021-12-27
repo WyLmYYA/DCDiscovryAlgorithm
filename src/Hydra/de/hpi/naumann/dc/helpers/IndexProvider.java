@@ -20,6 +20,9 @@ public class IndexProvider<T> {
 		}
 		return index;
 	}
+	public boolean contains(T object) {
+		return indexes.containsKey(object);
+	}
 
 	public T getObject(int index) {
 		return objects.get(index);

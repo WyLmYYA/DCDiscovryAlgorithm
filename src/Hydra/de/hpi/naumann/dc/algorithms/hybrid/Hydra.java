@@ -10,6 +10,8 @@ import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.SystematicLinearEviden
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import mmcsforDC.MMCSDC;
+import mmcsforDC.MMCSNode;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
@@ -46,6 +48,9 @@ public class Hydra {
 		//得到DC之后都需要check 防止冗余
 		long t2 = System.currentTimeMillis();
 		DenialConstraintSet dcsApprox = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(fullEvidenceSet);
+
+		System.out.println("hydra: " + dcsApprox.size());
+
 		System.out.println("first Inversion cost:" + (System.currentTimeMillis() - t2));
 
 //		for(DenialConstraint dcset:dcsApprox)

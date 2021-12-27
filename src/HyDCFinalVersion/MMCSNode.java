@@ -10,6 +10,7 @@ import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.PartitionEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.paritions.*;
+import Hydra.de.hpi.naumann.dc.predicates.Operator;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
@@ -54,7 +55,11 @@ public class MMCSNode {
 
     public List<Integer> sortedPredicates = new ArrayList<>();
 
+    public List<Predicate> sortedPredicates1 = new ArrayList<>();
 
+    public List<MMCSNode> nodesInPath = new ArrayList<>();
+
+    public Predicate curPred;
 
     public MMCSNode(int numberOfPredicates, IEvidenceSet evidenceToCover, int lineCount) {
 
@@ -72,6 +77,8 @@ public class MMCSNode {
         for (int i = 0; i < numberOfPredicates; ++i){
             crit.add(new ArrayList<>());
         }
+        nodesInPath.add(this);
+
     }
 
     public MMCSNode(int numberOfPredicates) {
@@ -161,26 +168,34 @@ public class MMCSNode {
          */
         Predicate predicate = PredicateBitSet.indexProvider.getObject(predicateAdded);
 
+        curPred = predicate;
+
         sortedPredicates.add(predicateAdded);
 
+        sortedPredicates1.add(predicate);
 
-        // in clone step, curNode get cluster pair from parent
-        if (predicate.needCombine()){
-            // 1. if this one is not first predicate need combination, use IEJoin update cluster pair
-            if (node.lastNeedCombinationPredicate != null){
-                refinePP(predicate, node.lastNeedCombinationPredicate);
-            }else {
-            // 2. if this node is the first predicate need combination, get cluster pair from parent, wait for next refine
-                lastNeedCombinationPredicate = predicate;
-            }
-        }else {
-            // if this node is not needed combination
-            refinePS(predicate, MMCSDC.ieJoin);
-            // 3. if parent or parent before has node wait for refining
-            if (node.lastNeedCombinationPredicate != null){
-                lastNeedCombinationPredicate = node.lastNeedCombinationPredicate;
-            }
-        }
+        nodesInPath.add(this);
+
+
+//        // in clone step, curNode get cluster pair from parent
+//        if (predicate.needCombine()){
+//            // 1. if this one is not first predicate need combination, use IEJoin update cluster pair
+//            if (node.lastNeedCombinationPredicate != null){
+//                refinePP(predicate, node.lastNeedCombinationPredicate);
+//            }else {
+//                // 2. if this node is the first predicate need combination, get cluster pair from parent, wait for next refine
+//                lastNeedCombinationPredicate = predicate;
+//            }
+//        }else {
+//            // if this node is not needed combination
+//            refinePS(predicate, MMCSDC.ieJoin);
+//            // 3. if parent or parent before has node wait for refining
+//            if (node.lastNeedCombinationPredicate != null){
+//                lastNeedCombinationPredicate = node.lastNeedCombinationPredicate;
+//            }
+//        }
+
+
 
     }
     public void refinePS(Predicate predicate, IEJoin ieJoin){
@@ -204,18 +219,58 @@ public class MMCSNode {
         TimeCal.add((System.currentTimeMillis() - l1), 0);
     }
 
+    public void refine(){
+        int firstRefined = 0;
+        for(int i = 0; i < nodesInPath.size(); ++i){
+            if (nodesInPath.get(i).clusterPairs.size() != 0){
+                firstRefined = i;
+                break;
+            }
+        }
+        while (firstRefined < nodesInPath.size() - 1){
+            MMCSNode node = nodesInPath.get(firstRefined);
+            MMCSNode curNode = nodesInPath.get(firstRefined + 1);
+            curNode.clusterPairs = new ArrayList<>(node.clusterPairs);
+            Predicate currentPredicate = curNode.curPred;
+            if (currentPredicate.needCombine()){
+                // 1. if this one is not first predicate need combination, use IEJoin update cluster pair
+                if (node.lastNeedCombinationPredicate != null){
+                    curNode.refinePP(currentPredicate, node.lastNeedCombinationPredicate);
+                }else {
+                    // 2. if this node is the first predicate need combination, get cluster pair from parent, wait for next refine
+                    curNode.lastNeedCombinationPredicate = currentPredicate;
+                }
+            }else {
+                // if this node is not needed combination
+                curNode.refinePS(currentPredicate, MMCSDC.ieJoin);
+                // 3. if parent or parent before has node wait for refining
+                if (node.lastNeedCombinationPredicate != null){
+                    curNode.lastNeedCombinationPredicate = node.lastNeedCombinationPredicate;
+                }
+            }
+            firstRefined++;
+        }
+
+
+    }
+
     private void cloneContext(IBitSet nextCandidatePredicates, MMCSNode parentNode) {
         element = parentNode.element.clone();
 
         candidatePredicates = nextCandidatePredicates.clone();
 
-        clusterPairs = new ArrayList<>(parentNode.clusterPairs);
+//        clusterPairs = new ArrayList<>(parentNode.clusterPairs);
+
 
         crit = new ArrayList<>(numberOfPredicates);
 
         sortedPredicates = new ArrayList<>(parentNode.sortedPredicates);
 
+        sortedPredicates1 = new ArrayList<>(parentNode.sortedPredicates1);
+
 //        neededValidCount = parentNode.neededValidCount;
+
+        parentNode.nodesInPath.forEach(mmcsNode -> nodesInPath.add(mmcsNode));
 
         for (int i = 0; i < numberOfPredicates; ++i){
             crit.add(new ArrayList<>(parentNode.crit.get(i)));
@@ -233,10 +288,10 @@ public class MMCSNode {
     }
 
 
-    public void getAddedEvidenceSet(PredicateBuilder predicates, Input input){
+    public void getAddedEvidenceSet(){
         HashEvidenceSet newEvi = new HashEvidenceSet();
         clusterPairs.forEach(clusterPair -> {
-            new PartitionEvidenceSetBuilder(predicates, input.getInts()).addEvidences(clusterPair, newEvi);
+            new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts()).addEvidences(clusterPair, newEvi);
         });
         Iterator iterable = newEvi.getSetOfPredicateSets().iterator();
         while (iterable.hasNext()){
@@ -266,6 +321,41 @@ public class MMCSNode {
 
     }
 
+    public boolean isPrunedByTransivity(){
+        Predicate predicate = indexProvider.getObject(sortedPredicates.get(sortedPredicates.size() - 1));
+        Operator[] trans = predicate.getOperator().getTransitives();
+        for (int ne = element.nextSetBit(0); ne != -1; ne = element.nextSetBit(ne + 1)){
+            Predicate predicate2 = indexProvider.getObject(ne);
+            if (predicate == predicate2) continue;
+            for (Operator op : trans){
+                if (op.equals(predicate2.getOperator()) && predicate.getOperand2().getColumn().equals(predicate2.getOperand1().getColumn())){
+                    Predicate newPred = new Predicate(op, predicate.getOperand1(), predicate2.getOperand2());
+                    if (canBeReplaced(sortedPredicates.get(sortedPredicates.size() - 1), ne, newPred)) return true;
+                }
+                if (op.equals(predicate2.getOperator()) && predicate.getOperand1().getColumn().equals(predicate2.getOperand2().getColumn())){
+                    Predicate newPred = new Predicate(op, predicate2.getOperand1(), predicate.getOperand2());
+                    if (canBeReplaced(sortedPredicates.get(sortedPredicates.size() - 1), ne, newPred)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean canBeReplaced(int p1, int p2, Predicate newPre){
+        for (PredicateBitSet predicates : crit.get(p1)) {
+            if (!predicates.getBitset().get(indexProvider.getIndex(newPre))){
+                return false;
+            }
+        }
+        for (PredicateBitSet predicates : crit.get(p2) ) {
+            if (!predicates.getBitset().get(indexProvider.getIndex(newPre))){
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     public DenialConstraint getDenialConstraint() {
         PredicateBitSet inverse = new PredicateBitSet();
         for (int next = element.nextSetBit(0); next >= 0; next = element.nextSetBit(next + 1)) {
@@ -276,32 +366,27 @@ public class MMCSNode {
     }
 
 
-    public boolean isTransivityValid(NTreeSearch nTreeSearch, boolean isInverse, int index, boolean[] v){
+    public boolean isTransivityValid(NTreeSearch nTreeSearch, boolean[] v, boolean hasInverse){
+        if (nTreeSearch.bitset != null && nTreeSearch.subtrees.size() == 0) return false;
 
-        // if a valid dc is a subset of element with part of inverse, so this will satisfy Transivity
-        if ( (nTreeSearch.subtrees.size() == 0 && nTreeSearch.bitset != null)  ){
-            return false;
-        }
-
-        Predicate next = indexProvider.getObject(sortedPredicates.get(index));
-        int inverseIndex = indexProvider.getIndex(next.getInverse());
-        v[index] = true;
-        if (nTreeSearch.subtrees.containsKey(sortedPredicates.get(index)) && !isInverse &&
-                !isTransivityValid(nTreeSearch.subtrees.get(sortedPredicates.get(index)), false, index + 1, v )){
+        for (int i = 0; i < sortedPredicates.size(); ++i){
+            int predicate = sortedPredicates.get(i);
+            if (v[i])continue;
+            v[i] = true;
+            if (nTreeSearch.subtrees.containsKey(predicate) && !isTransivityValid(nTreeSearch.subtrees.get(predicate), v, hasInverse)){
                 return false;
-        }
-        boolean isAllCovered = true;
-        for (int i = index + 1; i < v.length; ++i){
-            if(!v[i]){
-                isAllCovered = false;
-                v[i] = true;
-                // after index which is substree, there may be not in order
-                if (nTreeSearch.subtrees.containsKey(inverseIndex) && isInverse &&
-                        !isTransivityValid(nTreeSearch.subtrees.get(inverseIndex), true, index, v )){
+            }
+            if (hasInverse) continue;
+            Predicate inverse = indexProvider.getObject(predicate).getInverse();
+
+            for (Integer p : nTreeSearch.subtrees.keySet()){
+                List<Predicate> impl = (List<Predicate>) indexProvider.getObject(p).getImplications();
+                if (impl.contains(inverse) && !isTransivityValid(nTreeSearch.subtrees.get(p), v, true)){
                     return false;
                 }
-                v[i] = false;
             }
+            v[i] = false;
+
         }
         return true;
 

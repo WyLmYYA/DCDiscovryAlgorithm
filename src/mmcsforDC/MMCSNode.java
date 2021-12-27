@@ -2,12 +2,16 @@ package mmcsforDC;
 
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
+import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;
+import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 
 import java.util.*;
+
+import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 /**
  * @Author yoyuan
@@ -128,6 +132,14 @@ public class MMCSNode {
         for(int next = element.nextSetBit(0); next >= 0; next = element.nextSetBit(next+1))
             if(crit.get(next).isEmpty()) return false;
         return true;
+    }
+    public DenialConstraint getDenialConstraint() {
+        PredicateBitSet inverse = new PredicateBitSet();
+        for (int next = element.nextSetBit(0); next >= 0; next = element.nextSetBit(next + 1)) {
+            Predicate predicate = indexProvider.getObject(next); //1
+            inverse.add(predicate.getInverse());
+        }
+        return new DenialConstraint(inverse);
     }
 
     @Override

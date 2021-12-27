@@ -11,6 +11,7 @@ public enum Operator {
   private Operator[] transitives;
   private String shortString;
   private Operator[] redundant;
+  private Operator[] fastDCimplications;
 
   public Operator getInverse() {
     return inverse;
@@ -175,6 +176,7 @@ public enum Operator {
     GREATER.redundant = new Operator[] {UNEQUAL, EQUAL, LESS_EQUAL, GREATER_EQUAL, LESS};
     GREATER_EQUAL.redundant = new Operator[] {UNEQUAL, EQUAL, LESS_EQUAL, GREATER, LESS};
   }
+
 
 
 }

@@ -1,5 +1,7 @@
 package HyDCFinalVersion;
 
+import Hydra.de.hpi.naumann.dc.algorithms.hybrid.ResultCompletion;
+import Hydra.de.hpi.naumann.dc.cover.PrefixMinimalCoverSearch;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
@@ -15,6 +17,7 @@ import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import utils.TimeCal;
 
+import javax.swing.plaf.synth.SynthUI;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -27,7 +30,13 @@ public class RunHyDCFinalVersion {
     public static void main(String[] args) throws IOException, InputIterationException {
         long l1 = System.currentTimeMillis();
         String file ="dataset//Tax10k.csv";
-        int size = 10;
+        int size = 200;
+        // 40    dc 14109 t1:21s            t2:
+        // 50    dc 26396 t1:34s
+        // 100   dc 34489 t1:57s
+        // 200   dc 41150 t1:100s             51.4(37s) + 23 s
+        // 1000  dc 84150 t1:211s inversion 52s mini 55s comp 25s inver 25s min 51s   700s
+        // 10000 dc 85360 t1:525s
         File datafile = new File(file);
         RelationalInput data = new RelationalInput(datafile);
         Input input = new Input(data,size);
@@ -47,6 +56,16 @@ public class RunHyDCFinalVersion {
 //        calculateAndSortPredicate(set);
 
         // HyDC begin
+//        long l11 = System.currentTimeMillis();
+//        DenialConstraintSet dcsApprox = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(fullSamplingEvidenceSet);
+//
+//        dcsApprox.minimize();
+//
+//        //complete之后得到set 利用set得到DC
+//        IEvidenceSet result = new ResultCompletion(input, predicates).complete(dcsApprox, sampleEvidenceSet,
+//                fullSamplingEvidenceSet);
+//
+//        System.out.println("get full evidence : sss : " + (System.currentTimeMillis() - l11));
         MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullSamplingEvidenceSet, predicates, input);
 
 
