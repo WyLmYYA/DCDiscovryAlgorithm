@@ -2,9 +2,11 @@ package HyDCFinalVersion;
 
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.ResultCompletion;
 import Hydra.de.hpi.naumann.dc.cover.PrefixMinimalCoverSearch;
+import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
+import Hydra.de.hpi.naumann.dc.evidenceset.build.EvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.PartitionEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.ColumnAwareEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.SystematicLinearEvidenceSetBuilder;
@@ -21,16 +23,18 @@ import javax.swing.plaf.synth.SynthUI;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RunHyDCFinalVersion {
+public class RunHyDCWithFastDC {
     protected static int sampleRounds = 20;
     protected static double efficiencyThreshold = 0.005d;
-    public static void main(String[] args) throws IOException, InputIterationException {
+
+    public static CopyOnWriteArraySet<DenialConstraint>  denialConstraintSet = new CopyOnWriteArraySet<>();
+    public static void main(String[] args) throws IOException, InputIterationException, InterruptedException {
         long l1 = System.currentTimeMillis();
         String file ="dataset//Tax10k.csv";
-        int size = 10000;
+        int size = 10;
         // 40    dc 14109 t1:21s            t2:
         // 50    dc 26396 t1:34s
         // 100   dc 34489 t1:57s
@@ -52,35 +56,48 @@ public class RunHyDCFinalVersion {
         //get the sampling  evidence set
         IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
-        // calculate selectivity and sort for predicate
-//        calculateAndSortPredicate(set);
-
-        // HyDC begin
-//        long l11 = System.currentTimeMillis();
-//        DenialConstraintSet dcsApprox = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(fullSamplingEvidenceSet);
-//
-//        dcsApprox.minimize();
-//
-//        //complete之后得到set 利用set得到DC
-//        IEvidenceSet result = new ResultCompletion(input, predicates).complete(dcsApprox, sampleEvidenceSet,
-//                fullSamplingEvidenceSet);
-//
-//        System.out.println("get full evidence : sss : " + (System.currentTimeMillis() - l11));
-        MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullSamplingEvidenceSet, predicates, input);
-
-
-
-        DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
-        System.out.println(mmcsdc.getCoverNodes().size());
-        mmcsdc.getCoverNodes().forEach(mmcsNode -> {
-            denialConstraintSet.add(mmcsNode.getDenialConstraint());
+        // get predicates from evidence set
+        Set<Integer> predicatesFromSample = new HashSet<>();
+        fullSamplingEvidenceSet.forEach(predicates1 -> {
+            predicates1.forEach(predicate -> predicatesFromSample.add(PredicateBitSet.indexProvider.getIndex(predicate)));
         });
+
+        Map<Integer, IEvidenceSet> parallerEvidenceSet = new HashMap<>();
+        fullSamplingEvidenceSet.forEach(predicates1 -> {
+            predicates1.forEach(predicate -> {
+                int index = PredicateBitSet.getIndex(predicate) ;
+                PredicateBitSet tmp = new PredicateBitSet(predicates1);
+                tmp.getBitset().set(index, false);
+                if (parallerEvidenceSet.containsKey(index)){
+                    parallerEvidenceSet.get(index).add(tmp);
+                }else{
+                    IEvidenceSet iEvidenceSet = new HashEvidenceSet();
+                    iEvidenceSet.add(tmp);
+                    parallerEvidenceSet.put(index, iEvidenceSet);
+                }
+            });
+        });
+
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        for (Map.Entry<Integer, IEvidenceSet> entry : parallerEvidenceSet.entrySet()){
+            MyThread myThread = new MyThread(entry.getKey(), entry.getValue(), predicates, input);
+            executorService.execute(myThread);
+        }
+        executorService.shutdown();
+        while(true){
+            if(executorService.isTerminated()){
+                break;
+            }
+            Thread.sleep(1000);
+        }
+
+
 
         System.out.println("mmcs and get dcs cost:" + (System.currentTimeMillis() - l1));
 
         System.out.println(denialConstraintSet.size());
         l1 = System.currentTimeMillis();
-        denialConstraintSet.minimize();
+//        denialConstraintSet.minimize();
         System.out.println("dcs :" + denialConstraintSet.size());
         System.out.println("minimize cost:" + (System.currentTimeMillis() - l1));
 

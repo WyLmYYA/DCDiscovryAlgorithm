@@ -13,6 +13,9 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import mmcsforDC.MMCSDC;
 import mmcsforDC.MMCSNode;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 public class Hydra {
@@ -74,7 +77,6 @@ public class Hydra {
 
 
 //		System.out.println("before second inversion cost : " + (System.currentTimeMillis() - hydraBegin + timebefore));
-
 		long starttime = System.currentTimeMillis();
 		DenialConstraintSet dcs = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(result);
 

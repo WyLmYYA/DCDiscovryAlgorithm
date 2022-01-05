@@ -5,6 +5,7 @@ import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.ch.javasoft.bitset.search.NTreeSearch;
 import Hydra.de.hpi.naumann.dc.algorithms.hybrid.ResultCompletion;
+import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraint;
 import Hydra.de.hpi.naumann.dc.denialcontraints.DenialConstraintSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
@@ -67,7 +68,8 @@ public class MMCSDC {
 
     public static int noAddedCount = 0;
 
-    public Map<PredicateBitSet, DenialConstraintSet.MinimalDCCandidate> constraintsClosureMap = new HashMap<>();
+//    public Map<PredicateBitSet, DenialConstraintSet.MinimalDCCandidate> constraintsClosureMap = new HashMap<>();
+    Set<IBitSet> dcs = new HashSet<>();
 
     public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover, PredicateBuilder predicates, Input input){
 
@@ -116,14 +118,26 @@ public class MMCSDC {
     public  void walkDown(MMCSNode currentNode, List<MMCSNode> currentCovers){
         // minimize in mmcs,
 
-//        if (!currentNode.isTransivityValid(treeSearch, new boolean[currentNode.sortedPredicates.size()], false)){
-//            return;
-//        }
         if (currentNode.canCover()){
             // we need to valid current partial dc is valid dc or not
 
             //  check is there any predicate needed combination not be refined, and update cluster pair
 
+//            for (IBitSet bitSet : dcs){
+//                IBitSet tmp = bitSet.getXor(currentNode.element);
+//                DenialConstraint denialConstraintSet = currentNode.getDenialConstraint();
+//                if (tmp.cardinality() == 2){
+//                    int p1 = tmp.nextSetBit(0);
+//                    int p2 = tmp.nextSetBit( p1 + 1);
+//                    Predicate pre1 = indexProvider.getObject(p1);
+//                    Predicate pre2 = indexProvider.getObject(p2);
+//                    List<Predicate> impl1 = (List<Predicate>) pre1.getImplications();
+//                    List<Predicate> impl2 = (List<Predicate>) pre2.getImplications();
+//                    if (impl1.contains(pre2.getInverse()) || impl2.contains(pre1.getInverse())){
+//                        return;
+//                    }
+//                }
+//            }
             currentNode.refine();
 
             if (currentNode.lastNeedCombinationPredicate != null && currentNode.clusterPairs.size() != 0){
@@ -132,23 +146,14 @@ public class MMCSDC {
 
 
             if (currentNode.isValidResult()){
-                treeSearch.add(currentNode.element);
+//                treeSearch.add(currentNode.element);
+                dcs.add(currentNode.element);
                 currentCovers.add(currentNode);
             }else{
                 // not a valid result means cluster pair not empty, we need get added evidence set
                 // after this func, uncover update, and is a complete evidence for currNode, so cluster pair will be null
                 currentNode.getAddedEvidenceSet();
                 walkDown(currentNode, currentCovers);
-//                if (currentNode.uncoverEvidenceSet.size() == 0){
-//                    noAddedCount ++;
-//                    treeSearch.add(currentNode.element);
-//                    currentCovers.add(currentNode);
-//                }
-//                else{
-//                    noAddedCount = 0;
-//                    // get Result, this step clusterPair is empty, so we can get valid result
-//                    walkDown(currentNode, currentCovers);
-//                }
 
 
             }

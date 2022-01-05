@@ -365,6 +365,16 @@ public class MMCSNode {
         return new DenialConstraint(inverse);
     }
 
+    public DenialConstraint getDenialConstraint(int addPredicate) {
+        PredicateBitSet inverse = new PredicateBitSet();
+        for (int next = element.nextSetBit(0); next >= 0; next = element.nextSetBit(next + 1)) {
+            Predicate predicate = indexProvider.getObject(next); //1
+            inverse.add(predicate.getInverse());
+        }
+        inverse.add(indexProvider.getObject(addPredicate));
+        return new DenialConstraint(inverse);
+    }
+
 
     public boolean isTransivityValid(NTreeSearch nTreeSearch, boolean[] v, boolean hasInverse){
         if (nTreeSearch.bitset != null && nTreeSearch.subtrees.size() == 0) return false;

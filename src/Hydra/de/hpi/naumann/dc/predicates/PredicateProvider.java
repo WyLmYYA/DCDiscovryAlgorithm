@@ -4,6 +4,7 @@ import Hydra.de.hpi.naumann.dc.predicates.operands.ColumnOperand;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class PredicateProvider {
@@ -16,7 +17,7 @@ public class PredicateProvider {
 	}
 	
 	public Predicate getPredicate(Operator op, ColumnOperand<?> op1, ColumnOperand<?> op2) {
-		Map<ColumnOperand<?>, Predicate> map = predicates.computeIfAbsent(op,  a -> new HashMap<>()).computeIfAbsent(op1, a -> new HashMap<>());
+		Map<ColumnOperand<?>, Predicate> map = predicates.computeIfAbsent(op,  a -> new ConcurrentHashMap<>()).computeIfAbsent(op1, a -> new HashMap<>());
 		Predicate p = map.get(op2);
 		if(p == null) {
 			p = new Predicate(op, op1, op2);

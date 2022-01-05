@@ -4,9 +4,10 @@ import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class IndexProvider<T> {
-	private Map<T, Integer> indexes = new HashMap<>();
+	private Map<T, Integer> indexes = new ConcurrentHashMap<>();
 	private List<T> objects = new ArrayList<>();
 
 	private int nextIndex = 0;
