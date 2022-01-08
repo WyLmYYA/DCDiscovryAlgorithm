@@ -16,6 +16,8 @@ import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import utils.TimeCal;
+import utils.TimeCal2;
+import utils.TimeCal3;
 
 import javax.swing.plaf.synth.SynthUI;
 import java.io.File;
@@ -27,16 +29,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RunHyDCFinalVersion {
     protected static int sampleRounds = 20;
     protected static double efficiencyThreshold = 0.005d;
+
+    static Map<Predicate, Integer> predicateIntegerMap = new HashMap<>();
     public static void main(String[] args) throws IOException, InputIterationException {
         long l1 = System.currentTimeMillis();
         String file ="dataset//Tax10k.csv";
-        int size = 10000;
-        // 40    dc 14109 t1:21s            t2:
-        // 50    dc 26396 t1:34s
-        // 100   dc 34489 t1:57s
-        // 200   dc 41150 t1:100s             51.4(37s) + 23 s
-        // 1000  dc 84150 t1:211s inversion 52s mini 55s comp 25s inver 25s min 51s   700s
-        // 10000 dc 85360 t1:525s
+        int size = 1000;
+
+
         File datafile = new File(file);
         RelationalInput data = new RelationalInput(datafile);
         Input input = new Input(data,size);
@@ -52,31 +52,24 @@ public class RunHyDCFinalVersion {
         //get the sampling  evidence set
         IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
+        printPredicateToEvidence(predicates, fullSamplingEvidenceSet);
         // calculate selectivity and sort for predicate
 //        calculateAndSortPredicate(set);
 
         // HyDC begin
-//        long l11 = System.currentTimeMillis();
-//        DenialConstraintSet dcsApprox = new PrefixMinimalCoverSearch(predicates).getDenialConstraints(fullSamplingEvidenceSet);
-//
-//        dcsApprox.minimize();
-//
-//        //complete之后得到set 利用set得到DC
-//        IEvidenceSet result = new ResultCompletion(input, predicates).complete(dcsApprox, sampleEvidenceSet,
-//                fullSamplingEvidenceSet);
-//
-//        System.out.println("get full evidence : sss : " + (System.currentTimeMillis() - l11));
         MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullSamplingEvidenceSet, predicates, input);
 
+        System.out.println("mmcs and get dcs cost:" + (System.currentTimeMillis() - l1));
 
 
         DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
-        System.out.println(mmcsdc.getCoverNodes().size());
-        mmcsdc.getCoverNodes().forEach(mmcsNode -> {
-            denialConstraintSet.add(mmcsNode.getDenialConstraint());
-        });
+//        System.out.println(mmcsdc.getCoverNodes().size());
+//        mmcsdc.getCoverNodes().forEach(mmcsNode -> {
+//            denialConstraintSet.add(mmcsNode.getDenialConstraint());
+//        });
+        denialConstraintSet = mmcsdc.denialConstraintSet;
 
-        System.out.println("mmcs and get dcs cost:" + (System.currentTimeMillis() - l1));
+
 
         System.out.println(denialConstraintSet.size());
         l1 = System.currentTimeMillis();
@@ -84,53 +77,45 @@ public class RunHyDCFinalVersion {
         System.out.println("dcs :" + denialConstraintSet.size());
         System.out.println("minimize cost:" + (System.currentTimeMillis() - l1));
 
-        System.out.println("valid time " + TimeCal.getTime(0));
+        System.out.println("valid time " + TimeCal2.getTime(0));
+        System.out.println("transitivity prune time " + TimeCal2.getTime(1));
+        System.out.println("get child time " + TimeCal2.getTime(2));
+        System.out.println("cal evidence for pair line count " + TimeCal2.getTime(3));
+        System.out.println("singel predicate valid count " + TimeCal2.getTime(4));
+        System.out.println("double predicates valid  count " + TimeCal2.getTime(5));
 
-    }
-
-    private static void calculateAndSortPredicate( HashEvidenceSet sampleEvidenceSet) {
-        Set<Predicate> predicates = new HashSet<>();
-        sampleEvidenceSet.getSetOfPredicateSets().forEach(predicates1 -> {
-            predicates1.forEach(predicate -> {
-                predicates.add(predicate);
-            });
-        });
-        Map<Integer, Integer> predicateMapSelectivity = new ConcurrentHashMap<>();
-        List<Predicate> sortedPredicates = new ArrayList<>();
-        IndexProvider<Predicate> sortedIndexProvider = new IndexProvider<>();
-        for (Predicate predicate : predicates){
-            AtomicInteger select = new AtomicInteger();
-            sortedPredicates.add(predicate);
-            sampleEvidenceSet.forEach(predicates1 -> {
-                if (predicates1.containsPredicate(predicate)){
-                    select.addAndGet(1);
-                }
-            });
-            predicateMapSelectivity.put(PredicateBitSet.indexProvider.getIndex(predicate), select.intValue());
-        }
-        Collections.sort(sortedPredicates, new Comparator<Predicate>() {
+        List<Map.Entry<Predicate, Long>> list = new ArrayList<>(TimeCal3.time.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<Predicate, Long>>() {
             @Override
-            public int compare(Predicate o1, Predicate o2) {
-                int sel1 = predicateMapSelectivity.get(PredicateBitSet.indexProvider.getIndex(o1));
-                int sel2 = predicateMapSelectivity.get(PredicateBitSet.indexProvider.getIndex(o2));
-                return sel1 - sel2;
+            public int compare(Map.Entry<Predicate, Long> o1, Map.Entry<Predicate, Long> o2) {
+                return o1.getValue().compareTo(o2.getValue());
             }
         });
-        for (Predicate predicate : sortedPredicates){
-            sortedIndexProvider.getIndex(predicate);
+        for (Map.Entry<Predicate, Long> entry : list){
+            System.out.println(entry.getKey() + "  refine time: " + entry.getValue() + "  cover count :" + predicateIntegerMap.get(entry.getKey()));
         }
-        for (Predicate predicate : predicates){
-            sortedIndexProvider.getIndex(predicate);
-        }
+        //singel predicate valid count 1119207
+        //double predicates valid  count 396280
 
-        // sampling evidence need to rehash from indexiProvideer to sortedProvider
-        sampleEvidenceSet.getSetOfPredicateSets().forEach(predicates1 -> {
-            PredicateBitSet predicates2 = new PredicateBitSet();
-            predicates1.forEach(predicate -> {
-                predicates2.getBitset().set(sortedIndexProvider.getIndex(predicate));
-            });
-            predicates1 = predicates2;
-        });
-        PredicateBitSet.indexProvider = sortedIndexProvider;
+        //singel predicate valid count 4666084
+        //double predicates valid  count 1583770
+
+        //singel predicate valid count 4533055
+        //double predicates valid  count 1492748
     }
+
+    public static void printPredicateToEvidence(PredicateBuilder predicates, IEvidenceSet iEvidenceSet){
+
+        iEvidenceSet.forEach(predicates1 -> {
+            predicates1.forEach(predicate -> {
+                if (predicateIntegerMap.containsKey(predicate)){
+                    predicateIntegerMap.put(predicate, predicateIntegerMap.get(predicate) + 1);
+                }else{
+                    predicateIntegerMap.put(predicate, 1);
+                }
+            });
+        });
+    }
+
+
 }

@@ -8,6 +8,7 @@ import Hydra.de.hpi.naumann.dc.input.RelationalInput;
 import Hydra.de.hpi.naumann.dc.paritions.Cluster;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import utils.TimeCal;
+import utils.TimeCal2;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,8 +27,8 @@ public class RunHydra {
 //		String sizeline ="100";
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
-		String line ="dataset//Tax10k_part_int.csv";
-		String sizeline ="1000";
+		String line ="dataset//CLAIM.csv";
+		String sizeline ="10000";
 
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);
@@ -48,7 +49,8 @@ public class RunHydra {
 		System.out.println("Used time: "+ (endtime - starttime)+ " ms");
 
 		// time 3 is calculate evidence O(n2*R) in complete
-		TimeCal.time.forEach(System.out::println);
+		System.out.println("singel predicate valid count " + TimeCal2.getTime(0));
+		System.out.println("double predicates valid  count " + TimeCal2.getTime(1));
 
 
 //		dcs.forEach(System.out::println);

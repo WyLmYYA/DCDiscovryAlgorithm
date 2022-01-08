@@ -12,6 +12,7 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.procedure.TObjectProcedure;
+import utils.TimeCal2;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -150,8 +151,10 @@ public class ClusterPair {
 
 	public void refine(PartitionRefiner refiner, IEJoin iejoin, Consumer<ClusterPair> consumer) {
 		if (refiner instanceof Predicate) {
+			TimeCal2.add(1,0);
 			refinePs((Predicate) refiner, iejoin, consumer);
 		} else if (refiner instanceof PredicatePair) {
+			TimeCal2.add(1,1);
 			refinePP((PredicatePair) refiner, iejoin, consumer);
 		}
 	}

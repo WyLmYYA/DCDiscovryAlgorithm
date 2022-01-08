@@ -1,5 +1,6 @@
 package Hydra.de.hpi.naumann.dc.evidenceset.build;
 
+import HyDCFinalVersion.MMCSDC;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;
 import Hydra.de.hpi.naumann.dc.input.ColumnPair;
@@ -10,6 +11,7 @@ import Hydra.de.hpi.naumann.dc.paritions.LinePair;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
+import utils.TimeCal2;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,12 +29,54 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 	}
 
 	public void addEvidences(ClusterPair clusterPair, IEvidenceSet evidenceSet) {
+
 		PredicateBitSet staticSet = null;
 		int lastI = -1;
 		// transform clusterPair  to line pair
+
 		Iterator<LinePair> iter = clusterPair.getLinePairIterator();
+
+
 		while (iter.hasNext()) {
 			LinePair lPair = iter.next();
+//			if (!MMCSDC.calculatedPair.add(lPair)){
+//				continue;
+//			}
+
+			int i = lPair.getLine1();
+			int j = lPair.getLine2();
+			int[] row1 = input2s[i];
+			if (staticSet == null || i != lastI)
+				staticSet = getStatic(pairs, row1);
+
+			int[] row2 = input2s[j];
+			if (i != j) {
+
+				TimeCal2.add(1, 3);
+				PredicateBitSet set = getPredicateSet(staticSet, pairs, row1, row2);
+				evidenceSet.add(set);
+
+				PredicateBitSet set2 = getPredicateSet(getStatic(pairs, row2), pairs, row2, row1);
+				evidenceSet.add(set2);
+
+			}
+
+			lastI = i;
+
+		}
+
+	}
+	public void addEvidences(Iterator<LinePair> iter, IEvidenceSet evidenceSet) {
+		PredicateBitSet staticSet = null;
+		int lastI = -1;
+		// transform clusterPair  to line pair
+//		Iterator<LinePair> iter = clusterPair.getLinePairIterator();
+		while (iter.hasNext()) {
+			LinePair lPair = iter.next();
+//			if (!MMCSDC.calculatedPair.add(lPair)){
+//				continue;
+//			}
+
 			int i = lPair.getLine1();
 			int j = lPair.getLine2();
 			int[] row1 = input2s[i];

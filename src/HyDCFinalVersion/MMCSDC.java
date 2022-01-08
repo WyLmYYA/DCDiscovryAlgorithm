@@ -12,13 +12,16 @@ import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.build.PartitionEvidenceSetBuilder;
 import Hydra.de.hpi.naumann.dc.helpers.IndexProvider;
 import Hydra.de.hpi.naumann.dc.input.Input;
+import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
 import Hydra.de.hpi.naumann.dc.paritions.IEJoin;
+import Hydra.de.hpi.naumann.dc.paritions.LinePair;
 import Hydra.de.hpi.naumann.dc.paritions.StrippedPartition;
 import Hydra.de.hpi.naumann.dc.predicates.Operator;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.Closure;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import utils.TimeCal2;
 
 import java.util.*;
 
@@ -34,6 +37,7 @@ import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvi
 
 public class MMCSDC {
 
+    private final static boolean ENABLE_TRANSITIVE_CHECK = true;
     /**
      *  in DC, this is number of predicates, generally this is the attribute for FD or vertices for Hypergraph
     */
@@ -43,6 +47,8 @@ public class MMCSDC {
      *  each node represent current a minimal cover set, here, is a valid DC
     */
     private List<MMCSNode> coverNodes = new ArrayList<>();
+
+    public DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
 
     /**
      *  `cand` for MMCS, with the transversal walkDown, this will live update
@@ -68,8 +74,10 @@ public class MMCSDC {
 
     public static int noAddedCount = 0;
 
-//    public Map<PredicateBitSet, DenialConstraintSet.MinimalDCCandidate> constraintsClosureMap = new HashMap<>();
-    Set<IBitSet> dcs = new HashSet<>();
+    public static Set<LinePair> calculatedPair = new HashSet<>();
+
+    Map<PredicateBitSet, DenialConstraintSet.MinimalDCCandidate> constraintsClosureMap = new HashMap<>();
+
 
     public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover, PredicateBuilder predicates, Input input){
 
@@ -84,8 +92,6 @@ public class MMCSDC {
             candidatePredicates.set(i);
         }
 
-//        PartitionEvidenceSetBuilder partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(predicates, input.getInts());
-//        partitionEvidenceSetBuilder.addEvidences(StrippedPartition.getFullParition(input.getLineCount()), all );
 
         initiate(evidenceSetToCover);
 
@@ -99,46 +105,44 @@ public class MMCSDC {
         */
         hasEmptySubset = evidenceToCover.getSetOfPredicateSets().stream().anyMatch(predicates -> predicates.getBitset().isEmpty());
 
-        coverNodes = walkDown(new MMCSNode(numberOfPredicates, evidenceToCover, input.getLineCount()));
+        walkDown(new MMCSNode(numberOfPredicates, evidenceToCover, input.getLineCount()));
     }
 
     /**
      *  root is the root of the deep transversal tree, the elements is null, and the uncover is full EvidenceSet
     */
-    List<MMCSNode>  walkDown(MMCSNode root){
-
-        List<MMCSNode> currentCovers = new ArrayList<>();
-
-        walkDown(root, currentCovers);
-
-        return currentCovers;
-    }
+//    void walkDown(MMCSNode root){
+//
+//        List<MMCSNode> currentCovers = new ArrayList<>();
+//
+//        walkDown(root);
+//    }
 
 
-    public  void walkDown(MMCSNode currentNode, List<MMCSNode> currentCovers){
+    public  void walkDown(MMCSNode currentNode){
+
         // minimize in mmcs,
+        if(ENABLE_TRANSITIVE_CHECK){
+            long l1 = System.currentTimeMillis();
+            for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
+                IBitSet tmp = currentNode.element.clone();
+                tmp.set(ne, false);
+                for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
+                    tmp.set(indexProvider.getIndex(p2));
+                }
 
+                if (treeSearch.containsSubset(tmp))return;
+            }
+            TimeCal2.add((System.currentTimeMillis() - l1), 1);
+        }
         if (currentNode.canCover()){
             // we need to valid current partial dc is valid dc or not
 
             //  check is there any predicate needed combination not be refined, and update cluster pair
 
-//            for (IBitSet bitSet : dcs){
-//                IBitSet tmp = bitSet.getXor(currentNode.element);
-//                DenialConstraint denialConstraintSet = currentNode.getDenialConstraint();
-//                if (tmp.cardinality() == 2){
-//                    int p1 = tmp.nextSetBit(0);
-//                    int p2 = tmp.nextSetBit( p1 + 1);
-//                    Predicate pre1 = indexProvider.getObject(p1);
-//                    Predicate pre2 = indexProvider.getObject(p2);
-//                    List<Predicate> impl1 = (List<Predicate>) pre1.getImplications();
-//                    List<Predicate> impl2 = (List<Predicate>) pre2.getImplications();
-//                    if (impl1.contains(pre2.getInverse()) || impl2.contains(pre1.getInverse())){
-//                        return;
-//                    }
-//                }
-//            }
-            currentNode.refine();
+            if (currentNode.needRefine) {
+                currentNode.refine();
+            }
 
             if (currentNode.lastNeedCombinationPredicate != null && currentNode.clusterPairs.size() != 0){
                 currentNode.refinePS(currentNode.lastNeedCombinationPredicate, ieJoin);
@@ -146,16 +150,17 @@ public class MMCSDC {
 
 
             if (currentNode.isValidResult()){
-//                treeSearch.add(currentNode.element);
-                dcs.add(currentNode.element);
-                currentCovers.add(currentNode);
+
+                treeSearch.add(currentNode.element);
+                DenialConstraint dc = currentNode.getDenialConstraint();
+                denialConstraintSet.add(dc);
+
             }else{
                 // not a valid result means cluster pair not empty, we need get added evidence set
                 // after this func, uncover update, and is a complete evidence for currNode, so cluster pair will be null
+
                 currentNode.getAddedEvidenceSet();
-                walkDown(currentNode, currentCovers);
-
-
+                walkDown(currentNode);
             }
             return;
         }
@@ -178,24 +183,33 @@ public class MMCSDC {
         IBitSet nextCandidatePredicates = currentNode.candidatePredicates.getAndNot(chosenEvidence);
 
 
+
         /**
          * try every CandidatePredicates to add, and walkDown
         */
         for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
 
             /** get Trivial prune */
+
+
             IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
+
+
+
 
             MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
 
 
             if(childNode.isGlobalMinimal()){
-                walkDown(childNode, currentCovers);
+                walkDown(childNode);
+
                 currentNode.uncoverEvidenceSet.add(childNode.addEvidences);
                 currentNode.addEvidences.add(childNode.addEvidences);
                 nextCandidatePredicates.set(next);
+
             }
         }
+
 
 
 

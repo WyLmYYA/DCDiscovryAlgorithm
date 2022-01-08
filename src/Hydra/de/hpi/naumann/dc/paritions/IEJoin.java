@@ -237,7 +237,6 @@ public class  IEJoin {
 			int D = L_D[i];
 			bit.addTuple(B_D.get(D) + 1, D);
 		}
-		TimeCal.add(System.currentTimeMillis() - phase1, 0);
 
 
 		IndexForBIT indexForBIT = new IndexForBIT();
@@ -257,17 +256,14 @@ public class  IEJoin {
 			if(indexForBIT.equals(next)  && next.hasNext() && lastC1 != null){
 				lastC1.add(A);
 
-//				TimeCal.add(System.currentTimeMillis() - phase2, 1);
 				continue;
 			}else{
 				indexForBIT = next;
 			}
 
-//			TimeCal.add(System.currentTimeMillis() - phase2, 1);
 			long phase3 = System.currentTimeMillis();
 			if ( next.hasNext() ){
 
-				TimeCal.add(1, 3);
 				/** Phase3: other operation the same as IEJoin */
 
 				ClusterPair pair = new ClusterPair(c1, c2);
@@ -299,7 +295,6 @@ public class  IEJoin {
 				}
 				lastC2 = lastC1 = null;
 			}
-			TimeCal.add(System.currentTimeMillis() - phase3, 2);
 		}
 
 		if(lastC1 != null) {
@@ -370,7 +365,6 @@ public class  IEJoin {
 			int D = L_D[i];
 			bit.addTuple(B_D.get(D) + 1, D);
 		}
-		TimeCal.add(System.currentTimeMillis() - phase1, 0);
 
 
 		IndexForBIT indexForBIT = new IndexForBIT();
@@ -390,17 +384,14 @@ public class  IEJoin {
 			if(indexForBIT.equals(next)  && next.hasNext() && lastC1 != null){
 				lastC1.add(A);
 
-//				TimeCal.add(System.currentTimeMillis() - phase2, 1);
 				continue;
 			}else{
 				indexForBIT = next;
 			}
 
-//			TimeCal.add(System.currentTimeMillis() - phase2, 1);
 			long phase3 = System.currentTimeMillis();
 			if ( next.hasNext() ){
 
-				TimeCal.add(1, 3);
 				/** Phase3: other operation the same as IEJoin */
 
 				ClusterPair pair = new ClusterPair(c1, c2);
@@ -432,7 +423,6 @@ public class  IEJoin {
 				}
 				lastC2 = lastC1 = null;
 			}
-			TimeCal.add(System.currentTimeMillis() - phase3, 2);
 		}
 
 		if(lastC1 != null) {
@@ -640,7 +630,6 @@ public class  IEJoin {
 		Cluster lastC2 = null;
 
 
-		TimeCal.add(System.currentTimeMillis() - phase1, 0);
 		/** begin with scanning L2  here can replace with clusters.getC2().size()*/
 		for (int i = 0; i < clusters.getC1().size(); ++i) {
 			// relative position of r_i in L2'
@@ -685,9 +674,6 @@ public class  IEJoin {
 				// Tax10k 10s
 				for (int k = bitset.nextSetBit(start2); k >= 0; k = bitset.nextSetBit(k + 1))
 					c2.add(L1_[k]);
-
-
-				TimeCal.add(System.currentTimeMillis() - phase2, 1);
 				/** Phase3: other operation the same as IEJoin */
 				long phase3 = System.currentTimeMillis();
 				ClusterPair pair = new ClusterPair(c1, c2);
@@ -712,7 +698,6 @@ public class  IEJoin {
 					lastC2 = lastC1 = null;
 				}
 
-				TimeCal.add(System.currentTimeMillis() - phase3, 2);
 			} else {
 				if(lastC1 != null) {
 					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);

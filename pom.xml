@@ -10,11 +10,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
-            <version>5.5.2</version>
-        </dependency>
-        <dependency>
             <groupId>com.koloboke</groupId>
             <artifactId>koloboke-api-jdk8</artifactId>
             <version>1.0.0</version>
