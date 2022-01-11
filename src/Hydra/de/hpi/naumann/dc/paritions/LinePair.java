@@ -1,5 +1,7 @@
 package Hydra.de.hpi.naumann.dc.paritions;
 
+import javax.sound.sampled.Line;
+
 public class LinePair {
 
 	private int line1;
@@ -8,6 +10,9 @@ public class LinePair {
 	public LinePair(int line1, int line2) {
 		this.line1 = line1;
 		this.line2 = line2;
+	}
+	public LinePair getInverse(){
+		 return new LinePair(this.line2, this.line1);
 	}
 
 	public int getLine1() {

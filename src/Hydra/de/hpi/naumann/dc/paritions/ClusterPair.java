@@ -13,6 +13,7 @@ import gnu.trove.iterator.TIntIterator;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.procedure.TObjectProcedure;
 import utils.TimeCal2;
+import utils.TimeCal3;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -152,10 +153,19 @@ public class ClusterPair {
 	public void refine(PartitionRefiner refiner, IEJoin iejoin, Consumer<ClusterPair> consumer) {
 		if (refiner instanceof Predicate) {
 			TimeCal2.add(1,0);
+			TimeCal3.addPreCal((Predicate) refiner, 1);
+			long l1 = System.currentTimeMillis();
 			refinePs((Predicate) refiner, iejoin, consumer);
+			TimeCal3.add((Predicate)refiner, System.currentTimeMillis() - l1);
 		} else if (refiner instanceof PredicatePair) {
 			TimeCal2.add(1,1);
+			PredicatePair predicatePair = (PredicatePair) refiner;
+			TimeCal3.addPreCal(predicatePair.getP1(), 1);
+			TimeCal3.addPreCal(predicatePair.getP2(), 1);
+			long l1 = System.currentTimeMillis();
 			refinePP((PredicatePair) refiner, iejoin, consumer);
+			TimeCal3.add(predicatePair.getP1(), System.currentTimeMillis() - l1);
+			TimeCal3.add(predicatePair.getP2(), System.currentTimeMillis() - l1);
 		}
 	}
 

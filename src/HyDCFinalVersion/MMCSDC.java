@@ -46,7 +46,7 @@ public class MMCSDC {
     /**
      *  each node represent current a minimal cover set, here, is a valid DC
     */
-    private List<MMCSNode> coverNodes = new ArrayList<>();
+    private int nodesSize = 0;
 
     public DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
 
@@ -57,8 +57,8 @@ public class MMCSDC {
 
     private boolean hasEmptySubset = false;
 
-    public List<MMCSNode> getCoverNodes() {
-        return coverNodes;
+    public int getCoverNodes() {
+        return nodesSize;
     }
 
     /**
@@ -128,7 +128,10 @@ public class MMCSDC {
                 IBitSet tmp = currentNode.element.clone();
                 tmp.set(ne, false);
                 for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
-                    tmp.set(indexProvider.getIndex(p2));
+                    int index = indexProvider.getIndex(p2);
+                    if (index < numberOfPredicates){
+                        tmp.set(indexProvider.getIndex(p2));
+                    }
                 }
 
                 if (treeSearch.containsSubset(tmp))return;
@@ -152,8 +155,10 @@ public class MMCSDC {
             if (currentNode.isValidResult()){
 
                 treeSearch.add(currentNode.element);
-                DenialConstraint dc = currentNode.getDenialConstraint();
-                denialConstraintSet.add(dc);
+
+                denialConstraintSet.add(currentNode.getDenialConstraint());
+
+                nodesSize ++;
 
             }else{
                 // not a valid result means cluster pair not empty, we need get added evidence set
@@ -186,19 +191,57 @@ public class MMCSDC {
 
         /**
          * try every CandidatePredicates to add, and walkDown
+         * mmcs and get dcs cost:20465
+         * mmcs node 47369
+         * 46918
+         * dcs :34489
+         * minimize cost:9321
+         * valid time 5482
+         * transitivity prune time 3846
+         * get child time 937
+         *
+         * mmcs and get dcs cost:17471
+         * mmcs node 53540
+         * 53078
+         * dcs :34489
+         * minimize cost:10326
+         * valid time 6662
+         * transitivity prune time 3030
+         * get child time 972
         */
+//        List<Integer> list = new ArrayList<>();
+//        for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
+//            list.add(next);
+//        }
+//        Collections.sort(list, new Comparator<Integer>() {
+//            @Override
+//            public int compare(Integer o1, Integer o2) {
+//                return indexProvider.getObject(o2).coverSize - indexProvider.getObject(o1).coverSize;
+//            }
+//        });
+//        for (int next : list){
+//
+//            /** get Trivial prune */
+//            IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
+//
+//            MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
+//
+//            if(childNode.isGlobalMinimal()){
+//                walkDown(childNode);
+//
+//                currentNode.uncoverEvidenceSet.add(childNode.addEvidences);
+//                currentNode.addEvidences.add(childNode.addEvidences);
+//                nextCandidatePredicates.set(next);
+//
+//            }
+//
+//        }
         for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
 
             /** get Trivial prune */
-
-
             IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
 
-
-
-
             MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
-
 
             if(childNode.isGlobalMinimal()){
                 walkDown(childNode);
@@ -208,6 +251,7 @@ public class MMCSDC {
                 nextCandidatePredicates.set(next);
 
             }
+
         }
 
 

@@ -14,6 +14,7 @@ public class Predicate implements PartitionRefiner {
 	private final ColumnOperand operand1;
 	private final ColumnOperand operand2;
 	private Collection<Predicate> redundants;
+	public int coverSize = 0;
 
 	public Predicate(Operator op, ColumnOperand<?> operand1, ColumnOperand<?> operand2) {
 		if (op == null)

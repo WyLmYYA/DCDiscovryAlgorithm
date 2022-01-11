@@ -13,6 +13,8 @@ public class TimeCal3 {
 
     public static Map<Predicate, Long> time = new HashMap<>();
 
+    public static Map<Predicate, Long> preCalTime = new HashMap<>();
+
     public static void add(Predicate pre, long l1){
         if (time.containsKey(pre)){
             time.put(pre, time.get(pre) + l1);
@@ -21,7 +23,19 @@ public class TimeCal3 {
         }
     }
 
-    public static long getTime(int index) {
+    public static long getTime(Predicate index) {
         return time.get(index);
+    }
+
+    public static void addPreCal(Predicate pre, long l1){
+        if (preCalTime.containsKey(pre)){
+            preCalTime.put(pre, preCalTime.get(pre) + l1);
+        }else{
+            preCalTime.put(pre, l1);
+        }
+    }
+
+    public static long getPreCalTime(Predicate index) {
+        return preCalTime.get(index);
     }
 }

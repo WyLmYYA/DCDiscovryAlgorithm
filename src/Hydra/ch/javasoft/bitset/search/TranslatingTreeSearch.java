@@ -3,6 +3,8 @@ package Hydra.ch.javasoft.bitset.search;
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.de.hpi.naumann.dc.helpers.ArrayIndexComparator;
 import Hydra.de.hpi.naumann.dc.helpers.BitSetTranslator;
+import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import test.RunHydra;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -79,6 +81,9 @@ public class TranslatingTreeSearch implements ITreeSearch {
 					IBitSet valid = bitset.clone();
 					valid.andNot(invalidDC);
 					for (int i = valid.nextSetBit(0); i >= 0; i = valid.nextSetBit(i + 1)) {
+						if (i >= RunHydra.num){
+							System.out.println("s");
+						}
 						IBitSet add = removed.clone();
 						add.set(i);
 						if (!search.containsSubset(add)) {

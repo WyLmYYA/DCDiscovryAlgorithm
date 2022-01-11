@@ -13,9 +13,7 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import utils.TimeCal2;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 	private Collection<ColumnPair> pairs;
@@ -28,6 +26,7 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 		this.input2s = values;
 	}
 
+	private Set<LinePair> calPair = new HashSet<>();
 	public void addEvidences(ClusterPair clusterPair, IEvidenceSet evidenceSet) {
 
 		PredicateBitSet staticSet = null;
@@ -39,9 +38,6 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 
 		while (iter.hasNext()) {
 			LinePair lPair = iter.next();
-//			if (!MMCSDC.calculatedPair.add(lPair)){
-//				continue;
-//			}
 
 			int i = lPair.getLine1();
 			int j = lPair.getLine2();

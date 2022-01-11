@@ -6,18 +6,20 @@ import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.input.InputIterationException;
 import Hydra.de.hpi.naumann.dc.input.RelationalInput;
 import Hydra.de.hpi.naumann.dc.paritions.Cluster;
+import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import utils.TimeCal;
 import utils.TimeCal2;
+import utils.TimeCal3;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class RunHydra {
 
+	public  static int num;
 	public static void main(String[] args) throws InputIterationException, IOException {
 		// TODO Auto-generated method stub
 		//		String line=args[0];
@@ -27,18 +29,19 @@ public class RunHydra {
 //		String sizeline ="100";
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
-		String line ="dataset//CLAIM.csv";
-		String sizeline ="10000";
+		String line ="dataset//Tax10k.csv";
+		String sizeline ="100";
 
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);
 		File datafile = new File(line);
-//		File index=new File(indexline);
+		File index=new File("src/HyDCFinalVersion/Predicates.txt");
 
 		RelationalInput data = new RelationalInput(datafile);
 		Input input = new Input(data,size);
-		PredicateBuilder predicates = new PredicateBuilder(input, false, 0.3d);
-//		PredicateBuilder predicates = new PredicateBuilder(index,input);
+//		PredicateBuilder predicates = new PredicateBuilder(input, false, 0.3d);
+		PredicateBuilder predicates = new PredicateBuilder(index,input);
+		num = predicates.getPredicates().size();
 		System.out.println("predicate space:"+predicates.getPredicates().size());
 
 		Hydra hydra = new Hydra();
@@ -53,6 +56,17 @@ public class RunHydra {
 		System.out.println("double predicates valid  count " + TimeCal2.getTime(1));
 
 
+		List<Map.Entry<Predicate, Long>> list = new ArrayList<>(TimeCal3.time.entrySet());
+		Collections.sort(list, new Comparator<Map.Entry<Predicate, Long>>() {
+			@Override
+			public int compare(Map.Entry<Predicate, Long> o1, Map.Entry<Predicate, Long> o2) {
+				return o1.getValue().compareTo(o2.getValue());
+			}
+		});
+
+		for (Map.Entry<Predicate, Long> entry : list){
+			System.out.println(entry.getKey() + "  refine time: " + entry.getValue() +"  refine count: " + TimeCal3.getPreCalTime(entry.getKey()));
+		}
 //		dcs.forEach(System.out::println);
 //		String od="";
 //		int count=-1;

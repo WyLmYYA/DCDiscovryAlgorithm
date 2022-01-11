@@ -17,6 +17,8 @@ import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
 import Hydra.de.hpi.naumann.dc.predicates.sets.Closure;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import utils.TimeCal;
 import utils.TimeCal2;
 import utils.TimeCal3;
@@ -97,7 +99,18 @@ public class MMCSNode {
         candidatePredicates = mask.getAndNot(element);
     }
 
+    public static long time = 0;
     public PredicateBitSet getNextEvidence() {
+//        long l1 = System.currentTimeMillis();
+//        for (PredicateBitSet predicates : uncoverEvidenceSet) {
+//            if (predicates.allCover == 0){
+//                predicates.forEach(predicate -> predicates.allCover += predicate.coverSize);
+//            }
+//        }
+//        time += System.currentTimeMillis() - l1;
+//        Comparator<PredicateBitSet> cmp = Comparator.comparing(predicates -> predicates.allCover);
+//
+//        return Collections.max(uncoverEvidenceSet.getSetOfPredicateSets(), cmp);
 
         Comparator<PredicateBitSet> cmp = Comparator.comparing(predicates -> predicates.getBitset().getAnd(candidatePredicates));
 
@@ -116,7 +129,6 @@ public class MMCSNode {
 
         clusterPairs = mmcsNode.clusterPairs;
 
-        // TODO: crit的问题
         crit = new ArrayList<>(mmcsNode.crit.size());
         for (List<PredicateBitSet> predicateBitSets : mmcsNode.crit) {
             crit.add(new ArrayList<>(predicateBitSets));
@@ -187,6 +199,7 @@ public class MMCSNode {
             clusterPair.refinePsPublic(predicate.getInverse(), ieJoin, newResult);
         });
         clusterPairs = newResult;
+        TimeCal3.addPreCal(predicate, 1);
         TimeCal3.add(predicate, System.currentTimeMillis() - l1);
         TimeCal2.add((System.currentTimeMillis() - l1), 0);
     }
@@ -200,12 +213,14 @@ public class MMCSNode {
             clusterPair.refinePPPublic(new PredicatePair(p1.getInverse(), p2.getInverse()), MMCSDC.ieJoin, clusterPair1 -> newResult.add(clusterPair1));
         });
         clusterPairs = newResult;
+        TimeCal3.addPreCal(p1, 1);
+        TimeCal3.addPreCal(p2, 1);
         TimeCal3.add(p1, System.currentTimeMillis() - l1);
         TimeCal3.add(p2, System.currentTimeMillis() - l1);
         TimeCal2.add((System.currentTimeMillis() - l1), 0);
     }
 
-    public void refine(){
+    public void refineAlways(){
         int firstRefined = 0;
         for(int i = 0; i < nodesInPath.size(); ++i){
             if (nodesInPath.get(i).clusterPairs.size() != 0){
@@ -238,6 +253,70 @@ public class MMCSNode {
         }
 
 
+    }
+
+    public void refine(){
+        int firstRefined = 0;
+        List<Predicate> needCombination = new ArrayList<>();
+        for(int i = 0; i < nodesInPath.size(); ++i){
+            if (nodesInPath.get(i).curPred != null && nodesInPath.get(i).curPred.needCombine()){
+                needCombination.add(nodesInPath.get(i).curPred);
+            }
+            if (nodesInPath.get(i).clusterPairs.size() != 0){
+                firstRefined = i;
+                break;
+            }
+        }
+
+        while (firstRefined < nodesInPath.size() - 1){
+            MMCSNode node = nodesInPath.get(firstRefined);
+            MMCSNode curNode = nodesInPath.get(firstRefined + 1);
+            curNode.clusterPairs = new ArrayList<>(node.clusterPairs);
+            Predicate currentPredicate = curNode.curPred;
+            if (currentPredicate.needCombine()){
+                    needCombination.add(currentPredicate);
+            }else {
+                // if this node is not needed combination
+                curNode.refinePS(currentPredicate, MMCSDC.ieJoin);
+            }
+//            if (firstRefined == nodesInPath.size() - 2)
+//                curNode.refineCombinationEnd(needCombination);
+            firstRefined++;
+        }
+
+
+    }
+
+    public static long pairTime = 0;
+    private void refineCombinationEnd(List<Predicate> predicates){
+        long l2 = System.currentTimeMillis();
+        Multiset<PredicatePair> paircountDC = HashMultiset.create();
+        predicates.forEach(p1 -> {
+            if (StrippedPartition.isPairSupported(p1)){
+                predicates.forEach(p2 -> {
+                    if (!p1.equals(p2) && StrippedPartition.isPairSupported(p2)) {
+                        paircountDC.add(new PredicatePair(p1, p2));
+                    }
+                });
+            }
+        });
+        pairTime += System.currentTimeMillis() - l2;
+        for (PredicatePair predicatePair : paircountDC){
+            List<ClusterPair> newResult = new ArrayList<>();
+            Predicate p1 = predicatePair.getP1();
+            Predicate p2 = predicatePair.getP2();
+            long l1 = System.currentTimeMillis();
+            clusterPairs.forEach(clusterPair -> {
+                TimeCal2.add(1,5);
+                clusterPair.refinePPPublic(new PredicatePair(p1.getInverse(), p2.getInverse()), MMCSDC.ieJoin, clusterPair1 -> newResult.add(clusterPair1));
+            });
+            clusterPairs = newResult;
+            TimeCal3.addPreCal(p1, 1);
+            TimeCal3.addPreCal(p2, 1);
+            TimeCal3.add(p1, System.currentTimeMillis() - l1);
+            TimeCal3.add(p2, System.currentTimeMillis() - l1);
+            TimeCal2.add((System.currentTimeMillis() - l1), 0);
+        }
     }
 
     private void cloneContext(IBitSet nextCandidatePredicates, MMCSNode parentNode) {
@@ -318,26 +397,13 @@ public class MMCSNode {
     }
 
 
-    public boolean canBeReplaced(int p1, int p2, Predicate newPre){
-        for (PredicateBitSet predicates : crit.get(p1)) {
-            if (!predicates.getBitset().get(indexProvider.getIndex(newPre))){
-                return false;
-            }
-        }
-        for (PredicateBitSet predicates : crit.get(p2) ) {
-            if (!predicates.getBitset().get(indexProvider.getIndex(newPre))){
-                return false;
-            }
-        }
-        return true;
-    }
-
 
     public DenialConstraint getDenialConstraint() {
         PredicateBitSet inverse = new PredicateBitSet();
         for (int next = element.nextSetBit(0); next >= 0; next = element.nextSetBit(next + 1)) {
             Predicate predicate = indexProvider.getObject(next); //1
             inverse.add(predicate.getInverse());
+
         }
         return new DenialConstraint(inverse);
     }

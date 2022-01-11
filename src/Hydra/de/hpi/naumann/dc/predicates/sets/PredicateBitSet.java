@@ -1,5 +1,6 @@
 package Hydra.de.hpi.naumann.dc.predicates.sets;
 
+import HyDCFinalVersion.RunHyDCFinalVersion;
 import Hydra.ch.javasoft.bitset.BitSetFactory;
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet.LongBitSetFactory;
@@ -11,6 +12,20 @@ import java.util.Iterator;
 public class PredicateBitSet implements Iterable<Predicate> {
 
 	private IBitSet bitset;
+
+	public int allCover = 0;
+
+	private int value = -1;
+
+	public int getValue(){
+		if (value != -1)return value;
+		else {
+			for (int ne = bitset.nextSetBit(0); ne != -1; ne = bitset.nextSetBit(ne + 1)){
+				value += RunHyDCFinalVersion.predicateIntegerMap.get(indexProvider.getObject(ne));
+			}
+		}
+		return value;
+	}
 
 	public PredicateBitSet() {
 		this.bitset = bf.create();

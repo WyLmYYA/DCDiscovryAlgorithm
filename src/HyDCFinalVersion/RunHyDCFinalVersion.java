@@ -30,7 +30,10 @@ public class RunHyDCFinalVersion {
     protected static int sampleRounds = 20;
     protected static double efficiencyThreshold = 0.005d;
 
-    static Map<Predicate, Integer> predicateIntegerMap = new HashMap<>();
+    /**
+     * */
+    public static Map<Predicate, Integer> predicateIntegerMap = new HashMap<>();
+    static Map<Predicate, Integer> predicateIntegerMap2 = new HashMap<>();
     public static void main(String[] args) throws IOException, InputIterationException {
         long l1 = System.currentTimeMillis();
         String file ="dataset//Tax10k.csv";
@@ -43,6 +46,7 @@ public class RunHyDCFinalVersion {
 
         // Get predicates
         PredicateBuilder predicates = new PredicateBuilder(input, false, 0.3d);
+//        PredicateBuilder predicates = new PredicateBuilder(new File("src/HyDCFinalVersion/Predicates.txt"), input);
         // Sampling
         IEvidenceSet sampleEvidenceSet = new SystematicLinearEvidenceSetBuilder(predicates,
                 sampleRounds).buildEvidenceSet(input);
@@ -52,15 +56,16 @@ public class RunHyDCFinalVersion {
         //get the sampling  evidence set
         IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
-        printPredicateToEvidence(predicates, fullSamplingEvidenceSet);
+        printPredicateToEvidence( fullSamplingEvidenceSet);
         // calculate selectivity and sort for predicate
-//        calculateAndSortPredicate(set);
+        calculatePredicate( set);
 
         // HyDC begin
         MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullSamplingEvidenceSet, predicates, input);
 
         System.out.println("mmcs and get dcs cost:" + (System.currentTimeMillis() - l1));
 
+        System.out.println("mmcs node " + mmcsdc.getCoverNodes());
 
         DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
 //        System.out.println(mmcsdc.getCoverNodes().size());
@@ -73,6 +78,7 @@ public class RunHyDCFinalVersion {
 
         System.out.println(denialConstraintSet.size());
         l1 = System.currentTimeMillis();
+        printPredicateToEvidence(denialConstraintSet );
         denialConstraintSet.minimize();
         System.out.println("dcs :" + denialConstraintSet.size());
         System.out.println("minimize cost:" + (System.currentTimeMillis() - l1));
@@ -91,9 +97,15 @@ public class RunHyDCFinalVersion {
                 return o1.getValue().compareTo(o2.getValue());
             }
         });
+
         for (Map.Entry<Predicate, Long> entry : list){
-            System.out.println(entry.getKey() + "  refine time: " + entry.getValue() + "  cover count :" + predicateIntegerMap.get(entry.getKey()));
+            System.out.println(entry.getKey() + "  refine time: " + entry.getValue() +"  refine count: " + TimeCal3.getPreCalTime(entry.getKey()) +  "  dcs count :" + predicateIntegerMap2.get(entry.getKey()) + "  cover count :" + predicateIntegerMap.get(entry.getKey()));
         }
+
+        for (Predicate predicate: predicates.getPredicates()){
+            System.out.println(predicate);
+        }
+        IndexProvider<Predicate> predicateIndexProvider = PredicateBitSet.indexProvider;
         //singel predicate valid count 1119207
         //double predicates valid  count 396280
 
@@ -104,7 +116,15 @@ public class RunHyDCFinalVersion {
         //double predicates valid  count 1492748
     }
 
-    public static void printPredicateToEvidence(PredicateBuilder predicates, IEvidenceSet iEvidenceSet){
+    private static void calculatePredicate(HashEvidenceSet set) {
+        set.forEach(predicates1 -> {
+            predicates1.forEach(predicate -> {
+                predicate.coverSize ++;
+            });
+        });
+    }
+
+    public static void printPredicateToEvidence( IEvidenceSet iEvidenceSet){
 
         iEvidenceSet.forEach(predicates1 -> {
             predicates1.forEach(predicate -> {
@@ -112,6 +132,18 @@ public class RunHyDCFinalVersion {
                     predicateIntegerMap.put(predicate, predicateIntegerMap.get(predicate) + 1);
                 }else{
                     predicateIntegerMap.put(predicate, 1);
+                }
+            });
+        });
+    }
+    public static void printPredicateToEvidence(DenialConstraintSet denialConstraintSet){
+
+        denialConstraintSet.forEach(predicates1 -> {
+            predicates1.getPredicateSet().forEach(predicate -> {
+                if (predicateIntegerMap2.containsKey(predicate)){
+                    predicateIntegerMap2.put(predicate, predicateIntegerMap2.get(predicate) + 1);
+                }else{
+                    predicateIntegerMap2.put(predicate, 1);
                 }
             });
         });
