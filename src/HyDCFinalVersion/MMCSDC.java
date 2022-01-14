@@ -21,6 +21,7 @@ import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import Hydra.de.hpi.naumann.dc.predicates.sets.Closure;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import org.apache.lucene.util.RamUsageEstimator;
 import utils.TimeCal2;
 
 import java.util.*;
@@ -46,7 +47,6 @@ public class MMCSDC {
     /**
      *  each node represent current a minimal cover set, here, is a valid DC
     */
-    private int nodesSize = 0;
 
     public DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
 
@@ -55,11 +55,6 @@ public class MMCSDC {
     */
     static IBitSet candidatePredicates;
 
-    private boolean hasEmptySubset = false;
-
-    public int getCoverNodes() {
-        return nodesSize;
-    }
 
     /**
      * params added for HyDC
@@ -71,12 +66,6 @@ public class MMCSDC {
     public static IEJoin ieJoin;
 
     NTreeSearch treeSearch = new NTreeSearch();
-
-    public static int noAddedCount = 0;
-
-    public static Set<LinePair> calculatedPair = new HashSet<>();
-
-    Map<PredicateBitSet, DenialConstraintSet.MinimalDCCandidate> constraintsClosureMap = new HashMap<>();
 
 
     public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover, PredicateBuilder predicates, Input input){
@@ -103,8 +92,6 @@ public class MMCSDC {
         /**
          *   if there is evidenceSet is empty, return empty DC
         */
-        hasEmptySubset = evidenceToCover.getSetOfPredicateSets().stream().anyMatch(predicates -> predicates.getBitset().isEmpty());
-
         walkDown(new MMCSNode(numberOfPredicates, evidenceToCover, input.getLineCount()));
     }
 
@@ -119,9 +106,10 @@ public class MMCSDC {
 //    }
 
 
-    public  void walkDown(MMCSNode currentNode){
+    public  HashEvidenceSet walkDown(MMCSNode currentNode){
 
         // minimize in mmcs,
+        HashEvidenceSet ret = new HashEvidenceSet();
         if(ENABLE_TRANSITIVE_CHECK){
             long l1 = System.currentTimeMillis();
             for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
@@ -134,7 +122,7 @@ public class MMCSDC {
                     }
                 }
 
-                if (treeSearch.containsSubset(tmp))return;
+                if (treeSearch.containsSubset(tmp))return ret;
             }
             TimeCal2.add((System.currentTimeMillis() - l1), 1);
         }
@@ -158,16 +146,15 @@ public class MMCSDC {
 
                 denialConstraintSet.add(currentNode.getDenialConstraint());
 
-                nodesSize ++;
 
             }else{
                 // not a valid result means cluster pair not empty, we need get added evidence set
                 // after this func, uncover update, and is a complete evidence for currNode, so cluster pair will be null
 
-                currentNode.getAddedEvidenceSet();
+                ret.add(currentNode.getAddedEvidenceSet());
                 walkDown(currentNode);
             }
-            return;
+            return ret;
         }
 
 
@@ -209,33 +196,6 @@ public class MMCSDC {
          * transitivity prune time 3030
          * get child time 972
         */
-//        List<Integer> list = new ArrayList<>();
-//        for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
-//            list.add(next);
-//        }
-//        Collections.sort(list, new Comparator<Integer>() {
-//            @Override
-//            public int compare(Integer o1, Integer o2) {
-//                return indexProvider.getObject(o2).coverSize - indexProvider.getObject(o1).coverSize;
-//            }
-//        });
-//        for (int next : list){
-//
-//            /** get Trivial prune */
-//            IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
-//
-//            MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
-//
-//            if(childNode.isGlobalMinimal()){
-//                walkDown(childNode);
-//
-//                currentNode.uncoverEvidenceSet.add(childNode.addEvidences);
-//                currentNode.addEvidences.add(childNode.addEvidences);
-//                nextCandidatePredicates.set(next);
-//
-//            }
-//
-//        }
         for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
 
             /** get Trivial prune */
@@ -244,17 +204,18 @@ public class MMCSDC {
             MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
 
             if(childNode.isGlobalMinimal()){
-                walkDown(childNode);
+                HashEvidenceSet tmp = walkDown(childNode);
 
-                currentNode.uncoverEvidenceSet.add(childNode.addEvidences);
-                currentNode.addEvidences.add(childNode.addEvidences);
+                currentNode.uncoverEvidenceSet.add(tmp);
+                ret.add(tmp);
                 nextCandidatePredicates.set(next);
+                tmp = null;
 
             }
+            childNode = null;
 
         }
-
-
+        return ret;
 
 
     }

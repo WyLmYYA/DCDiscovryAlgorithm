@@ -277,10 +277,25 @@ public class MMCSNode {
                     needCombination.add(currentPredicate);
             }else {
                 // if this node is not needed combination
+//                long l1 = System.currentTimeMillis();
                 curNode.refinePS(currentPredicate, MMCSDC.ieJoin);
+//                long joinTime = System.currentTimeMillis() - l1;
+//
+//                l1 = System.currentTimeMillis();
+//                if (partitionEvidenceSetBuilder == null){
+//                    partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts());
+//                }
+//                Set<String> calP = new HashSet<>();
+//                for (ClusterPair clusterPair : clusterPairs){
+//                    partitionEvidenceSetBuilder.addEvidences(clusterPair, new HashEvidenceSet(), calP);
+//                }
+//                long calPair = System.currentTimeMillis() - l1;
+//                System.out.println("predicate count :" + element.cardinality() + "  join time :" + joinTime + "cal evi time: " + calPair);
+//
             }
-//            if (firstRefined == nodesInPath.size() - 2)
-//                curNode.refineCombinationEnd(needCombination);
+            if (firstRefined == nodesInPath.size() - 2) {
+                curNode.refineCombinationEnd(needCombination);
+            }
             firstRefined++;
         }
 
@@ -289,18 +304,29 @@ public class MMCSNode {
 
     public static long pairTime = 0;
     private void refineCombinationEnd(List<Predicate> predicates){
-        long l2 = System.currentTimeMillis();
+//        long l2 = System.currentTimeMillis();
         Multiset<PredicatePair> paircountDC = HashMultiset.create();
-        predicates.forEach(p1 -> {
+        boolean[] v = new boolean[predicates.size()];
+        for (int i = 0; i < predicates.size(); ++i) {
+            if (v[i]) continue;
+            Predicate p1 = predicates.get(i);
             if (StrippedPartition.isPairSupported(p1)){
-                predicates.forEach(p2 -> {
+                boolean pair = false;
+                for (int j = i + 1; j < predicates.size(); ++j) {
+                    if (v[j])continue;
+                    Predicate p2 = predicates.get(j);
                     if (!p1.equals(p2) && StrippedPartition.isPairSupported(p2)) {
                         paircountDC.add(new PredicatePair(p1, p2));
                     }
-                });
+                }
             }
-        });
-        pairTime += System.currentTimeMillis() - l2;
+        }
+        for (int i = 0; i < predicates.size(); ++i){
+            if (!v[i]){
+                refinePS(predicates.get(i), MMCSDC.ieJoin);
+            }
+        }
+//        pairTime += System.currentTimeMillis() - l2;
         for (PredicatePair predicatePair : paircountDC){
             List<ClusterPair> newResult = new ArrayList<>();
             Predicate p1 = predicatePair.getP1();
@@ -330,8 +356,6 @@ public class MMCSNode {
         crit = new ArrayList<>(numberOfPredicates);
 
 
-//        neededValidCount = parentNode.neededValidCount;
-
          needRefine = parentNode.needRefine;
 
         parentNode.nodesInPath.forEach(mmcsNode -> nodesInPath.add(mmcsNode));
@@ -352,7 +376,7 @@ public class MMCSNode {
     }
 
 
-    public void getAddedEvidenceSet(){
+    public HashEvidenceSet getAddedEvidenceSet(){
         HashEvidenceSet newEvi = new HashEvidenceSet();
 
 
@@ -361,8 +385,9 @@ public class MMCSNode {
         if (partitionEvidenceSetBuilder == null){
             partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts());
         }
+        Set<String> calP = new HashSet<>();
         for (ClusterPair clusterPair : clusterPairs){
-            partitionEvidenceSetBuilder.addEvidences(clusterPair, newEvi);
+            partitionEvidenceSetBuilder.addEvidences(clusterPair, newEvi, calP);
         }
         TimeCal2.add((System.currentTimeMillis() - l2), 2);
 
@@ -376,9 +401,9 @@ public class MMCSNode {
         }
 
         uncoverEvidenceSet.add(newEvi);
-        addEvidences.add(newEvi);
         clusterPairs = new ArrayList<>();
         needRefine = false;
+        return newEvi;
     }
     public boolean isValidResult(){
         // there may be {12} : {12, 12}, so need to add one step to judge

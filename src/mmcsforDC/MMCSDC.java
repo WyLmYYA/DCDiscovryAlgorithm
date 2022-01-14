@@ -2,9 +2,12 @@ package mmcsforDC;
 
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
+import Hydra.ch.javasoft.bitset.search.NTreeSearch;
+import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
+import utils.TimeCal2;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +48,7 @@ public class MMCSDC {
     public List<MMCSNode> getCoverNodes() {
         return coverNodes;
     }
+    NTreeSearch treeSearch = new NTreeSearch();
 
     public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover){
 
@@ -88,9 +92,26 @@ public class MMCSDC {
 
 
     public  void walkDown(MMCSNode currentNode, List<MMCSNode> currentCovers){
+        if(true){
+            long l1 = System.currentTimeMillis();
+            for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
+                IBitSet tmp = currentNode.element.clone();
+                tmp.set(ne, false);
+                for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
+                    int index = indexProvider.getIndex(p2);
+                    if (index < numberOfPredicates){
+                        tmp.set(indexProvider.getIndex(p2));
+                    }
+                }
+
+                if (treeSearch.containsSubset(tmp))return;
+            }
+            TimeCal2.add((System.currentTimeMillis() - l1), 1);
+        }
         if (currentNode.canCover()){
             //TODO: why we should reset: to dynamic usage
             currentNode.resetCandidatePredicates(candidatePredicates);
+            treeSearch.add(currentNode.element);
             currentCovers.add(currentNode);
             return;
         }

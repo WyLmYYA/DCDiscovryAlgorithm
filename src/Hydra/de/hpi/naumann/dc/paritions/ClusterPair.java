@@ -154,8 +154,13 @@ public class ClusterPair {
 		if (refiner instanceof Predicate) {
 			TimeCal2.add(1,0);
 			TimeCal3.addPreCal((Predicate) refiner, 1);
+
+//			if (((Predicate) refiner).getOperator().equals(Operator.EQUAL)){
+//				System.out.println("s");
+//			}
 			long l1 = System.currentTimeMillis();
 			refinePs((Predicate) refiner, iejoin, consumer);
+//			System.out.println(System.currentTimeMillis() - l1);
 			TimeCal3.add((Predicate)refiner, System.currentTimeMillis() - l1);
 		} else if (refiner instanceof PredicatePair) {
 			TimeCal2.add(1,1);
@@ -195,7 +200,7 @@ public class ClusterPair {
 		}
 	}
 
-	private void refinePs(Predicate p, IEJoin iejoin, Consumer<ClusterPair> consumer) {
+	public void refinePs(Predicate p, IEJoin iejoin, Consumer<ClusterPair> consumer) {
 			ColumnOperand<?> o1 = p.getOperand1();
 			ColumnOperand<?> o2 =  p.getOperand2();
 			if (o1.getIndex() == o2.getIndex()) {

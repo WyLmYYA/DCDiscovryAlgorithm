@@ -65,3 +65,23 @@ public class finalVersionResult {
      */
 
 }
+/**
+ * CLAIM 10000
+ * mmcs and get dcs cost:36925
+ * mmcs node 1470
+ * 1470
+ * dcs :868
+ * minimize cost:623
+ * valid time 29890
+ * transitivity prune time 161
+ * get child time 1620
+ *
+ * second inversion cost: 332
+ * dc before minimize 2333
+ * dc after minimize 868
+ *  second minimize time: 625 ms
+ * dc size:868
+ * Used time: 11499 ms
+ * singel predicate valid count 1100438
+ * double predicates valid  count 373295
+ * */

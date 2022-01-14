@@ -1,6 +1,7 @@
 package Hydra.de.hpi.naumann.dc.evidenceset.build.sampling;
 
 import HyDC.MMCSHyDCNode;
+import HyDCFinalVersion.MMCSDC;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;
@@ -95,9 +96,12 @@ public class SystematicLinearEvidenceSetBuilder extends EvidenceSetBuilder {
 			TIntIterator iter2 = c2.iterator();
 			while(iter2.hasNext()) {
 				int nextC2 = iter2.next();
-				if (nextC1 != nextC2){
+				if ( nextC1 != nextC2){
 					PredicateBitSet set = getPredicateSet(staticSet, pairs, nextC1, nextC2);
 					evidenceSet.add(set);
+
+					PredicateBitSet set1 = getPredicateSet(staticSet, pairs, nextC2, nextC1);
+					evidenceSet.add(set1);
 				}
 
 			}

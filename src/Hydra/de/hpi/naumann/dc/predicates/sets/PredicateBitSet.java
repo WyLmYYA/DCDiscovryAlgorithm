@@ -17,15 +17,15 @@ public class PredicateBitSet implements Iterable<Predicate> {
 
 	private int value = -1;
 
-	public int getValue(){
-		if (value != -1)return value;
-		else {
-			for (int ne = bitset.nextSetBit(0); ne != -1; ne = bitset.nextSetBit(ne + 1)){
-				value += RunHyDCFinalVersion.predicateIntegerMap.get(indexProvider.getObject(ne));
-			}
-		}
-		return value;
-	}
+//	public int getValue(){
+//		if (value != -1)return value;
+//		else {
+//			for (int ne = bitset.nextSetBit(0); ne != -1; ne = bitset.nextSetBit(ne + 1)){
+//				value += RunHyDCFinalVersion.predicateIntegerMap.get(indexProvider.getObject(ne));
+//			}
+//		}
+//		return value;
+//	}
 
 	public PredicateBitSet() {
 		this.bitset = bf.create();

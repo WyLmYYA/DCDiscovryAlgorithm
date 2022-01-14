@@ -24,7 +24,7 @@ public class MMCSNode {
     /**
      *  the set of predicates which can cover the evidence set
     */
-    private IBitSet element;
+    public IBitSet element;
 
     IBitSet candidatePredicates;
 

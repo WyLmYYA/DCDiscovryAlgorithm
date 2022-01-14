@@ -81,9 +81,9 @@ public class TranslatingTreeSearch implements ITreeSearch {
 					IBitSet valid = bitset.clone();
 					valid.andNot(invalidDC);
 					for (int i = valid.nextSetBit(0); i >= 0; i = valid.nextSetBit(i + 1)) {
-						if (i >= RunHydra.num){
-							System.out.println("s");
-						}
+//						if (i >= RunHydra.num){
+//							System.out.println("s");
+//						}
 						IBitSet add = removed.clone();
 						add.set(i);
 						if (!search.containsSubset(add)) {
