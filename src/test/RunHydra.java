@@ -32,7 +32,7 @@ public class RunHydra {
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
 		String line ="dataset//CLAIM.csv";
-		String sizeline ="50000";
+		String sizeline ="100000";
 //		 line ="dataset//Tax10k.csv";
 //		 sizeline ="10000";
 		/**
@@ -69,7 +69,7 @@ public class RunHydra {
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);
 		File datafile = new File(line);
-		File index=new File("dataset/Tax10kPredicates");
+		File index=new File("dataset/claim10kPre");
 
 		RelationalInput data = new RelationalInput(datafile);
 		Input input = new Input(data,size);

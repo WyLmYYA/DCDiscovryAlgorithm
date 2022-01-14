@@ -96,8 +96,8 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 			int j = lPair.getLine2();
 			if (i != j) {
 				int[] row1 = input2s[i];
-//				if (staticSet == null || i != lastI)
-				staticSet = getStatic(pairs, row1);
+				if (staticSet == null || i != lastI)
+					staticSet = getStatic(pairs, row1);
 
 				int[] row2 = input2s[j];
 

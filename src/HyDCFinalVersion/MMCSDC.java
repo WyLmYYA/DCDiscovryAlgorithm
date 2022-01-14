@@ -126,6 +126,47 @@ public class MMCSDC {
             }
             TimeCal2.add((System.currentTimeMillis() - l1), 1);
         }
+//        if (currentNode.element.cardinality() > 8 && currentNode.needRefine){
+//            currentNode.refine();
+//            ret.add(currentNode.getAddedEvidenceSet());
+//            walkDown(currentNode);
+//            return ret;
+//        }
+        //mmcs and get dcs cost:2093
+        //2474
+        //dcs :1877
+        //minimize cost:519
+        //valid time 1189
+        //transitivity prune time 113
+        //get child time 32
+        //cal evidence for pair line count 8307
+        //singel predicate valid count 1003690
+        //double predicates valid  count 13378
+        // 10000
+        //mmcs and get dcs cost:15268
+        //1408
+        //dcs :868
+        //minimize cost:398
+        //valid time 13565
+        //transitivity prune time 78
+        //get child time 40
+        //cal evidence for pair line count 20464
+        //singel predicate valid count 8528659
+        //double predicates valid  count 21692
+
+        //9
+        //mmcs and get dcs cost:15286
+        //1408
+        //dcs :868
+        //minimize cost:342
+        //valid time 13570
+        //transitivity prune time 49
+        //get child time 95
+        //cal evidence for pair line count 83393
+        //singel predicate valid count 8848028
+        //double predicates valid  count 163608
+
+
         if (currentNode.canCover()){
             // we need to valid current partial dc is valid dc or not
 
