@@ -65,6 +65,8 @@ public class MMCSDC {
 
     public static IEJoin ieJoin;
 
+    public static PartitionEvidenceSetBuilder partitionEvidenceSetBuilder;
+
     NTreeSearch treeSearch = new NTreeSearch();
 
 
@@ -98,13 +100,6 @@ public class MMCSDC {
     /**
      *  root is the root of the deep transversal tree, the elements is null, and the uncover is full EvidenceSet
     */
-//    void walkDown(MMCSNode root){
-//
-//        List<MMCSNode> currentCovers = new ArrayList<>();
-//
-//        walkDown(root);
-//    }
-
 
     public  HashEvidenceSet walkDown(MMCSNode currentNode){
 
@@ -126,58 +121,14 @@ public class MMCSDC {
             }
             TimeCal2.add((System.currentTimeMillis() - l1), 1);
         }
-//        if (currentNode.element.cardinality() > 8 && currentNode.needRefine){
-//            currentNode.refine();
-//            ret.add(currentNode.getAddedEvidenceSet());
-//            walkDown(currentNode);
-//            return ret;
-//        }
-        //mmcs and get dcs cost:2093
-        //2474
-        //dcs :1877
-        //minimize cost:519
-        //valid time 1189
-        //transitivity prune time 113
-        //get child time 32
-        //cal evidence for pair line count 8307
-        //singel predicate valid count 1003690
-        //double predicates valid  count 13378
-        // 10000
-        //mmcs and get dcs cost:15268
-        //1408
-        //dcs :868
-        //minimize cost:398
-        //valid time 13565
-        //transitivity prune time 78
-        //get child time 40
-        //cal evidence for pair line count 20464
-        //singel predicate valid count 8528659
-        //double predicates valid  count 21692
-
-        //9
-        //mmcs and get dcs cost:15286
-        //1408
-        //dcs :868
-        //minimize cost:342
-        //valid time 13570
-        //transitivity prune time 49
-        //get child time 95
-        //cal evidence for pair line count 83393
-        //singel predicate valid count 8848028
-        //double predicates valid  count 163608
-
 
         if (currentNode.canCover()){
             // we need to valid current partial dc is valid dc or not
 
             //  check is there any predicate needed combination not be refined, and update cluster pair
 
-            if (currentNode.needRefine) {
+            if (currentNode.clusterPairs != null) {
                 currentNode.refine();
-            }
-
-            if (currentNode.lastNeedCombinationPredicate != null && currentNode.clusterPairs.size() != 0){
-                currentNode.refinePS(currentNode.lastNeedCombinationPredicate, ieJoin);
             }
 
 
@@ -186,7 +137,6 @@ public class MMCSDC {
                 treeSearch.add(currentNode.element);
 
                 denialConstraintSet.add(currentNode.getDenialConstraint());
-
 
             }else{
                 // not a valid result means cluster pair not empty, we need get added evidence set
@@ -253,6 +203,7 @@ public class MMCSDC {
                 tmp = null;
 
             }
+            childNode.clusterPairs = null;
             childNode = null;
 
         }

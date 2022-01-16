@@ -1,6 +1,7 @@
 package Hydra.de.hpi.naumann.dc.evidenceset.build;
 
 import HyDCFinalVersion.MMCSDC;
+import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;
 import Hydra.de.hpi.naumann.dc.input.ColumnPair;
@@ -62,9 +63,6 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 
 				//349766
 
-
-
-
 			}
 
 			lastI = i;
@@ -75,20 +73,14 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 
 	static Set<LinePair> calP = new HashSet<>();
 
-	public void addEvidences(ClusterPair clusterPair, IEvidenceSet evidenceSet) {
-
-		//4950
-
+	static Map<LinePair, PredicateBitSet> mapEvidence = new HashMap<>();
+	public void addEvidencesForHyDC(ClusterPair clusterPair, IEvidenceSet evidenceSet) {
 		PredicateBitSet staticSet = null;
 		int lastI = -1;
 		// transform clusterPair  to line pair
-
 		Iterator<LinePair> iter = clusterPair.getLinePairIterator();
-
-
 		while (iter.hasNext()) {
 			LinePair lPair = iter.next();
-
 //			if (!calP.add(lPair)){
 //				continue;
 //			}
@@ -101,12 +93,61 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 
 				int[] row2 = input2s[j];
 
+				if (mapEvidence.containsKey(lPair)){
+					evidenceSet.add(mapEvidence.get(lPair));
+				}else{
 					PredicateBitSet set = getPredicateSet(staticSet, pairs, row1, row2);
 					evidenceSet.add(set);
+					mapEvidence.put(lPair, set);
 					TimeCal2.add(1, 3);
+				}
 
+				if (mapEvidence.containsKey(lPair.getInverse())){
+					evidenceSet.add(mapEvidence.get(lPair.getInverse()));
+				}else{
 					PredicateBitSet set1 = getPredicateSet(staticSet, pairs, row2, row1);
 					evidenceSet.add(set1);
+					mapEvidence.put(lPair, set1);
+				}
+//					PredicateBitSet set = getPredicateSet(staticSet, pairs, row1, row2);
+//					evidenceSet.add(set);
+//					TimeCal2.add(1, 3);
+//
+//					PredicateBitSet set1 = getPredicateSet(staticSet, pairs, row2, row1);
+//					evidenceSet.add(set1);
+				//349766
+			}
+
+			lastI = i;
+
+		}
+
+	}
+	public void addEvidences(ClusterPair clusterPair, IEvidenceSet evidenceSet) {
+		PredicateBitSet staticSet = null;
+		int lastI = -1;
+		// transform clusterPair  to line pair
+		Iterator<LinePair> iter = clusterPair.getLinePairIterator();
+		while (iter.hasNext()) {
+			LinePair lPair = iter.next();
+//			if (!calP.add(lPair)){
+//				continue;
+//			}
+			int i = lPair.getLine1();
+			int j = lPair.getLine2();
+			if (i != j) {
+				int[] row1 = input2s[i];
+				if (staticSet == null || i != lastI)
+					staticSet = getStatic(pairs, row1);
+
+				int[] row2 = input2s[j];
+
+				PredicateBitSet set = getPredicateSet(staticSet, pairs, row1, row2);
+				evidenceSet.add(set);
+				TimeCal2.add(1, 3);
+
+				PredicateBitSet set1 = getPredicateSet(staticSet, pairs, row2, row1);
+				evidenceSet.add(set1);
 				//349766
 			}
 

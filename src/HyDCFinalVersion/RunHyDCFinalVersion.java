@@ -33,16 +33,16 @@ public class RunHyDCFinalVersion {
 
     /**
      * */
-    public static Map<Predicate, Integer> predicateIntegerMap = new HashMap<>();
-    static Map<Predicate, Integer> predicateIntegerMap2 = new HashMap<>();
+//    public static Map<Predicate, Integer> predicateIntegerMap = new HashMap<>();
+//    static Map<Predicate, Integer> predicateIntegerMap2 = new HashMap<>();
 
     public static IEvidenceSet samplingEvidence;
     public static void main(String[] args) throws IOException, InputIterationException {
         long l1 = System.currentTimeMillis();
         String file ="dataset//CLAIM.csv";
-        int size = 100000;
-//         file ="dataset//Tax10k.csv";
-//         size = 10000;
+        int size = 10000;
+         file ="dataset//Tax10k.csv";
+         size = 10000;
         //CLAIM
         // 10000
         // mmcs and get dcs cost:15468
@@ -77,9 +77,9 @@ public class RunHyDCFinalVersion {
         //get the sampling  evidence set
         IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
-        printPredicateToEvidence( fullSamplingEvidenceSet);
+//        printPredicateToEvidence( fullSamplingEvidenceSet);
         // calculate selectivity and sort for predicate
-        calculatePredicate( set);
+//        calculatePredicate( set);
 
         // HyDC begin
         MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullSamplingEvidenceSet, predicates, input);
@@ -112,21 +112,21 @@ public class RunHyDCFinalVersion {
 
 //        System.out.println(dcsApprox.size() + " == ? " + MMCSDC.cal);
 
-        List<Map.Entry<Predicate, Long>> list = new ArrayList<>(TimeCal3.time.entrySet());
-        Collections.sort(list, new Comparator<Map.Entry<Predicate, Long>>() {
-            @Override
-            public int compare(Map.Entry<Predicate, Long> o1, Map.Entry<Predicate, Long> o2) {
-                return o1.getValue().compareTo(o2.getValue());
-            }
-        });
-
-        for (Map.Entry<Predicate, Long> entry : list){
-            System.out.println(entry.getKey() + "  refine time: " + entry.getValue() +"  refine count: " + TimeCal3.getPreCalTime(entry.getKey()) +  "  dcs count :" + predicateIntegerMap2.get(entry.getKey()) + "  cover count :" + predicateIntegerMap.get(entry.getKey()));
-        }
-
-        for (Predicate predicate: predicates.getPredicates()){
-            System.out.println(predicate);
-        }
+//        List<Map.Entry<Predicate, Long>> list = new ArrayList<>(TimeCal3.time.entrySet());
+//        Collections.sort(list, new Comparator<Map.Entry<Predicate, Long>>() {
+//            @Override
+//            public int compare(Map.Entry<Predicate, Long> o1, Map.Entry<Predicate, Long> o2) {
+//                return o1.getValue().compareTo(o2.getValue());
+//            }
+//        });
+//
+//        for (Map.Entry<Predicate, Long> entry : list){
+//            System.out.println(entry.getKey() + "  refine time: " + entry.getValue() +"  refine count: " + TimeCal3.getPreCalTime(entry.getKey()) +  "  dcs count :" + predicateIntegerMap2.get(entry.getKey()) + "  cover count :" + predicateIntegerMap.get(entry.getKey()));
+//        }
+//
+//        for (Predicate predicate: predicates.getPredicates()){
+//            System.out.println(predicate);
+//        }
 //        IndexProvider<Predicate> predicateIndexProvider = PredicateBitSet.indexProvider;
         //singel predicate valid count 1119207
         //double predicates valid  count 396280
@@ -146,30 +146,30 @@ public class RunHyDCFinalVersion {
         });
     }
 
-    public static void printPredicateToEvidence( IEvidenceSet iEvidenceSet){
-
-        iEvidenceSet.forEach(predicates1 -> {
-            predicates1.forEach(predicate -> {
-                if (predicateIntegerMap.containsKey(predicate)){
-                    predicateIntegerMap.put(predicate, predicateIntegerMap.get(predicate) + 1);
-                }else{
-                    predicateIntegerMap.put(predicate, 1);
-                }
-            });
-        });
-    }
-    public static void printPredicateToEvidence(DenialConstraintSet denialConstraintSet){
-
-        denialConstraintSet.forEach(predicates1 -> {
-            predicates1.getPredicateSet().forEach(predicate -> {
-                if (predicateIntegerMap2.containsKey(predicate)){
-                    predicateIntegerMap2.put(predicate, predicateIntegerMap2.get(predicate) + 1);
-                }else{
-                    predicateIntegerMap2.put(predicate, 1);
-                }
-            });
-        });
-    }
+//    public static void printPredicateToEvidence( IEvidenceSet iEvidenceSet){
+//
+//        iEvidenceSet.forEach(predicates1 -> {
+//            predicates1.forEach(predicate -> {
+//                if (predicateIntegerMap.containsKey(predicate)){
+//                    predicateIntegerMap.put(predicate, predicateIntegerMap.get(predicate) + 1);
+//                }else{
+//                    predicateIntegerMap.put(predicate, 1);
+//                }
+//            });
+//        });
+//    }
+//    public static void printPredicateToEvidence(DenialConstraintSet denialConstraintSet){
+//
+//        denialConstraintSet.forEach(predicates1 -> {
+//            predicates1.getPredicateSet().forEach(predicate -> {
+//                if (predicateIntegerMap2.containsKey(predicate)){
+//                    predicateIntegerMap2.put(predicate, predicateIntegerMap2.get(predicate) + 1);
+//                }else{
+//                    predicateIntegerMap2.put(predicate, 1);
+//                }
+//            });
+//        });
+//    }
 
 
 }

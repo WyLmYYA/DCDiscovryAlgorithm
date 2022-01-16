@@ -1,0 +1,132 @@
+优化目标以Tax10k的10000条数据
+1.15优化前：
+HyDC其实就是用valid的时间来代替cal evidence时间
+所以尽可能减少valid时间，优化valid策略才有可能超过hydra
+1.优化内存：valid时间过多，很大可能是垃圾回收的时间过长，所以第一次优化先解决内存的问题，
+    i. 代码的优化
+    ii. 怎么优化clusterPair（每个节点都需要存的，为了共享valid结果，当数据集的行数到十万二十万的时候，内存相当影响性能，）是最重要的
+2.优化valid策略：
+    2.1 mmcs是挑evidence再选preidcate，按照fastdc的方法，我们可以将所有predicate按覆盖到的uncover动态排序
+    2.2 然后选取覆盖数最多的predicate进行覆盖，
+    2.3 设置阈值，判断剩下的predicate最大的覆盖数
+        i.如果最大覆盖数不超过φ，那么接下来的覆盖可能会分裂很多子集，那么接下来的验证工作会很很多
+        所以直接验证当前节点，得到违反元组对，然后直接进行接下来的mmcs
+        ii. 如果大于φ，cover了的话，就验证，没cover就继续覆盖
+        iii. 谓词的选择性关系到中间输出的cp大小，如果一个谓词覆盖数很多，那么产生的clusterpair就会小
+        也就是覆盖性越大的谓词，违反的元组对就越少
+    2.4 valid和cal evidence的转换时间节点
+        i. 如果接下来的子节点深度很长或者宽度很宽，那么需要验证的次数就很多，这样不如直接计算evidence
+        如果接下来的子节点不多，
+        ii. hydra的计算evidence通过cluster pair容易产生重复计算，怎么省掉重复计算次数很关键
+3. 用pipeline进行某一条深度遍历的节点验证工作
+
+
+在笔记本上内存小，HyDC内存需求大，要进行垃圾回收的时间就很长，劣势愈发明显。
+
+mmcs and get dcs cost:1328430
+136069
+dcs :85360
+minimize cost:39318
+valid time 1246008
+transitivity prune time 23501
+get child time 296
+cal evidence for pair line count 63526
+singel predicate valid count 478587933
+double predicates valid  count 103253
+
+内存优化
+1.>和<节点的clusterPair直接指向父节点，这样节省内存，删除不必要的属性，
+mmcs and get dcs cost:685304
+136079
+dcs :85360
+minimize cost:37391
+valid time 611289
+transitivity prune time 21267
+get child time 165
+cal evidence for pair line count 55531
+singel predicate valid count 481776809
+double predicates valid  count 96715
+
+t0.FName(String) == t1.FName(String)   refine time: 99  refine count: 9  dcs count :null  cover count :725
+t0.LName(String) == t1.LName(String)   refine time: 145  refine count: 3  dcs count :null  cover count :1083
+t0.Salary(Integer) <= t1.Salary(Integer)   refine time: 179  refine count: 33288  dcs count :null  cover count :5087
+t0.Salary(Integer) < t1.Salary(Integer)   refine time: 228  refine count: 80822  dcs count :null  cover count :3354
+t0.SingleExemp(Integer) < t1.ChildExemp(Integer)   refine time: 413  refine count: 51882  dcs count :null  cover count :2756
+t0.MarriedExemp(Integer) <= t1.ChildExemp(Integer)   refine time: 489  refine count: 12371  dcs count :null  cover count :5838
+t0.SingleExemp(Integer) <= t1.SingleExemp(Integer)   refine time: 543  refine count: 11946  dcs count :null  cover count :5799
+t0.SingleExemp(Integer) <= t1.ChildExemp(Integer)   refine time: 579  refine count: 14095  dcs count :null  cover count :6037
+t0.City(String) == t1.City(String)   refine time: 594  refine count: 1712  dcs count :null  cover count :2012
+t0.Salary(Integer) >= t1.Salary(Integer)   refine time: 638  refine count: 25427  dcs count :null  cover count :5107
+t0.MarriedExemp(Integer) <= t1.MarriedExemp(Integer)   refine time: 675  refine count: 4931  dcs count :null  cover count :6737
+t0.MarriedExemp(Integer) >= t1.MarriedExemp(Integer)   refine time: 785  refine count: 19905  dcs count :null  cover count :5426
+t0.SingleExemp(Integer) <= t1.MarriedExemp(Integer)   refine time: 793  refine count: 10178  dcs count :null  cover count :6438
+t0.MarriedExemp(Integer) < t1.ChildExemp(Integer)   refine time: 895  refine count: 49886  dcs count :null  cover count :3027
+t0.MarriedExemp(Integer) > t1.MarriedExemp(Integer)   refine time: 948  refine count: 58116  dcs count :null  cover count :1724
+t0.Zip(String) == t1.Zip(String)   refine time: 1067  refine count: 1263  dcs count :null  cover count :590
+t0.ChildExemp(Integer) > t1.ChildExemp(Integer)   refine time: 1094  refine count: 64303  dcs count :null  cover count :2171
+t0.SingleExemp(Integer) < t1.SingleExemp(Integer)   refine time: 1421  refine count: 63130  dcs count :null  cover count :1440
+t0.SingleExemp(Integer) >= t1.MarriedExemp(Integer)   refine time: 1447  refine count: 19729  dcs count :null  cover count :4707
+t0.Salary(Integer) == t1.Salary(Integer)   refine time: 1449  refine count: 2099  dcs count :null  cover count :1733
+t0.Phone(String) <> t1.Phone(String)   refine time: 1450  refine count: 766  dcs count :null  cover count :8456
+t0.ChildExemp(Integer) < t1.ChildExemp(Integer)   refine time: 1475  refine count: 52132  dcs count :null  cover count :2671
+t0.ChildExemp(Integer) >= t1.ChildExemp(Integer)   refine time: 1543  refine count: 23197  dcs count :null  cover count :5790
+t0.ChildExemp(Integer) <= t1.ChildExemp(Integer)   refine time: 1661  refine count: 48524  dcs count :null  cover count :6290
+t0.Rate(Double) < t1.Rate(Double)   refine time: 1667  refine count: 71559  dcs count :null  cover count :3135
+t0.SingleExemp(Integer) >= t1.SingleExemp(Integer)   refine time: 1678  refine count: 12225  dcs count :null  cover count :7021
+t0.Salary(Integer) > t1.Salary(Integer)   refine time: 1712  refine count: 81126  dcs count :null  cover count :3374
+t0.Rate(Double) <= t1.Rate(Double)   refine time: 1916  refine count: 70686  dcs count :null  cover count :5349
+t0.MarriedExemp(Integer) > t1.ChildExemp(Integer)   refine time: 2639  refine count: 73975  dcs count :null  cover count :2623
+t0.SingleExemp(Integer) > t1.ChildExemp(Integer)   refine time: 2826  refine count: 49145  dcs count :null  cover count :2424
+t0.SingleExemp(Integer) > t1.MarriedExemp(Integer)   refine time: 2895  refine count: 50639  dcs count :null  cover count :2023
+t0.Rate(Double) >= t1.Rate(Double)   refine time: 2994  refine count: 28282  dcs count :null  cover count :5326
+t0.SingleExemp(Integer) < t1.MarriedExemp(Integer)   refine time: 3018  refine count: 70682  dcs count :null  cover count :3754
+t0.AreaCode(String) == t1.AreaCode(String)   refine time: 3141  refine count: 10088  dcs count :null  cover count :1226
+t0.SingleExemp(Integer) > t1.SingleExemp(Integer)   refine time: 3196  refine count: 49858  dcs count :null  cover count :2662
+t0.MarriedExemp(Integer) < t1.MarriedExemp(Integer)   refine time: 3223  refine count: 59122  dcs count :null  cover count :3035
+t0.MarriedExemp(Integer) >= t1.ChildExemp(Integer)   refine time: 3518  refine count: 34308  dcs count :null  cover count :5434
+t0.Rate(Double) > t1.Rate(Double)   refine time: 3745  refine count: 63939  dcs count :null  cover count :3112
+t0.SingleExemp(Integer) <> t1.MarriedExemp(Integer)   refine time: 4408  refine count: 11103  dcs count :null  cover count :5777
+t0.Rate(Double) == t1.Rate(Double)   refine time: 4455  refine count: 10632  dcs count :null  cover count :2214
+t0.SingleExemp(Integer) >= t1.ChildExemp(Integer)   refine time: 4861  refine count: 34389  dcs count :null  cover count :5705
+t0.MarriedExemp(Integer) <> t1.ChildExemp(Integer)   refine time: 5851  refine count: 9244  dcs count :null  cover count :5650
+t0.MarriedExemp(Integer) <> t1.MarriedExemp(Integer)   refine time: 7829  refine count: 12676  dcs count :null  cover count :4759
+t0.ChildExemp(Integer) == t1.ChildExemp(Integer)   refine time: 8934  refine count: 21252  dcs count :null  cover count :3619
+t0.SingleExemp(Integer) <> t1.ChildExemp(Integer)   refine time: 9347  refine count: 13507  dcs count :null  cover count :5180
+t0.SingleExemp(Integer) <> t1.SingleExemp(Integer)   refine time: 10310  refine count: 11908  dcs count :null  cover count :4102
+t0.MaritalStatus(String) <> t1.MaritalStatus(String)   refine time: 10334  refine count: 16303  dcs count :null  cover count :4200
+t0.SingleExemp(Integer) == t1.MarriedExemp(Integer)   refine time: 10556  refine count: 16451  dcs count :null  cover count :2684
+t0.ChildExemp(Integer) <> t1.ChildExemp(Integer)   refine time: 11865  refine count: 16240  dcs count :null  cover count :4842
+t0.SingleExemp(Integer) == t1.SingleExemp(Integer)   refine time: 12220  refine count: 14136  dcs count :null  cover count :4359
+t0.HasChild(String) == t1.HasChild(String)   refine time: 13643  refine count: 31492  dcs count :null  cover count :4419
+t0.SingleExemp(Integer) == t1.ChildExemp(Integer)   refine time: 13663  refine count: 26010  dcs count :null  cover count :3281
+t0.HasChild(String) <> t1.HasChild(String)   refine time: 14720  refine count: 29935  dcs count :null  cover count :4042
+t0.MarriedExemp(Integer) == t1.MarriedExemp(Integer)   refine time: 14799  refine count: 14833  dcs count :null  cover count :3702
+t0.AreaCode(String) <> t1.AreaCode(String)   refine time: 15082  refine count: 14024  dcs count :null  cover count :7235
+t0.Rate(Double) <> t1.Rate(Double)   refine time: 16078  refine count: 26523  dcs count :null  cover count :6247
+t0.State(String) == t1.State(String)   refine time: 17382  refine count: 20543  dcs count :null  cover count :2541
+t0.Zip(String) <> t1.Zip(String)   refine time: 19605  refine count: 9770  dcs count :null  cover count :7871
+t0.Gender(String) == t1.Gender(String)   refine time: 19665  refine count: 31439  dcs count :null  cover count :4601
+t0.Salary(Integer) <> t1.Salary(Integer)   refine time: 19895  refine count: 28259  dcs count :null  cover count :6728
+t0.Gender(String) <> t1.Gender(String)   refine time: 20026  refine count: 27454  dcs count :null  cover count :3860
+t0.Gender(String) == t1.MaritalStatus(String)   refine time: 20194  refine count: 33061  dcs count :null  cover count :2874
+t0.Gender(String) <> t1.MaritalStatus(String)   refine time: 21500  refine count: 24611  dcs count :null  cover count :5587
+t0.State(String) <> t1.State(String)   refine time: 22012  refine count: 20864  dcs count :null  cover count :5920
+t0.MaritalStatus(String) == t1.MaritalStatus(String)   refine time: 32240  refine count: 32112  dcs count :null  cover count :4261
+t0.MarriedExemp(Integer) == t1.ChildExemp(Integer)   refine time: 34198  refine count: 21251  dcs count :null  cover count :2811
+t0.FName(String) <> t1.FName(String)   refine time: 58271  refine count: 25089  dcs count :null  cover count :7736
+t0.LName(String) <> t1.LName(String)   refine time: 105283  refine count: 50608  dcs count :null  cover count :7378
+t0.City(String) <> t1.City(String)   refine time: 607839  refine count: 45711  dcs count :null  cover count :6449
+
+
+predicate space:70
+first Inversion cost:65370
+first minimize cost: 89346
+complete from sampling evidence cost :262048
+Evidence Set size: 11043
+second inversion cost: 62592
+ second minimize time: 70425 ms
+ dc size:85360
+ Used time: 553531 ms
+ singel predicate valid count 40437005
+ double predicates valid  count 45594755
+ cal evi count : 2005902

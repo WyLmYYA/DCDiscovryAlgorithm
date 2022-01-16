@@ -32,7 +32,7 @@ public class RunHydra {
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
 		String line ="dataset//CLAIM.csv";
-		String sizeline ="100000";
+		String sizeline ="10000";
 //		 line ="dataset//Tax10k.csv";
 //		 sizeline ="10000";
 		/**

@@ -48,22 +48,17 @@ public class MMCSNode {
     /**
      * params added for hyDC
      */
-    public boolean isCombination = false, isFirstNeededCombination = false;
 
-    public Predicate lastNeedCombinationPredicate;
 
 
     public List<ClusterPair> clusterPairs = new ArrayList<>();
 
-    public HashEvidenceSet addEvidences = new HashEvidenceSet();
-
-    public List<MMCSNode> nodesInPath = new ArrayList<>();
+//    public List<MMCSNode> nodesInPath = new ArrayList<>();
+    private MMCSNode parentNode;
 
     public Predicate curPred;
 
-    public boolean needRefine = true;
 
-    public static PartitionEvidenceSetBuilder partitionEvidenceSetBuilder;
 
     public MMCSNode(int numberOfPredicates, IEvidenceSet evidenceToCover, int lineCount) {
 
@@ -81,7 +76,7 @@ public class MMCSNode {
         for (int i = 0; i < numberOfPredicates; ++i){
             crit.add(new ArrayList<>());
         }
-        nodesInPath.add(this);
+//        nodesInPath.add(this);
 
     }
 
@@ -99,19 +94,7 @@ public class MMCSNode {
         candidatePredicates = mask.getAndNot(element);
     }
 
-    public static long time = 0;
     public PredicateBitSet getNextEvidence() {
-//        long l1 = System.currentTimeMillis();
-//        for (PredicateBitSet predicates : uncoverEvidenceSet) {
-//            if (predicates.allCover == 0){
-//                predicates.forEach(predicate -> predicates.allCover += predicate.coverSize);
-//            }
-//        }
-//        time += System.currentTimeMillis() - l1;
-//        Comparator<PredicateBitSet> cmp = Comparator.comparing(predicates -> predicates.allCover);
-//
-//        return Collections.max(uncoverEvidenceSet.getSetOfPredicateSets(), cmp);
-
         Comparator<PredicateBitSet> cmp = Comparator.comparing(predicates -> predicates.getBitset().getAnd(candidatePredicates));
 
         return Collections.min(uncoverEvidenceSet.getSetOfPredicateSets(), cmp);
@@ -184,7 +167,7 @@ public class MMCSNode {
 
         curPred = predicate;
 
-        nodesInPath.add(this);
+//        nodesInPath.add(this);
 
 
 
@@ -220,45 +203,51 @@ public class MMCSNode {
         TimeCal2.add((System.currentTimeMillis() - l1), 0);
     }
 
-    public void refineAlways(){
-        int firstRefined = 0;
-        for(int i = 0; i < nodesInPath.size(); ++i){
-            if (nodesInPath.get(i).clusterPairs.size() != 0){
-                firstRefined = i;
-                break;
-            }
-        }
-        while (firstRefined < nodesInPath.size() - 1){
-            MMCSNode node = nodesInPath.get(firstRefined);
-            MMCSNode curNode = nodesInPath.get(firstRefined + 1);
-            curNode.clusterPairs = new ArrayList<>(node.clusterPairs);
-            Predicate currentPredicate = curNode.curPred;
-            if (currentPredicate.needCombine()){
-                // 1. if this one is not first predicate need combination, use IEJoin update cluster pair
-                if (node.lastNeedCombinationPredicate != null){
-                    curNode.refinePP(currentPredicate, node.lastNeedCombinationPredicate);
-                }else {
-                    // 2. if this node is the first predicate need combination, get cluster pair from parent, wait for next refine
-                    curNode.lastNeedCombinationPredicate = currentPredicate;
-                }
-            }else {
-                // if this node is not needed combination
-                curNode.refinePS(currentPredicate, MMCSDC.ieJoin);
-                // 3. if parent or parent before has node wait for refining
-                if (node.lastNeedCombinationPredicate != null){
-                    curNode.lastNeedCombinationPredicate = node.lastNeedCombinationPredicate;
-                }
-            }
-            firstRefined++;
-        }
-
-
-    }
+//    public void refineAlways(){
+//        int firstRefined = 0;
+//        for(int i = 0; i < nodesInPath.size(); ++i){
+//            if (nodesInPath.get(i).clusterPairs.size() != 0){
+//                firstRefined = i;
+//                break;
+//            }
+//        }
+//        while (firstRefined < nodesInPath.size() - 1){
+//            MMCSNode node = nodesInPath.get(firstRefined);
+//            MMCSNode curNode = nodesInPath.get(firstRefined + 1);
+//            curNode.clusterPairs = new ArrayList<>(node.clusterPairs);
+//            Predicate currentPredicate = curNode.curPred;
+//            if (currentPredicate.needCombine()){
+//                // 1. if this one is not first predicate need combination, use IEJoin update cluster pair
+//                if (node.lastNeedCombinationPredicate != null){
+//                    curNode.refinePP(currentPredicate, node.lastNeedCombinationPredicate);
+//                }else {
+//                    // 2. if this node is the first predicate need combination, get cluster pair from parent, wait for next refine
+//                    curNode.lastNeedCombinationPredicate = currentPredicate;
+//                }
+//            }else {
+//                // if this node is not needed combination
+//                curNode.refinePS(currentPredicate, MMCSDC.ieJoin);
+//                // 3. if parent or parent before has node wait for refining
+//                if (node.lastNeedCombinationPredicate != null){
+//                    curNode.lastNeedCombinationPredicate = node.lastNeedCombinationPredicate;
+//                }
+//            }
+//            firstRefined++;
+//        }
+//
+//
+//    }
 
     public void refine(){
         int firstRefined = 0;
         List<Predicate> needCombination = new ArrayList<>();
-        for(int i = 0; i < nodesInPath.size(); ++i){
+        List<MMCSNode> nodesInPath = new ArrayList<>();
+        MMCSNode tmp = this;
+        while (tmp != null){
+            nodesInPath.add(tmp);
+            tmp = tmp.parentNode;
+        }
+        for(int i = nodesInPath.size() - 1; i >= 0; --i){
             if (nodesInPath.get(i).curPred != null && nodesInPath.get(i).curPred.needCombine()){
                 needCombination.add(nodesInPath.get(i).curPred);
             }
@@ -268,16 +257,18 @@ public class MMCSNode {
             }
         }
 
-        while (firstRefined < nodesInPath.size() - 1){
+        while (firstRefined > 0){
             MMCSNode node = nodesInPath.get(firstRefined);
-            MMCSNode curNode = nodesInPath.get(firstRefined + 1);
-            curNode.clusterPairs = new ArrayList<>(node.clusterPairs);
+            MMCSNode curNode = nodesInPath.get(firstRefined - 1);
+
             Predicate currentPredicate = curNode.curPred;
             if (currentPredicate.needCombine()){
-                    needCombination.add(currentPredicate);
+                curNode.clusterPairs = node.clusterPairs;
+                needCombination.add(currentPredicate);
             }else {
                 // if this node is not needed combination
 //                long l1 = System.currentTimeMillis();
+                curNode.clusterPairs = new ArrayList<>(node.clusterPairs);
                 curNode.refinePS(currentPredicate, MMCSDC.ieJoin);
 //                long joinTime = System.currentTimeMillis() - l1;
 //
@@ -293,10 +284,10 @@ public class MMCSNode {
 //                System.out.println("predicate count :" + element.cardinality() + "  join time :" + joinTime + "cal evi time: " + calPair);
 //
             }
-            if (firstRefined == nodesInPath.size() - 2) {
+            if (firstRefined == 1) {
                 curNode.refineCombinationEnd(needCombination);
             }
-            firstRefined++;
+            firstRefined--;
         }
 
 
@@ -350,16 +341,10 @@ public class MMCSNode {
 
         candidatePredicates = nextCandidatePredicates.clone();
 
-//        clusterPairs = new ArrayList<>(parentNode.clusterPairs);
-
-
         crit = new ArrayList<>(numberOfPredicates);
 
-
-         needRefine = parentNode.needRefine;
-
-        parentNode.nodesInPath.forEach(mmcsNode -> nodesInPath.add(mmcsNode));
-
+//        parentNode.nodesInPath.forEach(mmcsNode -> nodesInPath.add(mmcsNode));
+        this.parentNode = parentNode;
         for (int i = 0; i < numberOfPredicates; ++i){
             crit.add(new ArrayList<>(parentNode.crit.get(i)));
         }
@@ -382,12 +367,12 @@ public class MMCSNode {
 
         long l2 = System.currentTimeMillis();
 
-        if (partitionEvidenceSetBuilder == null){
-            partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts());
+        if (MMCSDC.partitionEvidenceSetBuilder == null){
+            MMCSDC.partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts());
         }
-        Set<String> calP = new HashSet<>();
+//        Set<String> calP = new HashSet<>();
         for (ClusterPair clusterPair : clusterPairs){
-            partitionEvidenceSetBuilder.addEvidences(clusterPair, newEvi, calP);
+            MMCSDC.partitionEvidenceSetBuilder.addEvidencesForHyDC(clusterPair, newEvi);
         }
         TimeCal2.add((System.currentTimeMillis() - l2), 2);
 
@@ -401,19 +386,22 @@ public class MMCSNode {
         }
 
         uncoverEvidenceSet.add(newEvi);
-        clusterPairs = new ArrayList<>();
-        needRefine = false;
+        clusterPairs = null;
         return newEvi;
     }
     public boolean isValidResult(){
         // there may be {12} : {12, 12}, so need to add one step to judge
+        if (clusterPairs == null)return true;
         for (ClusterPair clusterPair : clusterPairs){
-            Iterator<LinePair> iter = clusterPair.getLinePairIterator();
-            while (iter.hasNext()) {
-                LinePair lPair = iter.next();
-                int i = lPair.getLine1();
-                int j = lPair.getLine2();
-                if (i != j) return false;
+//            Iterator<LinePair> iter = clusterPair.getLinePairIterator();
+//            while (iter.hasNext()) {
+//                LinePair lPair = iter.next();
+//                int i = lPair.getLine1();
+//                int j = lPair.getLine2();
+//                if (i != j) return false;
+//            }
+            if(clusterPair.containsLinePair()){
+                return false;
             }
         }
         return true;

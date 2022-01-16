@@ -110,6 +110,7 @@ public class ResultCompletion {
 					//
 					long l1 = System.currentTimeMillis();
 					builder.addEvidences(clusterPair, resultEv);
+//					System.out.println("predicates size : " + indexProvider.size());
 					TimeCal.add((System.currentTimeMillis() - l1) , 3);
 					// point.collect();
 				} else {
