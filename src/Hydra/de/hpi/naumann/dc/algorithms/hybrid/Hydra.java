@@ -21,7 +21,7 @@ import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvi
 public class Hydra {
 
 	private IEvidenceSet fullEvidenceSet;
-	protected int sampleRounds = 20;
+	protected int sampleRounds = 5;
 	//sampling efficiency : growth/total
 	protected double efficiencyThreshold = 0.005d;
 

@@ -191,7 +191,7 @@ public class ClusterPair {
 
 
 		if (getLinePairCount() > 100) {
-			iejoin.calc(this, predicate.getP1(), predicate.getP2(), consumer);
+			iejoin.calcForBIT(this, predicate.getP1(), predicate.getP2(), consumer);
 		} else {
 			List<Predicate> pList = new ArrayList<Predicate>();
 			pList.add(predicate.getP1());

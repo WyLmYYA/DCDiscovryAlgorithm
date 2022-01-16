@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RunHyDCFinalVersion {
-    protected static int sampleRounds = 20;
+    protected static int sampleRounds = 5;
     protected static double efficiencyThreshold = 0.005d;
 
     /**
@@ -43,6 +43,8 @@ public class RunHyDCFinalVersion {
         int size = 10000;
          file ="dataset//Tax10k.csv";
          size = 10000;
+        file ="dataset//uce.csv";
+        size = 10;
         //CLAIM
         // 10000
         // mmcs and get dcs cost:15468

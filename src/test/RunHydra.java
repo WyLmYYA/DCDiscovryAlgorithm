@@ -33,8 +33,8 @@ public class RunHydra {
 //		String sizeline ="7";
 		String line ="dataset//CLAIM.csv";
 		String sizeline ="10000";
-//		 line ="dataset//Tax10k.csv";
-//		 sizeline ="10000";
+		 line ="dataset//uce.csv";
+		 sizeline ="100";
 		/**
 		 * 100000
 		 * dc before minimize 2175

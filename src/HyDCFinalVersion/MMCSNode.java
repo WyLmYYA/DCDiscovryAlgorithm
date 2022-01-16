@@ -251,10 +251,14 @@ public class MMCSNode {
             if (nodesInPath.get(i).curPred != null && nodesInPath.get(i).curPred.needCombine()){
                 needCombination.add(nodesInPath.get(i).curPred);
             }
-            if (nodesInPath.get(i).clusterPairs.size() != 0){
-                firstRefined = i;
+            if (nodesInPath.get(i).clusterPairs == null || nodesInPath.get(i).clusterPairs.size() == 0){
+                firstRefined = i + 1;
                 break;
             }
+//            if (nodesInPath.get(i).clusterPairs.size() != 0){
+//                firstRefined = i;
+//                break;
+//            }
         }
 
         while (firstRefined > 0){

@@ -307,13 +307,13 @@ public class  IEJoin {
 		PredicatePair predicatePair = (PredicatePair) partitionRefiner;
 		Predicate p1 = predicatePair.getP1().getInverse();
 		Predicate p2 = predicatePair.getP2().getInverse();
-		calcForBIT(clusters, p1, p2, Res);
+		calcForBIT(clusters, p1, p2, clusterPair -> Res.add(clusterPair));
 	}
 	public void calcForTest(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> Res){
 		// in mmcs we need to input inverse of predicate
-		calcForBIT(clusters, p1, p2, Res);
+		calcForBIT(clusters, p1, p2, clusterPair -> Res.add(clusterPair));
 	}
-	public void calcForBIT(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> Res){
+	public void calcForBIT(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> Res){
 
 
 
@@ -401,7 +401,7 @@ public class  IEJoin {
 					} else {
 						if(lastC1 != null) {
 							ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
-							Res.add(pairLast);
+							Res.accept(pairLast);
 						}
 
 						lastC2 = c2;
@@ -410,7 +410,7 @@ public class  IEJoin {
 				} else {
 					if(lastC1 != null) {
 						ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
-						Res.add(pairLast);
+						Res.accept(pairLast);
 					}
 
 					lastC2 = lastC1 = null;
@@ -419,7 +419,7 @@ public class  IEJoin {
 			}else{
 				if(lastC1 != null) {
 					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
-					Res.add(pairLast);
+					Res.accept(pairLast);
 				}
 				lastC2 = lastC1 = null;
 			}
@@ -427,7 +427,7 @@ public class  IEJoin {
 
 		if(lastC1 != null) {
 			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
-			Res.add(pairLast);
+			Res.accept(pairLast);
 		}
 
 	}
