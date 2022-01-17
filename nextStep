@@ -1,0 +1,136 @@
+FDR 15
+-----hydra----
+predicate space:44
+now is hydra for dc
+Building approximate evidence set...
+sampling cost18648
+Evidence Set size: 327
+Building new bitsets..
+Sorting new bitsets..
+starting inverting size 327
+Finished sorting neg 2. list size:327
+hydra: 494
+first Inversion cost:31
+DC count approx:494
+DC count approx after minimize:428
+first minimize cost: 90
+Checking 428 DCs.
+Building selectivity estimation
+Grouping DCs..
+Calculating partitions..
+complete dc size:428
+complete from sampling evidence cost :3851
+Evidence Set size: 355
+Building new bitsets..
+Sorting new bitsets..
+starting inverting size 355
+Finished sorting neg 2. list size:355
+second inversion cost: 25
+dc before minimize 418
+dc after minimize 412
+ second minimize time: 58 ms
+dc size:412
+Used time: 24256 ms
+singel predicate valid count 2449967
+double predicates valid  count 228
+cal evi count : 145
+
+------hydc------
+mmcs and get dcs cost:28345
+415
+dcs :412
+minimize cost:75
+valid time 4735
+transitivity prune time 5
+get child time 643
+cal evidence for pair line count 92
+singel predicate valid count 2783474
+double predicates valid  count 126
+
+FDR 25  187000
+-----hydra-----
+predicate space:54
+now is hydra for dc
+Building approximate evidence set...
+sampling cost30273
+Evidence Set size: 632
+Building new bitsets..
+Sorting new bitsets..
+starting inverting size 632
+Finished sorting neg 2. list size:632
+hydra: 1201
+first Inversion cost:53
+DC count approx:1201
+DC count approx after minimize:1101
+first minimize cost: 175
+Checking 1101 DCs.
+Building selectivity estimation
+Grouping DCs..
+Calculating partitions..
+complete dc size:1101
+complete from sampling evidence cost :5931
+Evidence Set size: 677
+Building new bitsets..
+Sorting new bitsets..
+starting inverting size 677
+Finished sorting neg 2. list size:677
+second inversion cost: 50
+dc before minimize 1081
+dc after minimize 1075
+ second minimize time: 127 ms
+dc size:1075
+Used time: 38622 ms
+singel predicate valid count 4178140
+double predicates valid  count 386
+cal evi count : 219
+
+-------hydc------
+mmcs and get dcs cost:44914
+1078
+dcs :1075
+minimize cost:170
+valid time 7800
+transitivity prune time 7
+get child time 928
+cal evidence for pair line count 213
+singel predicate valid count 4258213
+double predicates valid  count 259
+
+
+
+NCV 675000
+------hydra------
+predicate space:38
+now is hydra for dc
+Building approximate evidence set...
+sampling cost66113
+Evidence Set size: 1427
+Building new bitsets..
+Sorting new bitsets..
+starting inverting size 1427
+Finished sorting neg 2. list size:1427
+hydra: 1610
+first Inversion cost:161
+DC count approx:1610
+DC count approx after minimize:971
+first minimize cost: 259
+Checking 971 DCs.
+Building selectivity estimation
+Grouping DCs..
+Calculating partitions..
+complete dc size:971
+complete from sampling evidence cost :23555
+Evidence Set size: 1541
+Building new bitsets..
+Sorting new bitsets..
+starting inverting size 1541
+Finished sorting neg 2. list size:1541
+second inversion cost: 190
+dc before minimize 1051
+dc after minimize 727
+ second minimize time: 108 ms
+dc size:727
+Used time: 94900 ms
+singel predicate valid count 9472008
+double predicates valid  count 13010
+cal evi count : 570573
