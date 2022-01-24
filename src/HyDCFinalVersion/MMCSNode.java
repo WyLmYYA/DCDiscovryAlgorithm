@@ -49,14 +49,12 @@ public class MMCSNode {
      * params added for hyDC
      */
 
-
-
-    public List<ClusterPair> clusterPairs = new ArrayList<>();
-
 //    public List<MMCSNode> nodesInPath = new ArrayList<>();
     private MMCSNode parentNode;
 
     public Predicate curPred;
+
+    public boolean needRefine = true;
 
 
 
@@ -70,7 +68,7 @@ public class MMCSNode {
 
         candidatePredicates = MMCSDC.candidatePredicates;
 
-        clusterPairs.add(StrippedPartition.getFullParition(lineCount));
+//        clusterPairs.add(StrippedPartition.getFullParition(lineCount));
 
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
@@ -90,32 +88,10 @@ public class MMCSNode {
         return uncoverEvidenceSet.isEmpty();
     }
 
-    public void resetCandidatePredicates(IBitSet mask){
-        candidatePredicates = mask.getAndNot(element);
-    }
-
     public PredicateBitSet getNextEvidence() {
         Comparator<PredicateBitSet> cmp = Comparator.comparing(predicates -> predicates.getBitset().getAnd(candidatePredicates));
 
         return Collections.min(uncoverEvidenceSet.getSetOfPredicateSets(), cmp);
-
-    }
-    public MMCSNode(MMCSNode mmcsNode) {
-
-        this.numberOfPredicates = mmcsNode.numberOfPredicates;
-
-        element = mmcsNode.getElement().clone();
-
-        uncoverEvidenceSet.add(mmcsNode.uncoverEvidenceSet);
-
-        candidatePredicates = mmcsNode.candidatePredicates.clone();
-
-        clusterPairs = mmcsNode.clusterPairs;
-
-        crit = new ArrayList<>(mmcsNode.crit.size());
-        for (List<PredicateBitSet> predicateBitSets : mmcsNode.crit) {
-            crit.add(new ArrayList<>(predicateBitSets));
-        }
 
     }
 
@@ -144,10 +120,14 @@ public class MMCSNode {
         // parent uncover evidenceSet has updated before,
         // in other words parent uncover has added newEvidence come from before nodes.
         // so we can update directly
-        node.uncoverEvidenceSet.getSetOfPredicateSets().forEach(predicates -> {
+        for (PredicateBitSet predicates : node.uncoverEvidenceSet.getSetOfPredicateSets()) {
             if(predicates.getBitset().get(predicateAdded)) crit.get(predicateAdded).add(predicates);
             else uncoverEvidenceSet.add(predicates);
-        });
+        }
+//        node.uncoverEvidenceSet.getSetOfPredicateSets().forEach(predicates -> {
+//            if(predicates.getBitset().get(predicateAdded)) crit.get(predicateAdded).add(predicates);
+//            else uncoverEvidenceSet.add(predicates);
+//        });
 
         /**
          *  update crit in terms of  the EvidenceSet which is covered by predicateAdded
@@ -167,6 +147,8 @@ public class MMCSNode {
 
         curPred = predicate;
 
+        needRefine = parentNode.needRefine;
+
 //        nodesInPath.add(this);
 
 
@@ -177,122 +159,43 @@ public class MMCSNode {
         long l1 = System.currentTimeMillis();
         // refine by single predicate
         List<ClusterPair> newResult = new ArrayList<>();
-        clusterPairs.forEach(clusterPair -> {
+        for (ClusterPair clusterPair : MMCSDC.clusterPairs) {
             TimeCal2.add(1,4);
             clusterPair.refinePsPublic(predicate.getInverse(), ieJoin, newResult);
-        });
-        clusterPairs = newResult;
+        }
+//        MMCSDC.clusterPairs.forEach(clusterPair -> {
+//            TimeCal2.add(1,4);
+//            clusterPair.refinePsPublic(predicate.getInverse(), ieJoin, newResult);
+//        });
+        MMCSDC.clusterPairs = newResult;
         TimeCal3.addPreCal(predicate, 1);
         TimeCal3.add(predicate, System.currentTimeMillis() - l1);
         TimeCal2.add((System.currentTimeMillis() - l1), 0);
     }
-    public void refinePP(Predicate p1,  Predicate p2){
-        // refine by Join
 
-        long l1 = System.currentTimeMillis();
-        List<ClusterPair> newResult = new ArrayList<>();
-        clusterPairs.forEach(clusterPair -> {
-            TimeCal2.add(1,5);
-            clusterPair.refinePPPublic(new PredicatePair(p1.getInverse(), p2.getInverse()), MMCSDC.ieJoin, clusterPair1 -> newResult.add(clusterPair1));
-        });
-        clusterPairs = newResult;
-        TimeCal3.addPreCal(p1, 1);
-        TimeCal3.addPreCal(p2, 1);
-        TimeCal3.add(p1, System.currentTimeMillis() - l1);
-        TimeCal3.add(p2, System.currentTimeMillis() - l1);
-        TimeCal2.add((System.currentTimeMillis() - l1), 0);
-    }
 
-//    public void refineAlways(){
-//        int firstRefined = 0;
-//        for(int i = 0; i < nodesInPath.size(); ++i){
-//            if (nodesInPath.get(i).clusterPairs.size() != 0){
-//                firstRefined = i;
-//                break;
-//            }
-//        }
-//        while (firstRefined < nodesInPath.size() - 1){
-//            MMCSNode node = nodesInPath.get(firstRefined);
-//            MMCSNode curNode = nodesInPath.get(firstRefined + 1);
-//            curNode.clusterPairs = new ArrayList<>(node.clusterPairs);
-//            Predicate currentPredicate = curNode.curPred;
-//            if (currentPredicate.needCombine()){
-//                // 1. if this one is not first predicate need combination, use IEJoin update cluster pair
-//                if (node.lastNeedCombinationPredicate != null){
-//                    curNode.refinePP(currentPredicate, node.lastNeedCombinationPredicate);
-//                }else {
-//                    // 2. if this node is the first predicate need combination, get cluster pair from parent, wait for next refine
-//                    curNode.lastNeedCombinationPredicate = currentPredicate;
-//                }
-//            }else {
-//                // if this node is not needed combination
-//                curNode.refinePS(currentPredicate, MMCSDC.ieJoin);
-//                // 3. if parent or parent before has node wait for refining
-//                if (node.lastNeedCombinationPredicate != null){
-//                    curNode.lastNeedCombinationPredicate = node.lastNeedCombinationPredicate;
-//                }
-//            }
-//            firstRefined++;
-//        }
-//
-//
-//    }
-
-    public void refine(){
-        int firstRefined = 0;
+    public void refineBySelectivity(CPTree cpTree){
         List<Predicate> needCombination = new ArrayList<>();
-        List<MMCSNode> nodesInPath = new ArrayList<>();
+        List<Predicate> singleNode = new ArrayList<>();
         MMCSNode tmp = this;
-        while (tmp != null){
-            nodesInPath.add(tmp);
+
+        // get all nodes in path
+        while (tmp.curPred != null && tmp != null){
+            if (tmp.curPred.needCombine())
+                needCombination.add(tmp.curPred);
+            else
+                singleNode.add(tmp.curPred);
             tmp = tmp.parentNode;
         }
-        for(int i = nodesInPath.size() - 1; i >= 0; --i){
-            if (nodesInPath.get(i).curPred != null && nodesInPath.get(i).curPred.needCombine()){
-                needCombination.add(nodesInPath.get(i).curPred);
-            }
-            if (nodesInPath.get(i).clusterPairs == null || nodesInPath.get(i).clusterPairs.size() == 0){
-                firstRefined = i + 1;
-                break;
-            }
-//            if (nodesInPath.get(i).clusterPairs.size() != 0){
-//                firstRefined = i;
-//                break;
-//            }
-        }
 
-        while (firstRefined > 0){
-            MMCSNode node = nodesInPath.get(firstRefined);
-            MMCSNode curNode = nodesInPath.get(firstRefined - 1);
+        // sort
+        long l1 = System.currentTimeMillis();
+        sortPredicate(singleNode);
+        // find subset
+        MMCSDC.clusterPairs = cpTree.add(singleNode, 0);;
+        TimeCal2.add((System.currentTimeMillis() - l1), 6);
 
-            Predicate currentPredicate = curNode.curPred;
-            if (currentPredicate.needCombine()){
-                curNode.clusterPairs = node.clusterPairs;
-                needCombination.add(currentPredicate);
-            }else {
-                // if this node is not needed combination
-//                long l1 = System.currentTimeMillis();
-                curNode.clusterPairs = new ArrayList<>(node.clusterPairs);
-                curNode.refinePS(currentPredicate, MMCSDC.ieJoin);
-//                long joinTime = System.currentTimeMillis() - l1;
-//
-//                l1 = System.currentTimeMillis();
-//                if (partitionEvidenceSetBuilder == null){
-//                    partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts());
-//                }
-//                Set<String> calP = new HashSet<>();
-//                for (ClusterPair clusterPair : clusterPairs){
-//                    partitionEvidenceSetBuilder.addEvidences(clusterPair, new HashEvidenceSet(), calP);
-//                }
-//                long calPair = System.currentTimeMillis() - l1;
-//                System.out.println("predicate count :" + element.cardinality() + "  join time :" + joinTime + "cal evi time: " + calPair);
-//
-            }
-            if (firstRefined == 1) {
-                curNode.refineCombinationEnd(needCombination);
-            }
-            firstRefined--;
-        }
+        refineCombinationEnd(needCombination);
 
 
     }
@@ -312,26 +215,59 @@ public class MMCSNode {
                     Predicate p2 = predicates.get(j);
                     if (!p1.equals(p2) && StrippedPartition.isPairSupported(p2)) {
                         paircountDC.add(new PredicatePair(p1, p2));
+//                        v[i] = true;
+//                        v[j] = true;
                     }
                 }
             }
         }
+        //mmcs and get dcs cost:56255
+        //130930
+        //dcs :84150
+        //minimize cost:35012
+        //valid time 9376
+        //transitivity prune time 12643
+        //get child time 77
+        //cal evidence for pair line count 14401
+        //singel predicate valid count 12195793
+        //double predicates valid  count 30077
+        //get cluster pair time 3524
+
         for (int i = 0; i < predicates.size(); ++i){
             if (!v[i]){
                 refinePS(predicates.get(i), MMCSDC.ieJoin);
             }
         }
+        //D:\Java\jdk1.8.0_152\bin\java.exe "-javaagent:D:\IntelliJ IDEA 2020.3\lib\idea_rt.jar=55454:D:\IntelliJ IDEA 2020.3\bin" -Dfile.encoding=UTF-8 -classpath D:\Java\jdk1.8.0_152\jre\lib\charsets.jar;D:\Java\jdk1.8.0_152\jre\lib\deploy.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\access-bridge-64.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\cldrdata.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\dnsns.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\jaccess.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\jfxrt.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\localedata.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\nashorn.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\sunec.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\sunjce_provider.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\sunmscapi.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\sunpkcs11.jar;D:\Java\jdk1.8.0_152\jre\lib\ext\zipfs.jar;D:\Java\jdk1.8.0_152\jre\lib\javaws.jar;D:\Java\jdk1.8.0_152\jre\lib\jce.jar;D:\Java\jdk1.8.0_152\jre\lib\jfr.jar;D:\Java\jdk1.8.0_152\jre\lib\jfxswt.jar;D:\Java\jdk1.8.0_152\jre\lib\jsse.jar;D:\Java\jdk1.8.0_152\jre\lib\management-agent.jar;D:\Java\jdk1.8.0_152\jre\lib\plugin.jar;D:\Java\jdk1.8.0_152\jre\lib\resources.jar;D:\Java\jdk1.8.0_152\jre\lib\rt.jar;D:\Desktop\YYA\DCDiscovryAlgorithm2\target\classes;C:\Users\86158\.m2\repository\com\koloboke\koloboke-api-jdk8\1.0.0\koloboke-api-jdk8-1.0.0.jar;C:\Users\86158\.m2\repository\com\koloboke\koloboke-impl-jdk8\1.0.0\koloboke-impl-jdk8-1.0.0.jar;C:\Users\86158\.m2\repository\com\koloboke\koloboke-impl-common-jdk8\1.0.0\koloboke-impl-common-jdk8-1.0.0.jar;C:\Users\86158\.m2\repository\org\apache\lucene\lucene-core\4.5.1\lucene-core-4.5.1.jar;C:\Users\86158\.m2\repository\commons-net\commons-net\3.1\commons-net-3.1.jar;C:\Users\86158\.m2\repository\com\google\guava\guava\17.0\guava-17.0.jar;C:\Users\86158\.m2\repository\net\sf\trove4j\trove4j\3.0.3\trove4j-3.0.3.jar;D:\Desktop\YYA\DCDiscovryAlgorithm2\java-sizeof-0.0.5.jar;D:\Desktop\YYA\DCDiscovryAlgorithm2\guava-19.0.jar;D:\Desktop\YYA\DCDiscovryAlgorithm2\commons-net-3.3.jar;D:\Desktop\YYA\DCDiscovryAlgorithm2\primitive-1.3.jar;D:\Desktop\YYA\DCDiscovryAlgorithm2\trove-3.1.jar;D:\Desktop\YYA\DCDiscovryAlgorithm2\guava-19.0-javadoc.jar;D:\Desktop\YYA\DCDiscovryAlgorithm2\guava-19.0-sources.jar HyDCFinalVersion.RunHyDCFinalVersion
+        //mmcs and get dcs cost:64730
+        //130709
+        //dcs :84150
+        //minimize cost:31305
+        //valid time 24954
+        //transitivity prune time 11087
+        //get child time 108
+        //cal evidence for pair line count 13985
+        //singel predicate valid count 1715778
+        //double predicates valid  count 10656081
+        //get cluster pair time 1993
+        //
+        //Process finished with exit code 0
 //        pairTime += System.currentTimeMillis() - l2;
         for (PredicatePair predicatePair : paircountDC){
             List<ClusterPair> newResult = new ArrayList<>();
             Predicate p1 = predicatePair.getP1();
             Predicate p2 = predicatePair.getP2();
             long l1 = System.currentTimeMillis();
-            clusterPairs.forEach(clusterPair -> {
+            for (ClusterPair clusterPair : MMCSDC.clusterPairs) {
                 TimeCal2.add(1,5);
                 clusterPair.refinePPPublic(new PredicatePair(p1.getInverse(), p2.getInverse()), MMCSDC.ieJoin, clusterPair1 -> newResult.add(clusterPair1));
-            });
-            clusterPairs = newResult;
+            }
+//            MMCSDC.clusterPairs.forEach(clusterPair -> {
+//                TimeCal2.add(1,5);
+//                clusterPair.refinePPPublic(new PredicatePair(p1.getInverse(), p2.getInverse()), MMCSDC.ieJoin, clusterPair1 -> newResult.add(clusterPair1));
+//            });
+            MMCSDC.clusterPairs = newResult;
+
             TimeCal3.addPreCal(p1, 1);
             TimeCal3.addPreCal(p2, 1);
             TimeCal3.add(p1, System.currentTimeMillis() - l1);
@@ -364,7 +300,6 @@ public class MMCSNode {
         return true;
     }
 
-
     public HashEvidenceSet getAddedEvidenceSet(){
         HashEvidenceSet newEvi = new HashEvidenceSet();
 
@@ -375,7 +310,7 @@ public class MMCSNode {
             MMCSDC.partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts());
         }
 //        Set<String> calP = new HashSet<>();
-        for (ClusterPair clusterPair : clusterPairs){
+        for (ClusterPair clusterPair : MMCSDC.clusterPairs){
             MMCSDC.partitionEvidenceSetBuilder.addEvidencesForHyDC(clusterPair, newEvi);
         }
         TimeCal2.add((System.currentTimeMillis() - l2), 2);
@@ -384,19 +319,24 @@ public class MMCSNode {
         Iterator iterable = newEvi.getSetOfPredicateSets().iterator();
         while (iterable.hasNext()){
             PredicateBitSet predicates1 = (PredicateBitSet) iterable.next();
-            if (predicates1.getBitset().getAnd(element).cardinality() != 0){
+            IBitSet tmp = predicates1.getBitset().getAnd(element);
+            if (tmp.cardinality() != 0){
                 iterable.remove();
+//                if (tmp.cardinality() == 1){
+//                    crit.get(tmp.nextSetBit(0)).add(new PredicateBitSet(tmp));
+//                }
             }
         }
 
         uncoverEvidenceSet.add(newEvi);
-        clusterPairs = null;
+        MMCSDC.clusterPairs = null;
+        needRefine = false;
         return newEvi;
     }
     public boolean isValidResult(){
         // there may be {12} : {12, 12}, so need to add one step to judge
-        if (clusterPairs == null)return true;
-        for (ClusterPair clusterPair : clusterPairs){
+        if (MMCSDC.clusterPairs == null)return true;
+        for (ClusterPair clusterPair : MMCSDC.clusterPairs){
 //            Iterator<LinePair> iter = clusterPair.getLinePairIterator();
 //            while (iter.hasNext()) {
 //                LinePair lPair = iter.next();
@@ -409,8 +349,6 @@ public class MMCSNode {
             }
         }
         return true;
-
-
     }
 
 
@@ -433,6 +371,14 @@ public class MMCSNode {
         }
         inverse.add(indexProvider.getObject(addPredicate));
         return new DenialConstraint(inverse);
+    }
+    private void sortPredicate(List<Predicate> list){
+        Collections.sort(list, new Comparator<Predicate>() {
+            @Override
+            public int compare(Predicate o1, Predicate o2) {
+                return o2.coverSize - o1.coverSize;
+            }
+        });
     }
 
     @Override

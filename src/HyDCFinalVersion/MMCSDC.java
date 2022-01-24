@@ -69,6 +69,10 @@ public class MMCSDC {
 
     NTreeSearch treeSearch = new NTreeSearch();
 
+    CPTree cpTree = new CPTree();
+
+    public static List<ClusterPair> clusterPairs;
+
 
     public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover, PredicateBuilder predicates, Input input){
 
@@ -83,6 +87,9 @@ public class MMCSDC {
             candidatePredicates.set(i);
         }
 
+        List<ClusterPair> clusterPairs = new ArrayList<>();
+        clusterPairs.add(StrippedPartition.getFullParition(input.getLineCount()));
+        cpTree.setClusterPairs(clusterPairs);
 
         initiate(evidenceSetToCover);
 
@@ -127,13 +134,17 @@ public class MMCSDC {
 
             //  check is there any predicate needed combination not be refined, and update cluster pair
 
-            if (currentNode.clusterPairs != null) {
-                currentNode.refine();
+            if(currentNode.needRefine){
+                currentNode.refineBySelectivity(cpTree);
             }
+
 
 
             if (currentNode.isValidResult()){
 
+//                if (!currentNode.isValidResult(clusterPairs)){
+//                    System.out.println("s");
+//                }
                 treeSearch.add(currentNode.element);
 
                 denialConstraintSet.add(currentNode.getDenialConstraint());
@@ -142,8 +153,14 @@ public class MMCSDC {
                 // not a valid result means cluster pair not empty, we need get added evidence set
                 // after this func, uncover update, and is a complete evidence for currNode, so cluster pair will be null
 
-                ret.add(currentNode.getAddedEvidenceSet());
-                walkDown(currentNode);
+                HashEvidenceSet tmp = currentNode.getAddedEvidenceSet();
+                ret.add(tmp);
+                if (currentNode.uncoverEvidenceSet.size() == 0){
+                    treeSearch.add(currentNode.element);
+
+                    denialConstraintSet.add(currentNode.getDenialConstraint());
+                }else
+                    walkDown(currentNode);
             }
             return ret;
         }
@@ -203,7 +220,6 @@ public class MMCSDC {
                 tmp = null;
 
             }
-            childNode.clusterPairs = null;
             childNode = null;
 
         }

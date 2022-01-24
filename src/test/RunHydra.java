@@ -33,38 +33,9 @@ public class RunHydra {
 //		String sizeline ="7";
 		String line ="dataset//CLAIM.csv";
 		String sizeline ="10000";
-		 line ="dataset//uce.csv";
-		 sizeline ="100";
-		/**
-		 * 100000
-		 * dc before minimize 2175
-		 dc after minimize 750
-		 second minimize time: 606 ms
-		 dc size:750
-		 Used time: 51201 ms
+		 line =args[0];
+		 sizeline =args[1];
 
-		 second minimize time: 1 ms
-		 dc size:11
-		 Used time: 9674 ms
-		 singel predicate valid count 687815
-		 double predicates valid  count 0
-
-		 t0.AirlineName(String) <> t1.AirlineName(String)   refine time: 0  refine count: 1
-		 t0.ItemCategory(String) <> t1.ItemCategory(String)   refine time: 0  refine count: 1
-		 t0.YearReceived(Integer) <= t1.IncidentDate(Integer)   refine time: 2  refine count: 1
-		 t0.ClaimType(String) <> t1.ClaimType(String)   refine time: 7  refine count: 1760
-		 t0.ClaimSite(String) == t1.ClaimSite(String)   refine time: 10  refine count: 2626
-		 t0.CloseAmount(Double) <> t1.CloseAmount(Double)   refine time: 11  refine count: 3281
-		 t0.Disposition(String) == t1.Disposition(String)   refine time: 24  refine count: 5817
-		 t0.Disposition(String) <> t1.Disposition(String)   refine time: 32  refine count: 8526
-		 t0.ClaimNumber(String) == t1.ClaimNumber(String)   refine time: 50  refine count: 1
-		 t0.ClaimType(String) == t1.ClaimType(String)   refine time: 67  refine count: 14595
-		 t0.CloseAmount(Double) == t1.CloseAmount(Double)   refine time: 68  refine count: 14899
-		 t0.ClaimSite(String) <> t1.ClaimSite(String)   refine time: 104  refine count: 21757
-		 t0.AirlineName(String) == t1.AirlineName(String)   refine time: 180  refine count: 10476
-		 t0.ItemCategory(String) == t1.ItemCategory(String)   refine time: 201  refine count: 1371
-		 t0.YearReceived(Integer) == t1.IncidentDate(Integer)   refine time: 216  refine count: 1
-		 */
 
 		long starttime = System.currentTimeMillis();
 		int size=Integer.valueOf(sizeline);
