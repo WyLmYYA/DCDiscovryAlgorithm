@@ -112,22 +112,22 @@ public class MMCSDC {
 
         // minimize in mmcs,
         HashEvidenceSet ret = new HashEvidenceSet();
-        if(ENABLE_TRANSITIVE_CHECK){
-            long l1 = System.currentTimeMillis();
-            for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
-                IBitSet tmp = currentNode.element.clone();
-                tmp.set(ne, false);
-                for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
-                    int index = indexProvider.getIndex(p2);
-                    if (index < numberOfPredicates){
-                        tmp.set(indexProvider.getIndex(p2));
-                    }
-                }
-
-                if (treeSearch.containsSubset(tmp))return ret;
-            }
-            TimeCal2.add((System.currentTimeMillis() - l1), 1);
-        }
+//        if(ENABLE_TRANSITIVE_CHECK){
+//            long l1 = System.currentTimeMillis();
+//            for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
+//                IBitSet tmp = currentNode.element.clone();
+//                tmp.set(ne, false);
+//                for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
+//                    int index = indexProvider.getIndex(p2);
+//                    if (index < numberOfPredicates){
+//                        tmp.set(indexProvider.getIndex(p2));
+//                    }
+//                }
+//
+//                if (treeSearch.containsSubset(tmp))return ret;
+//            }
+//            TimeCal2.add((System.currentTimeMillis() - l1), 1);
+//        }
 
         if (currentNode.canCover()){
             // we need to valid current partial dc is valid dc or not
@@ -135,6 +135,22 @@ public class MMCSDC {
             //  check is there any predicate needed combination not be refined, and update cluster pair
 
             if(currentNode.needRefine){
+                if(ENABLE_TRANSITIVE_CHECK){
+                    long l1 = System.currentTimeMillis();
+                    for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
+                        IBitSet tmp = currentNode.element.clone();
+                        tmp.set(ne, false);
+                        for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
+                            int index = indexProvider.getIndex(p2);
+                            if (index < numberOfPredicates){
+                                tmp.set(indexProvider.getIndex(p2));
+                            }
+                        }
+
+                        if (treeSearch.containsSubset(tmp))return ret;
+                    }
+                    TimeCal2.add((System.currentTimeMillis() - l1), 1);
+                }
                 currentNode.refineBySelectivity(cpTree);
             }
 

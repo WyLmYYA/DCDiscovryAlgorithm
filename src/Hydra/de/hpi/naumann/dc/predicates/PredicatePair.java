@@ -7,10 +7,12 @@ public class PredicatePair implements PartitionRefiner {
 	private Predicate p1;
 	private Predicate p2;
 
+	private int coverSize;
 	public PredicatePair(Predicate p1, Predicate p2) {
 		super();
 		this.p1 = p1;
 		this.p2 = p2;
+		coverSize += p1.coverSize + p2.coverSize;
 	}
 
 	public Predicate getP1() {

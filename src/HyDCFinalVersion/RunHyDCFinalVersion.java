@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RunHyDCFinalVersion {
-    protected static int sampleRounds = 20;
+    protected static int sampleRounds = 5;
     protected static double efficiencyThreshold = 0.005d;
 
     /**
@@ -39,8 +39,8 @@ public class RunHyDCFinalVersion {
     public static IEvidenceSet samplingEvidence;
     public static void main(String[] args) throws IOException, InputIterationException {
         long l1 = System.currentTimeMillis();
-        String file ="dataset//CLAIM.csv";
-        int size = 10000;
+        String file ="dataset//CLAIM_2.csv";
+        int size = 30000;
          file ="dataset//Tax10k.csv";
          size = 1000;
         file =args[0];
@@ -71,12 +71,12 @@ public class RunHyDCFinalVersion {
         samplingEvidence = sampleEvidenceSet;
 
         //get the sampling  evidence set
-        IEvidenceSet fullSamplingEvidenceSet = set;
-//        IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
+//        IEvidenceSet fullSamplingEvidenceSet = set;
+        IEvidenceSet fullSamplingEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
 
 //        printPredicateToEvidence( fullSamplingEvidenceSet);
         // calculate selectivity and sort for predicate
-        calculatePredicate( set);
+        calculatePredicate((HashEvidenceSet) fullSamplingEvidenceSet);
 
         // HyDC begin
         MMCSDC mmcsdc = new MMCSDC(predicates.getPredicates().size(), fullSamplingEvidenceSet, predicates, input);

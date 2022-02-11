@@ -31,10 +31,10 @@ public class RunHydra {
 //		String sizeline ="100";
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
-		String line ="dataset//CLAIM.csv";
-		String sizeline ="10000";
-		 line =args[0];
-		 sizeline =args[1];
+		String line ="dataset//Tax10k.csv";
+		String sizeline ="100";
+//		 line =args[0];
+//		 sizeline =args[1];
 
 
 		long starttime = System.currentTimeMillis();
