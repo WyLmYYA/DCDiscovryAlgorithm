@@ -16,7 +16,6 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateSetFactory;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.sun.xml.internal.ws.wsdl.writer.document.Part;
 import utils.TimeCal;
 import utils.TimeCal2;
 import utils.TimeCal3;
@@ -188,36 +187,24 @@ public class MMCSNode {
 //            }
             tmp = tmp.parentNode;
         }
-//        if (needCombination.size() % 2 != 0){
-//            refiners.add(needCombination.get(0));
-//            selectivity.put(needCombination.get(0), needCombination.get(0).coverSize);
-//            needCombination.remove(0);
-//        }
-//        boolean[] v = new boolean[needCombination.size()];
-//        for (int i = 0; i < needCombination.size(); ++i) {
-//            if (v[i]) continue;
-//            Predicate p1 = needCombination.get(i);
-//            if (StrippedPartition.isPairSupported(p1)){
-//                boolean pair = false;
-//                for (int j = i + 1; j < needCombination.size(); ++j) {
-//                    if (v[j])continue;
-//                    Predicate p2 = needCombination.get(j);
-//                    if (!p1.equals(p2) && StrippedPartition.isPairSupported(p2)) {
-//                        PredicatePair tmp2 = new PredicatePair(p1, p2);
-//                        refiners.add(tmp2);
-//                        selectivity.put(tmp2, p1.coverSize + p2.coverSize);
-//                        v[i] = true;
-//                        v[j] = true;
-//                    }
-//                }
-//            }
-//        }
 
         // sort
         long l1 = System.currentTimeMillis();
         sortPredicate(refiners);
         // find subset
-        MMCSDC.clusterPairs = cpTree.add(refiners, 0);;
+        CPTree cpTree1 = cpTree.add(refiners, 0);
+        if (cpTree1.getNeedCombine() != null){
+            List<ClusterPair> newResult = new ArrayList<>();
+            cpTree1.getClusterPairs().forEach(clusterPair -> {
+                TimeCal2.add(1,4);
+                clusterPair.refinePsPublic(cpTree1.getNeedCombine().getInverse(), MMCSDC.ieJoin, newResult);
+            });
+//            cpTree1.setClusterPairs(newResult);
+            MMCSDC.clusterPairs = newResult;
+        }else
+            MMCSDC.clusterPairs = cpTree1.getClusterPairs();
+
+
         TimeCal2.add((System.currentTimeMillis() - l1), 6);
 
 //        refineCombinationEnd(needCombination);
@@ -345,6 +332,7 @@ public class MMCSNode {
         }
 //        Set<String> calP = new HashSet<>();
         for (ClusterPair clusterPair : MMCSDC.clusterPairs){
+
             MMCSDC.partitionEvidenceSetBuilder.addEvidencesForHyDC(clusterPair, newEvi);
         }
         TimeCal2.add((System.currentTimeMillis() - l2), 2);
@@ -356,9 +344,9 @@ public class MMCSNode {
             IBitSet tmp = predicates1.getBitset().getAnd(element);
             if (tmp.cardinality() != 0){
                 iterable.remove();
-//                if (tmp.cardinality() == 1){
-//                    crit.get(tmp.nextSetBit(0)).add(new PredicateBitSet(tmp));
-//                }
+                if (tmp.cardinality() == 1){
+                    crit.get(tmp.nextSetBit(0)).add(new PredicateBitSet(tmp));
+                }
             }
         }
 

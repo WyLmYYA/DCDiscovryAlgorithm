@@ -1,6 +1,7 @@
 package Hydra.de.hpi.naumann.dc.evidenceset.build;
 
 import HyDCFinalVersion.MMCSDC;
+import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.TroveEvidenceSet;

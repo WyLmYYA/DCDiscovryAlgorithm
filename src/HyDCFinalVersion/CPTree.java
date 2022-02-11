@@ -37,8 +37,8 @@ public class CPTree {
     public void setClusterPairs(List<ClusterPair> clusterPairs){
         this.clusterPairs = clusterPairs;
     }
-    public List<ClusterPair> add(List<Predicate> addList, int next){
-        if (next == addList.size()) return clusterPairs;
+    public CPTree add(List<Predicate> addList, int next){
+        if (next == addList.size()) return this;
         Predicate nextPre = addList.get(next);
         if (children.containsKey(nextPre)){
             return children.get(nextPre).add(addList, next + 1);
@@ -49,11 +49,9 @@ public class CPTree {
             if (nextPre.needCombine() ){
                 if (needCombine == null){
                     cpTree.needCombine = nextPre;
-//                    cpTree.clusterPairs = clusterPairs;
-                    clusterPairs.forEach(clusterPair -> {
-                        TimeCal2.add(1,4);
-                        clusterPair.refinePsPublic(nextPre.getInverse(), MMCSDC.ieJoin, newResult);
-                    });
+                    cpTree.clusterPairs = clusterPairs;
+                    children.put(nextPre, cpTree);
+                    return cpTree.add(addList, next + 1);
                 }else {
                     clusterPairs.forEach(clusterPair -> {
                         TimeCal2.add(1,5);
@@ -75,5 +73,11 @@ public class CPTree {
         }
     }
 
+    public List<ClusterPair> getClusterPairs(){
+        return clusterPairs;
+    }
+    public Predicate getNeedCombine(){
+        return needCombine;
+    }
 
 }
