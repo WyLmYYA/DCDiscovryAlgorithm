@@ -42,9 +42,9 @@ public class RunHyDCFinalVersion {
         String file ="dataset//CLAIM_2.csv";
         int size = 30000;
          file ="dataset//Tax10k.csv";
-         size = 1000;
-        file =args[0];
-        size = Integer.parseInt(args[1]);
+         size = 100;
+//        file =args[0];
+//        size = Integer.parseInt(args[1]);
 
          //-verbose:gc
         //-XX:+PrintGCDetails
