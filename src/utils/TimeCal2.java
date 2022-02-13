@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class TimeCal2 {
 
-    public static int len = 10;
+    public static int len = 2;
     public static List<Long> time = new ArrayList<>();
 
     static {

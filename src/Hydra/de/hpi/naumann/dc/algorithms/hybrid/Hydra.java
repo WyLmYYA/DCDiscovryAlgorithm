@@ -43,9 +43,9 @@ public class Hydra {
 		HashEvidenceSet set = new HashEvidenceSet();
 		sampleEvidenceSet.getSetOfPredicateSets().forEach(i -> set.add(i));
 		//get the full evidence set
-		IEvidenceSet fullEvidenceSet = set;
-//		IEvidenceSet fullEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
-//		System.out.println("Evidence set size deterministic sampler: " + fullEvidenceSet.size());
+//		IEvidenceSet fullEvidenceSet = set;
+		IEvidenceSet fullEvidenceSet = new ColumnAwareEvidenceSetBuilder(predicates).buildEvidenceSet(set, input, efficiencyThreshold);
+		System.out.println("Evidence set size deterministic sampler: " + fullEvidenceSet.size());
 
 		System.out.println("sampling cost" + (System.currentTimeMillis() - hydraBegin));
 

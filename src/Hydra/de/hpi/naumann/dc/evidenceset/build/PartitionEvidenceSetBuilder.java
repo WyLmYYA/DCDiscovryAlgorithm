@@ -82,9 +82,6 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 		Iterator<LinePair> iter = clusterPair.getLinePairIterator();
 		while (iter.hasNext()) {
 			LinePair lPair = iter.next();
-//			if (!calP.add(lPair)){
-//				continue;
-//			}
 			int i = lPair.getLine1();
 			int j = lPair.getLine2();
 			if (i != j) {
@@ -100,7 +97,6 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 					PredicateBitSet set = getPredicateSet(staticSet, pairs, row1, row2);
 					evidenceSet.add(set);
 					mapEvidence.put(lPair, set);
-					TimeCal2.add(1, 3);
 				}
 
 				if (mapEvidence.containsKey(lPair.getInverse())){
@@ -110,13 +106,6 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 					evidenceSet.add(set1);
 					mapEvidence.put(lPair, set1);
 				}
-//					PredicateBitSet set = getPredicateSet(staticSet, pairs, row1, row2);
-//					evidenceSet.add(set);
-//					TimeCal2.add(1, 3);
-//
-//					PredicateBitSet set1 = getPredicateSet(staticSet, pairs, row2, row1);
-//					evidenceSet.add(set1);
-				//349766
 			}
 
 			lastI = i;
@@ -145,7 +134,6 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 
 				PredicateBitSet set = getPredicateSet(staticSet, pairs, row1, row2);
 				evidenceSet.add(set);
-				TimeCal2.add(1, 3);
 
 				PredicateBitSet set1 = getPredicateSet(staticSet, pairs, row2, row1);
 				evidenceSet.add(set1);

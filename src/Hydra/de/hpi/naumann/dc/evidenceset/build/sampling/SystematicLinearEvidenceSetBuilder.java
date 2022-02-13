@@ -1,6 +1,6 @@
 package Hydra.de.hpi.naumann.dc.evidenceset.build.sampling;
 
-import HyDC.MMCSHyDCNode;
+
 import HyDCFinalVersion.MMCSDC;
 import Hydra.de.hpi.naumann.dc.evidenceset.HashEvidenceSet;
 import Hydra.de.hpi.naumann.dc.evidenceset.IEvidenceSet;

@@ -6,6 +6,9 @@
         <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
       </element>
       <element id="module-output" name="DCDiscovryAlgorithm" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/koloboke/koloboke-api-jdk8/1.0.0/koloboke-api-jdk8-1.0.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/koloboke/koloboke-impl-common-jdk8/1.0.0/koloboke-impl-common-jdk8-1.0.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/koloboke/koloboke-impl-jdk8/1.0.0/koloboke-impl-jdk8-1.0.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/commons-net-3.3.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/guava-19.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/java-sizeof-0.0.5.jar" path-in-jar="/" />
@@ -13,13 +16,10 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/primitive-1.3.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/guava-19.0-javadoc.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/guava-19.0-sources.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/koloboke/koloboke-impl-jdk8/1.0.0/koloboke-impl-jdk8-1.0.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/guava/guava/17.0/guava-17.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/koloboke/koloboke-impl-common-jdk8/1.0.0/koloboke-impl-common-jdk8-1.0.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/commons-net/commons-net/3.1/commons-net-3.1.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/koloboke/koloboke-api-jdk8/1.0.0/koloboke-api-jdk8-1.0.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/lucene/lucene-core/4.5.1/lucene-core-4.5.1.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/net/sf/trove4j/trove4j/3.0.3/trove4j-3.0.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/guava/guava/17.0/guava-17.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/commons-net/commons-net/3.1/commons-net-3.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/lucene/lucene-core/4.5.1/lucene-core-4.5.1.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

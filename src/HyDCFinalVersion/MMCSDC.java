@@ -1,6 +1,6 @@
 package HyDCFinalVersion;
 
-import HyDC.MMCSHyDCNode;
+
 import Hydra.ch.javasoft.bitset.IBitSet;
 import Hydra.ch.javasoft.bitset.LongBitSet;
 import Hydra.ch.javasoft.bitset.search.NTreeSearch;
@@ -112,22 +112,6 @@ public class MMCSDC {
 
         // minimize in mmcs,
         HashEvidenceSet ret = new HashEvidenceSet();
-//        if(ENABLE_TRANSITIVE_CHECK){
-//            long l1 = System.currentTimeMillis();
-//            for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
-//                IBitSet tmp = currentNode.element.clone();
-//                tmp.set(ne, false);
-//                for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
-//                    int index = indexProvider.getIndex(p2);
-//                    if (index < numberOfPredicates){
-//                        tmp.set(indexProvider.getIndex(p2));
-//                    }
-//                }
-//
-//                if (treeSearch.containsSubset(tmp))return ret;
-//            }
-//            TimeCal2.add((System.currentTimeMillis() - l1), 1);
-//        }
 
         if (currentNode.canCover()){
             // we need to valid current partial dc is valid dc or not
@@ -199,27 +183,6 @@ public class MMCSDC {
         IBitSet nextCandidatePredicates = currentNode.candidatePredicates.getAndNot(chosenEvidence);
 
 
-
-        /**
-         * try every CandidatePredicates to add, and walkDown
-         * mmcs and get dcs cost:20465
-         * mmcs node 47369
-         * 46918
-         * dcs :34489
-         * minimize cost:9321
-         * valid time 5482
-         * transitivity prune time 3846
-         * get child time 937
-         *
-         * mmcs and get dcs cost:17471
-         * mmcs node 53540
-         * 53078
-         * dcs :34489
-         * minimize cost:10326
-         * valid time 6662
-         * transitivity prune time 3030
-         * get child time 972
-        */
         for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
 
             /** get Trivial prune */

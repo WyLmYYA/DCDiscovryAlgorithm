@@ -206,8 +206,8 @@ public class  IEJoin {
 
 		BIT bit = new BIT(len2,columnC, columnD);
 
-		Order order1 = getSortingOrder(p1);
-		Order order2 = getSortingOrder(p2);
+		Order order1 = getSortingOrder( p1);
+		Order order2 = getSortingOrder( p2);
 
 		bit.order2 = order2;
 		bit.p2 = p2;
@@ -351,10 +351,10 @@ public class  IEJoin {
 		for (int i = 0; i < len2; ++i){
 			B_D.put(L_B[i], i);
 		}
-		HashMap<Integer, Integer> A_C = new HashMap<>();
-		for (int i = 0; i < len1; ++i){
-			A_C.put(L_A[i], i);
-		}
+//		HashMap<Integer, Integer> A_C = new HashMap<>();
+//		for (int i = 0; i < len1; ++i){
+//			A_C.put(L_A[i], i);
+//		}
 
 		Cluster lastC1 = null;
 		Cluster lastC2 = null;
@@ -373,12 +373,16 @@ public class  IEJoin {
 			int A = L_A[i];
 //			int offsetForAandB = getOffset(L_B,  L_A[i]);
 			int offsetForAandB = O1[i];
-			if(offsetForAandB == 0)continue;
+			if(offsetForAandB == 0)
+				continue;
 //			int C_value = A_C.get(A);
  			Cluster c1 = new Cluster(A);
 			Cluster c2 = new Cluster();
 
 			long phase2 = System.currentTimeMillis();
+			if (A == 5557){
+				System.out.println("");
+			}
 			IndexForBIT next = bit.getSum(offsetForAandB, A, c2, indexForBIT);
 
 			if(indexForBIT.equals(next)  && next.hasNext() && lastC1 != null){
@@ -577,7 +581,126 @@ public class  IEJoin {
 	 *   IEjoin for predicates pair
 	 */
 	@SuppressWarnings("rawtypes")
-	public void calc(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer) {
+	public void calc(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> Res){
+
+
+
+		/** Phase1: get init structure */
+
+		long phase1 = System.currentTimeMillis();
+
+		int len1 = clusters.getC1().size();
+		int len2 = clusters.getC2().size();
+
+
+
+
+		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
+		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
+		ParsedColumn<?> columnC =  p2.getOperand1().getColumn();
+		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
+
+		BIT bit = new BIT(len2,columnC, columnD);
+
+		Order order1 = getSortingOrder(p1);
+		Order order2 = getSortingOrder(p2);
+
+		bit.order2 = order2;
+		bit.p2 = p2;
+
+		int[] L_A = getSortedArray(clusters.getC1(), columnA, order1);
+		int[] L_B = getSortedArray(clusters.getC2(), columnB, order1);
+		int[] L_D = getSortedArray(clusters.getC2(), columnD, order2);
+
+		int[] O1 = getOffsetArray(L_A, L_B, columnA.getIndex(), columnB.getIndex(), order1 == Order.DESCENDING,
+				p1.getOperator() == Operator.GREATER_EQUAL || p1.getOperator() == Operator.LESS_EQUAL);
+
+		HashMap<Integer, Integer> B_D = new HashMap<>();
+		for (int i = 0; i < len2; ++i){
+			B_D.put(L_B[i], i);
+		}
+//		HashMap<Integer, Integer> A_C = new HashMap<>();
+//		for (int i = 0; i < len1; ++i){
+//			A_C.put(L_A[i], i);
+//		}
+
+		Cluster lastC1 = null;
+		Cluster lastC2 = null;
+
+
+		/** Step1:  init BIT with insert L_D */
+		for (int i = 0;i < len2; ++i){
+			int D = L_D[i];
+			bit.addTuple(B_D.get(D) + 1, D);
+		}
+
+
+		IndexForBIT indexForBIT = new IndexForBIT();
+		for (int i = 0; i < len1; ++i){
+			/** Phase2:  get cluster */
+			int A = L_A[i];
+//			int offsetForAandB = getOffset(L_B,  L_A[i]);
+			int offsetForAandB = O1[i];
+			if(offsetForAandB == 0)
+				continue;
+//			int C_value = A_C.get(A);
+			Cluster c1 = new Cluster(A);
+			Cluster c2 = new Cluster();
+
+			long phase2 = System.currentTimeMillis();
+			IndexForBIT next = bit.getSum(offsetForAandB, A, c2, indexForBIT);
+
+			if(indexForBIT.equals(next)  && next.hasNext() && lastC1 != null){
+				lastC1.add(A);
+
+				continue;
+			}else{
+				indexForBIT = next;
+			}
+
+			long phase3 = System.currentTimeMillis();
+			if ( next.hasNext() ){
+
+				/** Phase3: other operation the same as IEJoin */
+
+				ClusterPair pair = new ClusterPair(c1, c2);
+				if (pair.containsLinePair()) {
+					if (lastC2 != null && c2.equals(lastC2)) {
+						lastC1.add(A);
+					} else {
+						if(lastC1 != null) {
+							ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+							Res.accept(pairLast);
+						}
+
+						lastC2 = c2;
+						lastC1 = c1;
+					}
+				} else {
+					if(lastC1 != null) {
+						ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+						Res.accept(pairLast);
+					}
+
+					lastC2 = lastC1 = null;
+				}
+
+			}else{
+				if(lastC1 != null) {
+					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+					Res.accept(pairLast);
+				}
+				lastC2 = lastC1 = null;
+			}
+		}
+
+		if(lastC1 != null) {
+			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
+			Res.accept(pairLast);
+		}
+
+	}
+	public void calcIEjoin(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> consumer) {
 		/** Phase1: get init structure */
 		long phase1 = System.currentTimeMillis();
 		ColumnOperand op11 = p1.getOperand1();
@@ -616,7 +739,7 @@ public class  IEJoin {
 		 * */
 //		EtmPoint pointO = etmMonitor.createPoint("offsets..");
 		int[] O1 = getOffsetArray(L1, L1_, columnX.getIndex(), columnX_.getIndex(), order1 == Order.DESCENDING,
-				p1.getOperator() == Operator.GREATER || p1.getOperator() == Operator.LESS);
+				p1.getOperator() == Operator.GREATER_EQUAL || p1.getOperator() == Operator.LESS_EQUAL);
 		int[] O2 = getOffsetArray(L2, L2_, columnY.getIndex(), columnY_.getIndex(), order2 == Order.DESCENDING,
 				p2.getOperator() == Operator.GREATER_EQUAL || p2.getOperator() == Operator.LESS_EQUAL);
 //		pointO.collect();

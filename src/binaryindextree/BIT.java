@@ -8,6 +8,7 @@ import Hydra.de.hpi.naumann.dc.predicates.Operator;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import utils.TimeCal;
 
+import java.awt.font.FontRenderContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,11 +53,10 @@ public class BIT {
 
     public IndexForBIT getSum(int rightBound, int value, Cluster cluster, IndexForBIT indexForBIT) {
         IndexForBIT res = new IndexForBIT();
-        boolean first = true;
 
         while (rightBound > 0) {
             long phase2 = System.currentTimeMillis();
-            int[] arr = null;
+            int[] arr;
             if (hashMap.containsKey(rightBound)){
                 arr = hashMap.get(rightBound);
                 TimeCal.add(System.currentTimeMillis() - phase2, 1);
@@ -68,7 +68,6 @@ public class BIT {
 
             int index = IEJoin.getOffset(value, arr, ColC.getIndex(), ColD.getIndex(), order2 == IEJoin.Order.DESCENDING,
                     p2.getOperator() == Operator.GREATER_EQUAL || p2.getOperator() == Operator.LESS_EQUAL);
-
 
             if(index != 0){
                 res.offsetInNode.add(index);
@@ -84,7 +83,7 @@ public class BIT {
 
             for (int i = 0; i < res.NodeIndex.size(); ++i){
                 int tmp = res.NodeIndex.get(i);
-                int[] arr = hashMap.get(tmp);;
+                int[] arr = hashMap.get(tmp);
                 for(int j = 0; j < res.offsetInNode.get(i); ++j){
                     cluster.add(arr[j]);
                 }

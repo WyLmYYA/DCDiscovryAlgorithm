@@ -1,12 +1,8 @@
 package HyDCFinalVersion;
 
-import Hydra.ch.javasoft.bitset.IBitSet;
-import Hydra.ch.javasoft.bitset.search.NTreeSearch;
-import Hydra.de.hpi.naumann.dc.paritions.Cluster;
 import Hydra.de.hpi.naumann.dc.paritions.ClusterPair;
 import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
-import utils.TimeCal2;
 
 import java.util.*;
 
@@ -46,7 +42,7 @@ public class CPTree {
             CPTree cpTree = new CPTree(nextPre);
             List<ClusterPair> newResult = new ArrayList<>();
 
-            if (nextPre.needCombine() ){
+            if (nextPre.needCombine() && next >= 5){
                 if (needCombine == null){
                     cpTree.needCombine = nextPre;
                     cpTree.clusterPairs = clusterPairs;
@@ -54,14 +50,12 @@ public class CPTree {
                     return cpTree.add(addList, next + 1);
                 }else {
                     clusterPairs.forEach(clusterPair -> {
-                        TimeCal2.add(1,5);
                         clusterPair.refinePPPublic(new PredicatePair(needCombine.getInverse(), nextPre.getInverse()), MMCSDC.ieJoin, clusterPair1 -> newResult.add(clusterPair1));
                     });
                 }
 
             }else{
                 clusterPairs.forEach(clusterPair -> {
-                    TimeCal2.add(1,4);
                     clusterPair.refinePsPublic(nextPre.getInverse(), MMCSDC.ieJoin, newResult);
                 });
                 cpTree.needCombine = needCombine;
@@ -73,6 +67,9 @@ public class CPTree {
         }
     }
 
+    public void setNeedCombine(Predicate predicate){
+        this.needCombine = predicate;
+    }
     public List<ClusterPair> getClusterPairs(){
         return clusterPairs;
     }
