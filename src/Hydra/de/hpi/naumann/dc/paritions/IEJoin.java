@@ -309,10 +309,10 @@ public class  IEJoin {
 		Predicate p2 = predicatePair.getP2().getInverse();
 		calcForBIT(clusters, p1, p2, clusterPair -> Res.add(clusterPair));
 	}
-	public void calcForTest(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> Res){
-		// in mmcs we need to input inverse of predicate
-		calcForBIT(clusters, p1, p2, clusterPair -> Res.add(clusterPair));
-	}
+//	public void calcForTest(ClusterPair clusters, Predicate p1, Predicate p2, List<ClusterPair> Res){
+//		// in mmcs we need to input inverse of predicate
+//		calcForBIT(clusters, p1, p2, clusterPair -> Res.add(clusterPair));
+//	}
 	public void calcForBIT(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> Res){
 
 
@@ -323,9 +323,6 @@ public class  IEJoin {
 
 		int len1 = clusters.getC1().size();
 		int len2 = clusters.getC2().size();
-
-
-
 
 		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
 		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
@@ -359,13 +356,16 @@ public class  IEJoin {
 		Cluster lastC1 = null;
 		Cluster lastC2 = null;
 
+		System.out.println("phase1 init index cost:" + (System.currentTimeMillis() - phase1));
 
+		long phase2 = System.currentTimeMillis();
 		/** Step1:  init BIT with insert L_D */
 		for (int i = 0;i < len2; ++i){
 			int D = L_D[i];
 			bit.addTuple(B_D.get(D) + 1, D);
 		}
 
+		System.out.println("phase2 init BIT cost:" + (System.currentTimeMillis() - phase2));
 
 		IndexForBIT indexForBIT = new IndexForBIT();
 		for (int i = 0; i < len1; ++i){
@@ -379,7 +379,7 @@ public class  IEJoin {
  			Cluster c1 = new Cluster(A);
 			Cluster c2 = new Cluster();
 
-			long phase2 = System.currentTimeMillis();
+
 			if (A == 5557){
 				System.out.println("");
 			}
@@ -578,8 +578,9 @@ public class  IEJoin {
 	}
 
 	/**
-	 *   IEjoin for predicates pair
+	 *   BITjoin for predicates pair
 	 */
+	public HashMap<PredicatePair, BIT> predicatePairBITHashMap = new HashMap<>();
 	@SuppressWarnings("rawtypes")
 	public void calc(ClusterPair clusters, Predicate p1, Predicate p2, Consumer<ClusterPair> Res){
 
@@ -592,40 +593,56 @@ public class  IEJoin {
 		int len1 = clusters.getC1().size();
 		int len2 = clusters.getC2().size();
 
-
-
-
 		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
 		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
 		ParsedColumn<?> columnC =  p2.getOperand1().getColumn();
 		ParsedColumn<?> columnD =  p2.getOperand2().getColumn();
 
-		BIT bit = new BIT(len2,columnC, columnD);
+
 
 		Order order1 = getSortingOrder(p1);
 		Order order2 = getSortingOrder(p2);
 
-		bit.order2 = order2;
-		bit.p2 = p2;
-
 		int[] L_A = getSortedArray(clusters.getC1(), columnA, order1);
 		int[] L_B = getSortedArray(clusters.getC2(), columnB, order1);
+		int[] L_C = getSortedArray(clusters.getC2(), columnC, order2);
 		int[] L_D = getSortedArray(clusters.getC2(), columnD, order2);
 
 		int[] O1 = getOffsetArray(L_A, L_B, columnA.getIndex(), columnB.getIndex(), order1 == Order.DESCENDING,
 				p1.getOperator() == Operator.GREATER_EQUAL || p1.getOperator() == Operator.LESS_EQUAL);
 
+		int[] O2 = getOffsetArray(L_D, L_C, columnA.getIndex(), columnB.getIndex(), order1 == Order.DESCENDING,
+				p1.getOperator() == Operator.GREATER_EQUAL || p1.getOperator() == Operator.LESS_EQUAL);
+		Cluster lastC1 = null;
+		Cluster lastC2 = null;
+
+
+		long phase2_1 = System.currentTimeMillis();
 		HashMap<Integer, Integer> B_D = new HashMap<>();
 		for (int i = 0; i < len2; ++i){
 			B_D.put(L_B[i], i);
 		}
-//		HashMap<Integer, Integer> A_C = new HashMap<>();
-//		for (int i = 0; i < len1; ++i){
-//			A_C.put(L_A[i], i);
-//		}
+		HashMap<Integer, Integer> A_C = new HashMap<>();
+		for (int i = 0; i < len2; ++i){
+			A_C.put(L_C[i], i);
+		}
+		System.out.println("phase1_2 init BIT cost:" + (System.currentTimeMillis() - phase2_1));
 
-		Cluster lastC1 = null;
-		Cluster lastC2 = null;
+		System.out.println("phase1 init index cost:" + (System.currentTimeMillis() - phase1));
+
+		long phase2 = System.currentTimeMillis();
+		BIT bit;
+		PredicatePair predicatePair = new PredicatePair(p1, p2);
+//		if (predicatePairBITHashMap.containsKey(predicatePair)){
+//			bit = predicatePairBITHashMap.get(predicatePair);
+//		}else{
+//			bit = new BIT(len2,columnC, columnD);
+//			bit.order2 = order2;
+//			bit.p2 = p2;
+//		}
+		bit = new BIT(len2,columnC, columnD);
+		bit.order2 = order2;
+		bit.p2 = p2;
 
 
 		/** Step1:  init BIT with insert L_D */
@@ -635,7 +652,10 @@ public class  IEJoin {
 		}
 
 
+		System.out.println("phase2 init BIT cost:" + (System.currentTimeMillis() - phase2));
 		IndexForBIT indexForBIT = new IndexForBIT();
+		long phase3Time = 0;
+		long phase3Num = 0;
 		for (int i = 0; i < len1; ++i){
 			/** Phase2:  get cluster */
 			int A = L_A[i];
@@ -647,8 +667,16 @@ public class  IEJoin {
 			Cluster c1 = new Cluster(A);
 			Cluster c2 = new Cluster();
 
-			long phase2 = System.currentTimeMillis();
-			IndexForBIT next = bit.getSum(offsetForAandB, A, c2, indexForBIT);
+
+			long cur = System.currentTimeMillis();
+			IndexForBIT next = bit.getSum(offsetForAandB, A, c2, indexForBIT, A_C, O2);
+
+			if (System.currentTimeMillis() - cur > 0)
+			{
+				phase3Num ++;
+				phase3Time += System.currentTimeMillis() - cur;
+			}
+
 
 			if(indexForBIT.equals(next)  && next.hasNext() && lastC1 != null){
 				lastC1.add(A);
@@ -657,8 +685,6 @@ public class  IEJoin {
 			}else{
 				indexForBIT = next;
 			}
-
-			long phase3 = System.currentTimeMillis();
 			if ( next.hasNext() ){
 
 				/** Phase3: other operation the same as IEJoin */
@@ -693,7 +719,8 @@ public class  IEJoin {
 				lastC2 = lastC1 = null;
 			}
 		}
-
+		System.out.println("phase3 add result cost:" +  phase3Time);
+		System.out.println("phase3 add result Num:" +  phase3Num);
 		if(lastC1 != null) {
 			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
 			Res.accept(pairLast);
@@ -751,7 +778,7 @@ public class  IEJoin {
 //		EtmPoint pointJ = etmMonitor.createPoint("Join");
 		Cluster lastC1 = null;
 		Cluster lastC2 = null;
-
+		System.out.println("phase1 init index cost:" + (System.currentTimeMillis() - phase1));
 
 		/** begin with scanning L2  here can replace with clusters.getC2().size()*/
 		for (int i = 0; i < clusters.getC1().size(); ++i) {
@@ -889,13 +916,14 @@ public class  IEJoin {
 		Cluster lastC2 = null;
 
 
-		TimeCal.add(System.currentTimeMillis() - phase1, 0);
+		System.out.println("phase1 init index cost:" + (System.currentTimeMillis() - phase1));
+		long phase2Time = 0;
+		long phase2Num = 0;
 		/** begin with scanning L2  here can replace with clusters.getC2().size()*/
 		for (int i = 0; i < clusters.getC1().size(); ++i) {
 			// relative position of r_i in L2'
 			/** the first bigger off2 in L2' than L2[i]*/
 			/** Phase2:  get cluster */
-			long phase2 = System.currentTimeMillis();
 			int off2 = O2[i];
 
 
@@ -926,22 +954,19 @@ public class  IEJoin {
 			for (int k = bitset.nextSetBit(start2); k >= 0; k = bitset.nextSetBit(k + 1))
 				++count;
 
-
-
-
 			if (count > 0) {
 				TimeCal.add(1, 3);
 				Cluster c2 = new Cluster(new TIntArrayList(count));
 
 				// Tax10k 10s
-				long timeForAddRes = System.currentTimeMillis();
+				long phase2 = System.currentTimeMillis();
+
 				for (int k = bitset.nextSetBit(start2); k >= 0; k = bitset.nextSetBit(k + 1))
 					c2.add(L1_[k]);
-				TimeCal.add(System.currentTimeMillis() - timeForAddRes, 4);
+				phase2Num ++;
+				phase2Time += System.currentTimeMillis() - phase2;
 
-				TimeCal.add(System.currentTimeMillis() - phase2, 1);
 				/** Phase3: other operation the same as IEJoin */
-				long phase3 = System.currentTimeMillis();
 				ClusterPair pair = new ClusterPair(c1, c2);
 				if (pair.containsLinePair()) {
 					if (lastC2 != null && c2.equals(lastC2)) {
@@ -963,8 +988,6 @@ public class  IEJoin {
 
 					lastC2 = lastC1 = null;
 				}
-
-				TimeCal.add(System.currentTimeMillis() - phase3, 2);
 			} else {
 				if(lastC1 != null) {
 					ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
@@ -973,6 +996,8 @@ public class  IEJoin {
 				lastC2 = lastC1 = null;
 			}
 		}
+		System.out.println("phase2 add result cost:" + phase2Time) ;
+		System.out.println("phase2 add result Num:" + phase2Num) ;
 		if(lastC1 != null) {
 			ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
 			res.add(pairLast);
@@ -999,7 +1024,6 @@ public class  IEJoin {
 		int[] L1 = getSortedArray(clusters.getC1(), columnX, order1);
 		int[] L1_ = getSortedArray(clusters.getC2(), columnX_, order1);
 
-		
 		int start2 = 0;
 
 		/** begin algorithm with scanning L1 */
