@@ -153,10 +153,13 @@ public class MMCSNode {
     // 2、选择性可以让前面的clusterPair尽快变小
     // 3、尽可能多的共享深度遍历前面已有的clusterPair
     // 当一个集合是MMCS的一个覆盖时，我们进行refine，也就是验证
+
+    public static int allValid = 0, sharedNum = 0;
     public void refine(){
         // 先找到第一个clusterPair不为空的父节点
         MMCSNode firstParent = this;
         List<MMCSNode> needRefined = new ArrayList<>();
+        int num = 0;
         while(firstParent.clusterPairs == null){
             // 按照MMCS遍历的顺序插入列表，所以父节点是插入头部
             needRefined.add(0, firstParent);
@@ -165,6 +168,10 @@ public class MMCSNode {
 
         // 用来记录上一个节点的clusterPair
         List<ClusterPair> curClusterPairs = firstParent.clusterPairs;
+
+        sharedNum += this.element.cardinality() - curClusterPairs.size();
+
+        allValid ++;
         // 父节点遗留的不等谓词
         Predicate preNeedCombine = firstParent.needCombinePre;
 

@@ -183,9 +183,9 @@ public class MMCSDC {
             IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
 
             // 子节点
-            System.out.println("used mem: " + (Runtime.getRuntime().totalMemory()) / (1024.0 * 1024) + "M");
+//            System.out.println("used mem: " + (Runtime.getRuntime().totalMemory()) / (1024.0 * 1024) + "M");
             MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
-            System.out.println("used mem: " + (Runtime.getRuntime().totalMemory()) / (1024.0 * 1024) + "M");
+//            System.out.println("used mem: " + (Runtime.getRuntime().totalMemory()) / (1024.0 * 1024) + "M");
 
             if(childNode.isGlobalMinimal()){
                 HashEvidenceSet tmp = walkDown(childNode);
@@ -195,7 +195,7 @@ public class MMCSDC {
                 nextCandidatePredicates.set(next);
             }
         }
-        currentNode = null;
+//        currentNode = null;
         return ret;
 
 

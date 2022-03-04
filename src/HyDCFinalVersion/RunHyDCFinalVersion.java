@@ -87,6 +87,8 @@ public class RunHyDCFinalVersion {
 
         System.out.println("valid and get clusterPair time : " + MMCSDC.validTime);
 
+        System.out.println("average shared times: " + (MMCSNode.sharedNum / MMCSNode.allValid));
+
     }
 
     private static void calculatePredicate(HashEvidenceSet set) {
