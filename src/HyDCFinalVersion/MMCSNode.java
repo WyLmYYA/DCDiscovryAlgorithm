@@ -163,14 +163,16 @@ public class MMCSNode {
         while(firstParent.clusterPairs == null){
             // 按照MMCS遍历的顺序插入列表，所以父节点是插入头部
             needRefined.add(0, firstParent);
+            System.out.println(firstParent.curPred.coverSize);
             firstParent = firstParent.parentNode;
         }
 
         // 用来记录上一个节点的clusterPair
         List<ClusterPair> curClusterPairs = firstParent.clusterPairs;
 
-        sharedNum += this.element.cardinality() - curClusterPairs.size();
+        sharedNum += this.element.cardinality() - needRefined.size();
 
+        System.out.println(this.element.cardinality() - needRefined.size());
         allValid ++;
         // 父节点遗留的不等谓词
         Predicate preNeedCombine = firstParent.needCombinePre;

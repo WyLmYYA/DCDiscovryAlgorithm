@@ -24,7 +24,7 @@ public class RunHyDCFinalVersion {
         String file ="dataset//CLAIM_2.csv";
         int size = 30000;
          file ="dataset//Tax10k.csv";
-         size = 10000;
+         size = 1000;
          sampleRounds = (int) (size * 0.01);
 //        file =args[0];
 //        size = Integer.parseInt(args[1]);

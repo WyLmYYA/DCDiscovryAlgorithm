@@ -110,28 +110,28 @@ public class MMCSDC {
 
         // minimize in mmcs,
         HashEvidenceSet ret = new HashEvidenceSet();
+        if(ENABLE_TRANSITIVE_CHECK){
+            long l1 = System.currentTimeMillis();
+            for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
+                IBitSet tmp = currentNode.element.clone();
+                tmp.set(ne, false);
+                for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
+                    int index = indexProvider.getIndex(p2);
+                    if (index < numberOfPredicates){
+                        tmp.set(indexProvider.getIndex(p2));
+                    }
+                }
 
+                if (treeSearch.containsSubset(tmp))return ret;
+            }
+            TimeCal2.add((System.currentTimeMillis() - l1), 1);
+        }
         // 如果当前谓词集合能覆盖住当前的evidence集合，那么就是一个候选dc了，要对其进行valid
         if (currentNode.canCover()){
 
             // 如果是验证过后，并且已经用过clusterPair获得过完整evidence节点的子节点，那么就不需要其他操作，直接添加就可
             if(currentNode.needRefine){
-                if(ENABLE_TRANSITIVE_CHECK){
-                    long l1 = System.currentTimeMillis();
-                    for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
-                        IBitSet tmp = currentNode.element.clone();
-                        tmp.set(ne, false);
-                        for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
-                            int index = indexProvider.getIndex(p2);
-                            if (index < numberOfPredicates){
-                                tmp.set(indexProvider.getIndex(p2));
-                            }
-                        }
 
-                        if (treeSearch.containsSubset(tmp))return ret;
-                    }
-                    TimeCal2.add((System.currentTimeMillis() - l1), 1);
-                }
 //                currentNode.refineBySelectivity(cpTree);
                 long l1 = System.currentTimeMillis();
                 currentNode.refine();
