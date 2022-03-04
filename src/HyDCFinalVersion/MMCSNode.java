@@ -37,12 +37,16 @@ public class MMCSNode {
      * params added for hyDC
      */
 
+
+    private List<ClusterPair> clusterPairs;
 //    public List<MMCSNode> nodesInPath = new ArrayList<>();
     private MMCSNode parentNode;
 
     public Predicate curPred;
 
     public boolean needRefine = true;
+
+    private Predicate needCombinePre;
 
 
 
@@ -56,7 +60,8 @@ public class MMCSNode {
 
         candidatePredicates = MMCSDC.candidatePredicates;
 
-//        clusterPairs.add(StrippedPartition.getFullParition(lineCount));
+        clusterPairs = new ArrayList<>();
+        clusterPairs.add(StrippedPartition.getFullParition(lineCount));
 
         crit = new ArrayList<>(numberOfPredicates);
         for (int i = 0; i < numberOfPredicates; ++i){
@@ -143,41 +148,99 @@ public class MMCSNode {
 
     }
 
-
-    public void refineBySelectivity(CPTree cpTree){
-//        List<Predicate> needCombination = new ArrayList<>();
-        List<Predicate> refiners = new ArrayList<>();
-//        HashMap<PartitionRefiner, Integer> selectivity = new HashMap<>();
-        MMCSNode tmp = this;
-
-        // get all nodes in path
-        while (tmp.curPred != null && tmp != null){
-            refiners.add(tmp.curPred);
-            tmp = tmp.parentNode;
+    // MMCS中加入了谓词选择，那么MMCS的深度遍历顺序就是选择性从高到低，那么共享的clusterPair就肯定在一条路上
+    // 1、可以控制内存中只保持一条路的内存使用
+    // 2、选择性可以让前面的clusterPair尽快变小
+    // 3、尽可能多的共享深度遍历前面已有的clusterPair
+    // 当一个集合是MMCS的一个覆盖时，我们进行refine，也就是验证
+    public void refine(){
+        // 先找到第一个clusterPair不为空的父节点
+        MMCSNode firstParent = this;
+        List<MMCSNode> needRefined = new ArrayList<>();
+        while(firstParent.clusterPairs == null){
+            // 按照MMCS遍历的顺序插入列表，所以父节点是插入头部
+            needRefined.add(0, firstParent);
+            firstParent = firstParent.parentNode;
         }
 
-        // sort
-        long l1 = System.currentTimeMillis();
-        sortPredicate(refiners);
-        // find subset
-        CPTree cpTree1 = cpTree.add(refiners, 0);
-        if (cpTree1.getNeedCombine() != null){
-            List<ClusterPair> newResult = new ArrayList<>();
-            cpTree1.getClusterPairs().forEach(clusterPair -> {
-                clusterPair.refinePsPublic(cpTree1.getNeedCombine().getInverse(), MMCSDC.ieJoin, newResult);
+        // 用来记录上一个节点的clusterPair
+        List<ClusterPair> curClusterPairs = firstParent.clusterPairs;
+        // 父节点遗留的不等谓词
+        Predicate preNeedCombine = firstParent.needCombinePre;
+
+        for (MMCSNode mmcsNode : needRefined){
+            // 如果是==，<>直接进行refine
+            if (!mmcsNode.curPred.needCombine()){
+                List<ClusterPair> newRes = new ArrayList<>();
+                curClusterPairs.forEach(clusterPair -> {
+                    clusterPair.refinePsPublic(mmcsNode.curPred.getInverse(), MMCSDC.ieJoin, newRes);
+                });
+                mmcsNode.clusterPairs = newRes;
+                if (preNeedCombine != null) mmcsNode.needCombinePre = preNeedCombine;
+            }else{
+                // 如果是不等谓词，需要看前面是否有落单的不等谓词
+                if (preNeedCombine == null){
+                    // 如果没有，那么继承父节点的clusterPair
+                    mmcsNode.needCombinePre = mmcsNode.curPred;
+                    preNeedCombine = mmcsNode.curPred;
+                    mmcsNode.clusterPairs = curClusterPairs;
+                }else{
+                    // 如果刚好可以凑成一对
+                    List<ClusterPair> newRes = new ArrayList<>();
+                    Predicate finalPreNeedCombine = preNeedCombine;
+                    curClusterPairs.forEach(clusterPair -> {
+                        clusterPair.refinePPPublic(new PredicatePair(finalPreNeedCombine.getInverse(), mmcsNode.curPred.getInverse()), MMCSDC.ieJoin, clusterPair1 -> newRes.add(clusterPair1));
+                    });
+                    mmcsNode.clusterPairs = newRes;
+                    preNeedCombine = null;
+                }
+            }
+            // 改变引用对象
+            curClusterPairs = mmcsNode.clusterPairs;
+        }
+        if (preNeedCombine != null) {
+            List<ClusterPair> newRes = new ArrayList<>();
+            curClusterPairs.forEach(clusterPair -> {
+                clusterPair.refinePsPublic(needCombinePre.getInverse(), MMCSDC.ieJoin, newRes);
             });
-            cpTree1.setClusterPairs(newResult);
-            cpTree1.setNeedCombine(null);
-            MMCSDC.clusterPairs = newResult;
-        }else
-            MMCSDC.clusterPairs = cpTree1.getClusterPairs();
+            clusterPairs = newRes;
+            this.needCombinePre = null;
+        }
 
-
-        TimeCal2.add((System.currentTimeMillis() - l1), 0);
 
 
 
     }
+//    public void refineBySelectivity(CPTree cpTree){
+////        List<Predicate> needCombination = new ArrayList<>();
+//        List<Predicate> refiners = new ArrayList<>();
+////        HashMap<PartitionRefiner, Integer> selectivity = new HashMap<>();
+//        MMCSNode tmp = this;
+//
+//        // get all nodes in path
+//        while (tmp.curPred != null && tmp != null){
+//            refiners.add(tmp.curPred);
+//            tmp = tmp.parentNode;
+//        }
+//
+//        // sort
+//        long l1 = System.currentTimeMillis();
+//        sortPredicate(refiners);
+//        // find subset
+//        CPTree cpTree1 = cpTree.add(refiners, 0);
+//        if (cpTree1.getNeedCombine() != null){
+//            List<ClusterPair> newResult = new ArrayList<>();
+//            cpTree1.getClusterPairs().forEach(clusterPair -> {
+//                clusterPair.refinePsPublic(cpTree1.getNeedCombine().getInverse(), MMCSDC.ieJoin, newResult);
+//            });
+//            cpTree1.setClusterPairs(newResult);
+//            cpTree1.setNeedCombine(null);
+//            MMCSDC.clusterPairs = newResult;
+//        }else
+//            MMCSDC.clusterPairs = cpTree1.getClusterPairs();
+//        TimeCal2.add((System.currentTimeMillis() - l1), 0);
+//
+//    }
     private void sortPredicate(List<Predicate> list){
         Collections.sort(list, new Comparator<Predicate>() {
             @Override
@@ -224,7 +287,7 @@ public class MMCSNode {
         if (MMCSDC.partitionEvidenceSetBuilder == null){
             MMCSDC.partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts());
         }
-        for (ClusterPair clusterPair : MMCSDC.clusterPairs){
+        for (ClusterPair clusterPair : clusterPairs){
 
             MMCSDC.partitionEvidenceSetBuilder.addEvidencesForHyDC(clusterPair, newEvi);
         }
@@ -244,14 +307,14 @@ public class MMCSNode {
         }
 
         uncoverEvidenceSet.add(newEvi);
-        MMCSDC.clusterPairs = null;
+        clusterPairs = null;
         needRefine = false;
         return newEvi;
     }
     public boolean isValidResult(){
         // there may be {12} : {12, 12}, so need to add one step to judge
-        if (MMCSDC.clusterPairs == null)return true;
-        for (ClusterPair clusterPair : MMCSDC.clusterPairs){
+        if (clusterPairs == null)return true;
+        for (ClusterPair clusterPair : clusterPairs){
 //            Iterator<LinePair> iter = clusterPair.getLinePairIterator();
 //            while (iter.hasNext()) {
 //                LinePair lPair = iter.next();

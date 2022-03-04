@@ -24,7 +24,7 @@ public class RunHyDCFinalVersion {
         String file ="dataset//CLAIM_2.csv";
         int size = 30000;
          file ="dataset//Tax10k.csv";
-         size = 1000;
+         size = 10000;
          sampleRounds = (int) (size * 0.01);
 //        file =args[0];
 //        size = Integer.parseInt(args[1]);
@@ -85,8 +85,7 @@ public class RunHyDCFinalVersion {
         System.out.println("dc result :" + denialConstraintSet.size());
         System.out.println("minimize cost:" + (System.currentTimeMillis() - l1));
 
-        System.out.println("valid and get clusterPair time : " + TimeCal2.getTime(0));
-        System.out.println("calculate evidence set time : " + TimeCal2.getTime(1));
+        System.out.println("valid and get clusterPair time : " + MMCSDC.validTime);
 
     }
 

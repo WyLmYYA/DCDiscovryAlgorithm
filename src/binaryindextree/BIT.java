@@ -40,9 +40,6 @@ public class BIT {
         }
         this.length = length + 1;
     }
-    public void init(){
-        nodes = null;
-    }
 
     /**
      * add tupleId to index, we should add same id to manager of index
@@ -54,51 +51,6 @@ public class BIT {
         }
     }
 
-    public IndexForBIT getSum(int rightBound, int value, Cluster cluster, IndexForBIT indexForBIT, HashMap<Integer,Integer> A_C, int[] O2) {
-        IndexForBIT res = new IndexForBIT();
-
-        while (rightBound > 0) {
-            long phase2 = System.currentTimeMillis();
-            int[] arr;
-            if (hashMap.containsKey(rightBound)){
-                arr = hashMap.get(rightBound);
-                TimeCal.add(System.currentTimeMillis() - phase2, 1);
-            }
-            else{
-                arr = nodes[rightBound].toArray();
-                hashMap.put(rightBound, arr);
-            }
-
-//            int index = IEJoin.getOffset(value, arr, ColC.getIndex(), ColD.getIndex(), order2 == IEJoin.Order.DESCENDING,
-//                    p2.getOperator() == Operator.GREATER_EQUAL || p2.getOperator() == Operator.LESS_EQUAL);
-
-            int index1 = O2[A_C.get(value)];
-//            if(index != index1){
-//                System.out.println("s");
-//            }
-            if(index1 != 0){
-                res.offsetInNode.add(index1);
-                res.NodeIndex.add(rightBound);
-            }
-
-            rightBound -= lowbit(rightBound);
-        }
-
-        if (res.equals(indexForBIT)){
-            return res;
-        }else {
-
-            for (int i = 0; i < res.NodeIndex.size(); ++i){
-                int tmp = res.NodeIndex.get(i);
-                int[] arr = hashMap.get(tmp);
-                for(int j = 0; j < res.offsetInNode.get(i); ++j){
-                    cluster.add(arr[j]);
-                }
-            }
-
-        }
-        return res;
-    }
     public IndexForBIT getSum(int rightBound, int value, Cluster cluster, IndexForBIT indexForBIT) {
         IndexForBIT res = new IndexForBIT();
 
@@ -140,6 +92,7 @@ public class BIT {
         }
         return res;
     }
+
     public int getSum(int rightBound, int value, Cluster cluster, int pre) {
         int res = 0;
         boolean first = true;
