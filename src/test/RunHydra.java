@@ -27,8 +27,8 @@ public class RunHydra {
 //		String sizeline ="100";
 //		String line ="dataset//Test.csv";
 //		String sizeline ="7";
-		String line ="dataset//inspection.csv";
-		String sizeline ="100";
+		String line ="dataset//Tax10k.csv";
+		String sizeline ="1000";
 //		 line =args[0];
 //		 sizeline =args[1];
 
@@ -40,11 +40,11 @@ public class RunHydra {
 		RelationalInput data = new RelationalInput(datafile);
 		Input input = new Input(data,size);
 		PredicateBuilder predicates;
-		if (args.length == 3)
-			predicates = new PredicateBuilder(new File(args[2]),input);
-		else
-			predicates = new PredicateBuilder(input, false, 0.3d);
-
+//		if (args.length == 3)
+//			predicates = new PredicateBuilder(new File(args[2]),input);
+//		else
+//			predicates = new PredicateBuilder(input, false, 0.3d);
+		predicates = new PredicateBuilder(new File("dataset//atom_dc.txt"),input);
 		num = predicates.getPredicates().size();
 		System.out.println("predicate space:"+predicates.getPredicates().size());
 

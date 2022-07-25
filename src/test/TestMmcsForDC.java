@@ -47,9 +47,13 @@ public class TestMmcsForDC {
     public static void main(String[] args) throws InputIterationException, IOException {
         long DCBegin = System.currentTimeMillis();
         String dataFile ="dataset//Tax10k.csv";
-        int lineSize=10000;
+        int lineSize=1000;
+//        dataFile =args[0];
+//        lineSize = Integer.parseInt(args[1]);
 
-        getPredicates(dataFile, lineSize);
+        String preFile = "";
+        if (args.length == 3)preFile = args[2];
+        getPredicates(dataFile, lineSize, preFile);
 
 //        Hydra hydra = new Hydra();
 //        DenialConstraintSet dcs = hydra.run(input, predicates, 0 );
@@ -134,15 +138,17 @@ public class TestMmcsForDC {
         return result;
     }
 
-    private static void getPredicates(String dataFile, int lineSize) throws IOException, InputIterationException {
+    private static void getPredicates(String dataFile, int lineSize, String preFile) throws IOException, InputIterationException {
         RelationalInput data = new RelationalInput(new File(dataFile));
         Input inputTmp = new Input(data,lineSize);
-        PredicateBuilder predicateBuilder = new PredicateBuilder(inputTmp, false, 0.3d);
-
-        predicates = predicateBuilder;
+        if (preFile.length() != 0){
+            predicates = new PredicateBuilder(new File(preFile), inputTmp);
+        }else {
+            predicates = new PredicateBuilder(inputTmp, false, 0.3d);
+        }
         input = inputTmp;
 
-        System.out.println("predicate space:"+predicateBuilder.getPredicates().size());
+        System.out.println("predicate space:"+predicates.getPredicates().size());
 
     }
 }

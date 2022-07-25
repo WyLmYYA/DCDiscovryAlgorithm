@@ -13,6 +13,7 @@ import utils.TimeCal2;
 
 import java.util.*;
 
+import static HyDCFinalVersion.RunHyDCFinalVersion.begFreeMem;
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 public class MMCSNode {
@@ -144,11 +145,18 @@ public class MMCSNode {
     }
 
 
+    static int dcNum = 0;
+    static int curShareLen = -1;
+    static int shareSum = 0;
     public void refineBySelectivity(CPTree cpTree){
 //        List<Predicate> needCombination = new ArrayList<>();
         List<Predicate> refiners = new ArrayList<>();
 //        HashMap<PartitionRefiner, Integer> selectivity = new HashMap<>();
         MMCSNode tmp = this;
+        dcNum ++;
+//        if (dcNum == 5){
+//            cpTree.deleteCurrentNode();
+//        }
 
         // get all nodes in path
         while (tmp.curPred != null && tmp != null){
@@ -160,7 +168,13 @@ public class MMCSNode {
         long l1 = System.currentTimeMillis();
         sortPredicate(refiners);
         // find subset
+//        long meme = Runtime.getRuntime().freeMemory();
+        curShareLen = -1;
         CPTree cpTree1 = cpTree.add(refiners, 0);
+        shareSum += curShareLen;
+//        System.out.println("add 之后使用内存： " +
+//                (( meme - Runtime.getRuntime().freeMemory()) / 1048576) + "M");
+        long l2 = System.currentTimeMillis();
         if (cpTree1.getNeedCombine() != null){
             List<ClusterPair> newResult = new ArrayList<>();
             cpTree1.getClusterPairs().forEach(clusterPair -> {
@@ -182,7 +196,15 @@ public class MMCSNode {
         Collections.sort(list, new Comparator<Predicate>() {
             @Override
             public int compare(Predicate o1, Predicate o2) {
-                return o2.coverSize - o1.coverSize;
+                if (o1.isEqual()){
+                    if (o2.isEqual())return o2.coverSize - o1.coverSize;
+                    else return -1;
+                }else{
+                    if (o2.isEqual()) return 1;
+                    else return o2.coverSize - o1.coverSize;
+                }
+//                return o1.coverSize - o2.coverSize;
+
 
             }
         });

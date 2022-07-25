@@ -26,6 +26,7 @@ import utils.TimeCal2;
 
 import java.util.*;
 
+import static HyDCFinalVersion.RunHyDCFinalVersion.begFreeMem;
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 /**
@@ -69,7 +70,9 @@ public class MMCSDC {
 
     NTreeSearch treeSearch = new NTreeSearch();
 
-    CPTree cpTree = new CPTree();
+    CPTree cpTree;
+
+    public static List<ClusterPair> initClusterPairs;
 
     public static List<ClusterPair> clusterPairs;
 
@@ -86,10 +89,9 @@ public class MMCSDC {
         for (int i = 0; i < numberOfPredicates; ++i){
             candidatePredicates.set(i);
         }
+        initClusterPairs = new ArrayList<>();
+        initClusterPairs.add(StrippedPartition.getFullParition(input.getLineCount()));
 
-        List<ClusterPair> clusterPairs = new ArrayList<>();
-        clusterPairs.add(StrippedPartition.getFullParition(input.getLineCount()));
-        cpTree.setClusterPairs(clusterPairs);
 
         initiate(evidenceSetToCover);
 
@@ -119,6 +121,7 @@ public class MMCSDC {
             //  check is there any predicate needed combination not be refined, and update cluster pair
 
             if(currentNode.needRefine){
+//                System.out.println("need refine ");
                 if(ENABLE_TRANSITIVE_CHECK){
                     long l1 = System.currentTimeMillis();
                     for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
@@ -186,22 +189,28 @@ public class MMCSDC {
         for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
 
             /** get Trivial prune */
+            if (currentNode.curPred == null) {
+                cpTree = new CPTree();
+                cpTree.setClusterPairs(initClusterPairs);
+            }
             IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
 
             MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
 
             if(childNode.isGlobalMinimal()){
                 HashEvidenceSet tmp = walkDown(childNode);
-
                 currentNode.uncoverEvidenceSet.add(tmp);
                 ret.add(tmp);
                 nextCandidatePredicates.set(next);
                 tmp = null;
 
             }
+
             childNode = null;
 
         }
+
+
         return ret;
 
 

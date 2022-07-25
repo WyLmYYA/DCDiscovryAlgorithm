@@ -92,6 +92,9 @@ public class Predicate implements PartitionRefiner {
 		inverse = predicateProvider.getPredicate(op.getInverse(), operand1, operand2);
 		return inverse;
 	}
+	public boolean isEqual(){
+		return op == Operator.EQUAL || op == Operator.UNEQUAL;
+	}
 
 	public boolean satisfies(int line1, int line2) {
 		return op.eval(operand1.getValue(line1, line2), operand2.getValue(line1, line2));
