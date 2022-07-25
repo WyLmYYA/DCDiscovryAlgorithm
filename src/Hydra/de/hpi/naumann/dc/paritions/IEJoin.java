@@ -71,17 +71,17 @@ public class  IEJoin {
 
 	private static Order getSortingOrder(int pos, Predicate p) {
 		switch (p.getOperator()) {
-		case GREATER:
-		case GREATER_EQUAL:
-			return pos == 0 ? Order.DESCENDING : Order.ASCENDING;
-		case LESS:
-		case LESS_EQUAL:
-			return pos == 0 ? Order.ASCENDING : Order.DESCENDING;
-		case EQUAL:
-		case UNEQUAL:
-		default:
-			// WRONG STATE;
-			break;
+			case GREATER:
+			case GREATER_EQUAL:
+				return pos == 0 ? Order.DESCENDING : Order.ASCENDING;
+			case LESS:
+			case LESS_EQUAL:
+				return pos == 0 ? Order.ASCENDING : Order.DESCENDING;
+			case EQUAL:
+			case UNEQUAL:
+			default:
+				// WRONG STATE;
+				break;
 		}
 		return null;
 	}
@@ -117,7 +117,7 @@ public class  IEJoin {
 	}
 
 	public static int[] getOffsetArray(int[] l2, int[] l2_, int column1, int column2, boolean c2Rev,
-			boolean equal) {
+									   boolean equal) {
 		final int size = l2.length;
 		int[] result = new int[size];
 		for (int i = 0; i < size; ++i) {
@@ -376,7 +376,7 @@ public class  IEJoin {
 			if(offsetForAandB == 0)
 				continue;
 //			int C_value = A_C.get(A);
- 			Cluster c1 = new Cluster(A);
+			Cluster c1 = new Cluster(A);
 			Cluster c2 = new Cluster();
 
 			long phase2 = System.currentTimeMillis();
@@ -808,7 +808,7 @@ public class  IEJoin {
 							ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
 							consumer.accept(pairLast);
 						}
-						
+
 						lastC2 = c2;
 						lastC1 = c1;
 					}
@@ -817,7 +817,7 @@ public class  IEJoin {
 						ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
 						consumer.accept(pairLast);
 					}
-					
+
 					lastC2 = lastC1 = null;
 				}
 
@@ -983,7 +983,7 @@ public class  IEJoin {
 	/**
 	 * @Description: for single predicates  IEjoin
 	 * this way is Inequality join, not the best way described in Hydra paper
-	*/
+	 */
 	public void calc(ClusterPair clusters, Predicate p1, Consumer<ClusterPair> consumer) {
 
 		/** get operator and column  */
@@ -999,7 +999,7 @@ public class  IEJoin {
 		int[] L1 = getSortedArray(clusters.getC1(), columnX, order1);
 		int[] L1_ = getSortedArray(clusters.getC2(), columnX_, order1);
 
-		
+
 		int start2 = 0;
 
 		/** begin algorithm with scanning L1 */

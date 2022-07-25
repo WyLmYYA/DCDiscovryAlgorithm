@@ -58,7 +58,6 @@ public class PartitionEvidenceSetBuilder extends EvidenceSetBuilder {
 				int[] row2 = input2s[j];
 				PredicateBitSet set = getPredicateSet(staticSet, pairs, row1, row2);
 				evidenceSet.add(set);
-				TimeCal2.add(1, 3);
 				PredicateBitSet set2 = getPredicateSet(getStatic(pairs, row2), pairs, row2, row1);
 				evidenceSet.add(set2);
 

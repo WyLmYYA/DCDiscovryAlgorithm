@@ -39,38 +39,38 @@ public class Input {
 		int i = 0;
 		for (Column c : columns) {
 			switch (c.getType()) {
-			case LONG: {
-				ParsedColumn<Long> parsedColumn = new ParsedColumn<Long>(relationalInput.relationName(), c.getName(),
-						Long.class, i);
+				case LONG: {
+					ParsedColumn<Long> parsedColumn = new ParsedColumn<Long>(relationalInput.relationName(), c.getName(),
+							Long.class, i);
 
-				for (int l = 0; l < lineCount; ++l) {
-					parsedColumn.addLine(c.getLong(l));
+					for (int l = 0; l < lineCount; ++l) {
+						parsedColumn.addLine(c.getLong(l));
+					}
+					parsedColumns.add(parsedColumn);
 				}
-				parsedColumns.add(parsedColumn);
-			}
 				break;
-			case NUMERIC: {
-				ParsedColumn<Double> parsedColumn = new ParsedColumn<Double>(relationalInput.relationName(),
-						c.getName(), Double.class, i);
+				case NUMERIC: {
+					ParsedColumn<Double> parsedColumn = new ParsedColumn<Double>(relationalInput.relationName(),
+							c.getName(), Double.class, i);
 
-				for (int l = 0; l < lineCount; ++l) {
-					parsedColumn.addLine(c.getDouble(l));
+					for (int l = 0; l < lineCount; ++l) {
+						parsedColumn.addLine(c.getDouble(l));
+					}
+					parsedColumns.add(parsedColumn);
 				}
-				parsedColumns.add(parsedColumn);
-			}
 				break;
-			case STRING: {
-				ParsedColumn<String> parsedColumn = new ParsedColumn<String>(relationalInput.relationName(),
-						c.getName(), String.class, i);
+				case STRING: {
+					ParsedColumn<String> parsedColumn = new ParsedColumn<String>(relationalInput.relationName(),
+							c.getName(), String.class, i);
 
-				for (int l = 0; l < lineCount; ++l) {
-					parsedColumn.addLine(c.getString(l));
+					for (int l = 0; l < lineCount; ++l) {
+						parsedColumn.addLine(c.getString(l));
+					}
+					parsedColumns.add(parsedColumn);
 				}
-				parsedColumns.add(parsedColumn);
-			}
 				break;
-			default:
-				break;
+				default:
+					break;
 			}
 
 			++i;
@@ -143,7 +143,7 @@ public class Input {
 			}
 		}
 
-//		System.out.println("rebuild: " + (System.currentTimeMillis() - time));
+		System.out.println("rebuild: " + (System.currentTimeMillis() - time));
 		return input2s;
 	}
 

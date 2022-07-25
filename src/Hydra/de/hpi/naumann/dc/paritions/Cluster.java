@@ -32,6 +32,9 @@ public class Cluster {
     public void add(int index) {
 		this.array.add(index);
 	}
+	public void removeAll(Cluster c){
+		this.array.removeAll(c.array);
+	}
 
 	public void addAll(Cluster c) {
 		this.array.addAll(c.array);
