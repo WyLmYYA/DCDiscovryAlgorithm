@@ -12,13 +12,14 @@ import utils.TimeCal2;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 
 public class RunHydra {
 
 	public  static int num;
 	public static HashMap<String, PredicateBitSet> calP = new HashMap();
-	public static void main(String[] args) throws InputIterationException, IOException {
+	public static void main(String[] args) throws InputIterationException, IOException, ExecutionException, InterruptedException {
 		// TODO Auto-generated method stub
 		//		String line=args[0];
 

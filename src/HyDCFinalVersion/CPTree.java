@@ -6,6 +6,8 @@ import Hydra.de.hpi.naumann.dc.predicates.PredicatePair;
 import utils.TimeCal2;
 
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 /**
  * @Author yoyuan
@@ -36,7 +38,7 @@ public class CPTree {
     public void setClusterPairs(List<ClusterPair> clusterPairs){
         this.clusterPairs = clusterPairs;
     }
-    public CPTree add(List<Predicate> addList, int next){
+    public CPTree add(List<Predicate> addList, int next) throws InterruptedException, ExecutionException {
         if (next == addList.size()) return this;
         Predicate nextPre = addList.get(next);
         if (children.containsKey(nextPre)){
@@ -62,6 +64,40 @@ public class CPTree {
                     clusterPairs.forEach(clusterPair -> {
                         clusterPair.refinePPPublic(new PredicatePair(needCombine.getInverse(), nextPre.getInverse()), MMCSDC.ieJoin, clusterPair1 -> newResult.add(clusterPair1));
                     });
+
+////                    CountDownLatch countDownLatch = new CountDownLatch(2);
+
+//                    ExecutorService executorService = Executors.newFixedThreadPool(4);
+//                    List<Future> futures = new ArrayList<>();
+//                    int qua = clusterPairs.size() / 4;
+//                    int[] lef = new int[]{0,qua, qua * 2, qua *3};
+//                    int[] rig = new int[]{qua - 1, qua*2-1,qua*3-1,clusterPairs.size()-1};
+//                    for (int i = 0; i < 4; ++i){
+//
+//                        int finalI = i;
+//                        futures.add((Future<List<ClusterPair>>) executorService.submit(()->{
+//                            List<ClusterPair> tmp = new ArrayList<>();
+//                            for (int j = lef[finalI]; j <= rig[finalI ]; ++j){
+//                                clusterPairs.get(j).refinePPPublic(new PredicatePair(needCombine.getInverse(), nextPre.getInverse()), MMCSDC.ieJoin, clusterPair -> tmp.add(clusterPair));
+//                            }
+//                            return tmp;
+//                        }));
+//
+//
+//                    }
+//                    executorService.shutdown();
+//                    while (!executorService.isTerminated()){
+//
+//                    }
+//                    for (Future<List<ClusterPair>> future : futures){
+//                        future.get().forEach(clusterPair -> newResult.add(clusterPair));
+//                    }
+//
+//
+
+//                    executorService.awaitTermination(1, TimeUnit.SECONDS);
+//
+//                    countDownLatch.await();
                     TimeCal2.add((System.currentTimeMillis() - l1), 2);
                 }
 
@@ -70,9 +106,11 @@ public class CPTree {
                 clusterPairs.forEach(clusterPair -> {
                     clusterPair.refinePsPublic(nextPre.getInverse(), MMCSDC.ieJoin, newResult);
                 });
+
                 cpTree.needCombine = needCombine;
                 TimeCal2.add((System.currentTimeMillis() - l1), 2);
             }
+
 
             cpTree.clusterPairs = newResult;
             children.put(nextPre, cpTree);

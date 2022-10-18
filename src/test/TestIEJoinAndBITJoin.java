@@ -33,7 +33,7 @@ public class TestIEJoinAndBITJoin {
 
         long l1 = System.currentTimeMillis();
         System.out.println("test for IEJoin");
-        ieJoin.calc2ForTest(clusterPair, p1, p2, resForIEJoin);
+        ieJoin.calc(clusterPair, p1, p2, clusterPair1 -> resForIEJoin.add(clusterPair1));
         System.out.println("IEJoin Time " + (System.currentTimeMillis() - l1));
         int sum1 = (int) resForIEJoin.stream().mapToLong(ClusterPair::getLinePairCount).sum();
         System.out.println(resForIEJoin.stream().mapToLong(ClusterPair::getLinePairCount).sum());
@@ -41,7 +41,7 @@ public class TestIEJoinAndBITJoin {
 
         long l2 = System.currentTimeMillis();
         System.out.println("test for BITJoin");
-        ieJoin.calc(clusterPair, p1, p2, clusterPair1 -> resForBITJoin.add(clusterPair1));
+        ieJoin.calcForBIT(clusterPair, p1, p2, clusterPair1 -> resForBITJoin.add(clusterPair1));
         System.out.println("BITJoin Time " + (System.currentTimeMillis() - l2) );
 //        int sum2 = (int)resForBITJoin.stream().mapToLong(ClusterPair::getLinePairCount).sum();
         System.out.println(resForBITJoin.stream().mapToLong(ClusterPair::getLinePairCount).sum());
@@ -73,76 +73,38 @@ public class TestIEJoinAndBITJoin {
 
     public static void main(String[] args) throws IOException, InputIterationException {
 
-        String line ="dataset//Tax_100k.csv";
-        int sizeLine = 100000;
+        int[] sizes = new int[]{600000};
+        for(int j = 0; j < sizes.length; ++j){
+            String line ="dataset//ncvoter.csv";
+            int sizeLine = sizes[j];
 //        String line ="dataset//Test.csv";
 //        int sizeLine = 7;
-        int size=Integer.valueOf(sizeLine);
-        File datafile = new File(line);
+            int size=Integer.valueOf(sizeLine);
+            File datafile = new File(line);
 
-        RelationalInput data = new RelationalInput(datafile);
-        Input input = new Input(data,size);
-        PredicateBuilder predicates = new PredicateBuilder(input, false, 0.3d);
-        System.out.println("predicate space:"+predicates.getPredicates().size());
+            RelationalInput data = new RelationalInput(datafile);
+            Input input = new Input(data,size);
+            PredicateBuilder predicates = new PredicateBuilder(input, false, 0.3d);
+            System.out.println("predicate space:"+predicates.getPredicates().size());
 
-        int[] clu = new int[sizeLine];
-        for (int i = 0; i < sizeLine; ++i){
-            clu[i] = i;
+            int[] clu = new int[sizeLine];
+            for (int i = 0; i < sizeLine; ++i){
+                clu[i] = i;
+            }
+            Cluster cluster1 = new Cluster(new TIntArrayList(clu));
+            Cluster cluster2 = new Cluster(new TIntArrayList(clu));
+            ClusterPair clusterPair = new ClusterPair(cluster1, cluster2);
+            List<Predicate> predicates1 = new ArrayList<>(predicates.getPredicates());
+
+            Predicate pre1 = new Predicate(Operator.GREATER,new ColumnOperand<>(input.getColumns()[12], 12),
+                    new ColumnOperand<>(input.getColumns()[50], 50) );
+            Predicate pre2 = new Predicate(Operator.LESS,new ColumnOperand<>(input.getColumns()[12], 12),
+                    new ColumnOperand<>(input.getColumns()[48], 48) );
+            System.out.println(pre1);
+            System.out.println(pre2);
+            run(input, clusterPair, pre1, pre2);
         }
-        Cluster cluster1 = new Cluster(new TIntArrayList(clu));
-        Cluster cluster2 = new Cluster(new TIntArrayList(clu));
-        ClusterPair clusterPair = new ClusterPair(cluster1, cluster2);
-        List<Predicate> predicates1 = new ArrayList<>(predicates.getPredicates());
 
-//        for (int j = 0; j < 10; ++j){
-//            Predicate pre1 = null, pre2 = null;
-//            int index = 0;
-//            Random random = new Random();
-//            int end = random.nextInt(80);
-//            for (Predicate predicate : predicates1){
-//                ++index;
-//                if (index < end)continue;
-//                if (predicate.getOperand1().getColumn().getIndex() == predicate.getOperand2().getColumn().getIndex())continue;
-//                if (predicate.getOperator() == Operator.GREATER || predicate.getOperator() == Operator.LESS ){
-//                    if (pre1 == null)pre1 = predicate;
-//                    else {
-//                        if(predicate.getOperand2() != pre1.getOperand2() && predicate.getOperand1() != pre1.getOperand1())
-//                        {
-//                            pre2 = predicate;
-//                            break;
-//                        }
-//
-//                    }
-//                }
-//            }
-//            System.out.println(pre1);
-//            System.out.println(pre2);
-//
-////            pre1 = new Predicate(Operator.LESS_EQUAL,new ColumnOperand<>(input.getColumns()[6], 6),
-////                    new ColumnOperand<>(input.getColumns()[9], 9) );
-////            pre2 = new Predicate(Operator.LESS_EQUAL,new ColumnOperand<>(input.getColumns()[1], 1),
-////                    new ColumnOperand<>(input.getColumns()[9], 9) );
-//            run(input, clusterPair, pre1, pre2);
-//        }
-//
-        //t0.SingleExemp(Integer) > t1.ChildExemp(Integer)  13.14
-        //t0.SingleExemp(Integer) < t1.MarriedExemp(Integer)  13.15
-        //test for IEJoin
-        //IEJoin Time 298
-        //632591018
-        //test for BITJoin
-        //BITJoin Time 586
-        //632591018
-        //t0.MarriedExemp(Integer) < t1.ChildExemp(Integer)
-        //t0.SingleExemp(Integer) > t1.MarriedExemp(Integer)
-
-        Predicate pre1 = new Predicate(Operator.GREATER,new ColumnOperand<>(input.getColumns()[12], 12),
-                new ColumnOperand<>(input.getColumns()[14], 14) );
-        Predicate pre2 = new Predicate(Operator.LESS,new ColumnOperand<>(input.getColumns()[12], 12),
-                new ColumnOperand<>(input.getColumns()[13], 13) );
-        System.out.println(pre1);
-        System.out.println(pre2);
-        run(input, clusterPair, pre1, pre2);
 
 
 

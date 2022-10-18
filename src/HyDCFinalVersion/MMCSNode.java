@@ -12,6 +12,7 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import utils.TimeCal2;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static HyDCFinalVersion.RunHyDCFinalVersion.begFreeMem;
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
@@ -148,7 +149,7 @@ public class MMCSNode {
     static int dcNum = 0;
     static int curShareLen = -1;
     static int shareSum = 0;
-    public void refineBySelectivity(CPTree cpTree){
+    public List<ClusterPair> refineBySelectivity(CPTree cpTree) throws InterruptedException, ExecutionException {
 //        List<Predicate> needCombination = new ArrayList<>();
         List<Predicate> refiners = new ArrayList<>();
 //        HashMap<PartitionRefiner, Integer> selectivity = new HashMap<>();
@@ -182,12 +183,13 @@ public class MMCSNode {
             });
             cpTree1.setClusterPairs(newResult);
             cpTree1.setNeedCombine(null);
-            MMCSDC.clusterPairs = newResult;
-        }else
-            MMCSDC.clusterPairs = cpTree1.getClusterPairs();
+//            MMCSDC.clusterPairs = newResult;
+            return newResult;
+        }else return cpTree1.getClusterPairs();
+//            MMCSDC.clusterPairs = cpTree1.getClusterPairs();
 
 
-        TimeCal2.add((System.currentTimeMillis() - l1), 0);
+//        TimeCal2.add((System.currentTimeMillis() - l1), 0);
 
 
 
@@ -237,7 +239,7 @@ public class MMCSNode {
         return true;
     }
 
-    public HashEvidenceSet getAddedEvidenceSet(){
+    public HashEvidenceSet getAddedEvidenceSet(List<ClusterPair> cps){
         HashEvidenceSet newEvi = new HashEvidenceSet();
 
 
@@ -246,7 +248,11 @@ public class MMCSNode {
         if (MMCSDC.partitionEvidenceSetBuilder == null){
             MMCSDC.partitionEvidenceSetBuilder = new PartitionEvidenceSetBuilder(MMCSDC.predicates, MMCSDC.input.getInts());
         }
-        for (ClusterPair clusterPair : MMCSDC.clusterPairs){
+//        for (ClusterPair clusterPair : MMCSDC.clusterPairs){
+//
+//            MMCSDC.partitionEvidenceSetBuilder.addEvidencesForHyDC(clusterPair, newEvi);
+//        }
+        for (ClusterPair clusterPair : cps){
 
             MMCSDC.partitionEvidenceSetBuilder.addEvidencesForHyDC(clusterPair, newEvi);
         }
@@ -266,14 +272,14 @@ public class MMCSNode {
         }
 
         uncoverEvidenceSet.add(newEvi);
-        MMCSDC.clusterPairs = null;
+        cps = new ArrayList<>();
         needRefine = false;
         return newEvi;
     }
-    public boolean isValidResult(){
+    public boolean isValidResult(List<ClusterPair> cps){
         // there may be {12} : {12, 12}, so need to add one step to judge
-        if (MMCSDC.clusterPairs == null)return true;
-        for (ClusterPair clusterPair : MMCSDC.clusterPairs){
+        if (cps.size() == 0)return true;
+        for (ClusterPair clusterPair : cps){
 //            Iterator<LinePair> iter = clusterPair.getLinePairIterator();
 //            while (iter.hasNext()) {
 //                LinePair lPair = iter.next();

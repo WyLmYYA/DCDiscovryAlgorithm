@@ -19,6 +19,7 @@ import Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet;
 import mmcsforDC.MMCSDC;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
@@ -44,7 +45,7 @@ public class TestMmcsForDC {
 
     static IEvidenceSet samplingEvidenceSet;
 
-    public static void main(String[] args) throws InputIterationException, IOException {
+    public static void main(String[] args) throws InputIterationException, IOException, ExecutionException, InterruptedException {
         long DCBegin = System.currentTimeMillis();
         String dataFile ="dataset//Tax10k.csv";
         int lineSize=1000;
@@ -102,7 +103,7 @@ public class TestMmcsForDC {
         System.out.println("all time :" + (System.currentTimeMillis() - DCBegin));
     }
 
-    private static IEvidenceSet getFullEvidenceSet() {
+    private static IEvidenceSet getFullEvidenceSet() throws ExecutionException, InterruptedException {
         /**   sampling
         */
         IEvidenceSet sampleEvidenceSet = new SystematicLinearEvidenceSetBuilder(predicates,

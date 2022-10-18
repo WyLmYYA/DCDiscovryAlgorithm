@@ -8,11 +8,16 @@ import Hydra.de.hpi.naumann.dc.evidenceset.build.sampling.SystematicLinearEviden
 import Hydra.de.hpi.naumann.dc.input.Input;
 import Hydra.de.hpi.naumann.dc.input.InputIterationException;
 import Hydra.de.hpi.naumann.dc.input.RelationalInput;
+import Hydra.de.hpi.naumann.dc.predicates.Predicate;
 import Hydra.de.hpi.naumann.dc.predicates.PredicateBuilder;
 import utils.TimeCal2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class RunHyDCFinalVersion {
     protected static int sampleRounds = 5;
@@ -21,19 +26,26 @@ public class RunHyDCFinalVersion {
 
     public static IEvidenceSet samplingEvidence;
     static  long begFreeMem;
-    public static void main(String[] args) throws IOException, InputIterationException {
+    public static int sampleTime = 0;
+    public static int validTime  = 0;
+    public static void main(String[] args) throws IOException, InputIterationException, ExecutionException, InterruptedException {
         // 字节 1MB = 1048576字节 1GB = 1024 * 1048576 = 1073741824 字节
 //        begFreeMem = Runtime.getRuntime().freeMemory();
-        System.out.println(begFreeMem);
         long l1 = System.currentTimeMillis();
         String file ="dataset//CLAIM_2.csv";
         int size = 30000;
-         file ="dataset//Test.csv";
-         size = 5;
-         sampleRounds = 1;
+         file ="dataset//Tax10k.csv";
+         size = 100;
+         sampleRounds = 5;
+//
 //        file =args[0];
 //        size = Integer.parseInt(args[1]);
 
+        if (args.length >= 3 ){
+            sampleRounds = Integer.parseInt(args[2]);
+
+        }
+        System.out.println(sampleRounds);
         System.out.println("LRU");
          //-verbose:gc
         //-XX:+PrintGCDetails
@@ -48,12 +60,17 @@ public class RunHyDCFinalVersion {
 
         // build predicates
         long l2 = System.currentTimeMillis();
-        if (args.length == 3){
-            predicates = new PredicateBuilder(new File(args[2]), input);
+        if (args.length == 4 ){
+            predicates = new PredicateBuilder(new File(args[3]), input);
         }else {
             predicates = new PredicateBuilder(input, false, 0.3d);
         }
 //        predicates = new PredicateBuilder(new File("dataset//atom_dc.txt"), input);
+//        for (Collection<Predicate> predicatesTmp : predicates.getPredicateGroups()){
+//            for (Predicate predicate : predicatesTmp){
+//                System.out.println(predicate);
+//            }
+//        }
         System.out.println("predicates num:" + predicates.getPredicates().size());
         System.out.println("build predicates cost:" + (System.currentTimeMillis() - l2) + "ms");
 
@@ -61,6 +78,8 @@ public class RunHyDCFinalVersion {
         l2 = System.currentTimeMillis();
         IEvidenceSet sampleEvidenceSet = new SystematicLinearEvidenceSetBuilder(predicates,
                 sampleRounds).buildEvidenceSet(input);
+
+        System.out.println("sample " + (System.currentTimeMillis() - l2));
         HashEvidenceSet set = new HashEvidenceSet();
         sampleEvidenceSet.getSetOfPredicateSets().forEach(i -> set.add(i));
 
@@ -89,7 +108,6 @@ public class RunHyDCFinalVersion {
 
         DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
         denialConstraintSet = mmcsdc.denialConstraintSet;
-        denialConstraintSet.forEach(denialConstraint -> System.out.println(denialConstraint));
 
 
         System.out.println(denialConstraintSet.size());
@@ -102,7 +120,9 @@ public class RunHyDCFinalVersion {
         System.out.println("calculate evidence set time : " + TimeCal2.getTime(1));
         System.out.println("valid last predicate  time : " + TimeCal2.getTime(2));
         System.out.println("valid(refine) dc num" + MMCSNode.dcNum);
-        System.out.println("average share num: " + MMCSNode.shareSum / MMCSNode.dcNum);
+//        System.out.println("average share num: " + MMCSNode.shareSum / MMCSNode.dcNum);
+
+        System.out.println("final refine time " + validTime);
 
 
     }

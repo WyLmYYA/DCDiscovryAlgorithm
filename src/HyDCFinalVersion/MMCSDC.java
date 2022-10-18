@@ -25,15 +25,15 @@ import org.apache.lucene.util.RamUsageEstimator;
 import utils.TimeCal2;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import static HyDCFinalVersion.RunHyDCFinalVersion.begFreeMem;
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
 /**
  * @Author yoyuan
- * @Description:  we treat mmcs process as a deep traversal of a tree,
- *                IEvidenceSet is evidence set to cover whose element is PredicateBitSet, a set of predicates = an evidence
- *
+ * @Description: we treat mmcs process as a deep traversal of a tree,
+ * IEvidenceSet is evidence set to cover whose element is PredicateBitSet, a set of predicates = an evidence
  * @DateTime: 2021/9/26 14:47
  */
 
@@ -41,19 +41,19 @@ public class MMCSDC {
 
     private final static boolean ENABLE_TRANSITIVE_CHECK = true;
     /**
-     *  in DC, this is number of predicates, generally this is the attribute for FD or vertices for Hypergraph
-    */
+     * in DC, this is number of predicates, generally this is the attribute for FD or vertices for Hypergraph
+     */
     private int numberOfPredicates;
 
     /**
-     *  each node represent current a minimal cover set, here, is a valid DC
-    */
+     * each node represent current a minimal cover set, here, is a valid DC
+     */
 
     public DenialConstraintSet denialConstraintSet = new DenialConstraintSet();
 
     /**
-     *  `cand` for MMCS, with the transversal walkDown, this will live update
-    */
+     * `cand` for MMCS, with the transversal walkDown, this will live update
+     */
     static IBitSet candidatePredicates;
 
 
@@ -68,16 +68,15 @@ public class MMCSDC {
 
     public static PartitionEvidenceSetBuilder partitionEvidenceSetBuilder;
 
-    NTreeSearch treeSearch = new NTreeSearch();
+//    NTreeSearch treeSearch = new NTreeSearch();
 
-    CPTree cpTree;
 
     public static List<ClusterPair> initClusterPairs;
 
-    public static List<ClusterPair> clusterPairs;
+//    public static List<ClusterPair> clusterPairs;
 
 
-    public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover, PredicateBuilder predicates, Input input){
+    public MMCSDC(int numberOfPredicates, IEvidenceSet evidenceSetToCover, PredicateBuilder predicates, Input input) throws InterruptedException, ExecutionException {
 
         this.numberOfPredicates = numberOfPredicates;
         ieJoin = new IEJoin(input.getInts());
@@ -86,64 +85,68 @@ public class MMCSDC {
         this.predicates = predicates;
         this.input = input;
 
-        for (int i = 0; i < numberOfPredicates; ++i){
+        for (int i = 0; i < numberOfPredicates; ++i) {
             candidatePredicates.set(i);
         }
         initClusterPairs = new ArrayList<>();
         initClusterPairs.add(StrippedPartition.getFullParition(input.getLineCount()));
-
 
         initiate(evidenceSetToCover);
 
     }
 
 
-    public void initiate(IEvidenceSet evidenceToCover){
+    public void initiate(IEvidenceSet evidenceToCover) throws InterruptedException, ExecutionException {
 
         /**
          *   if there is evidenceSet is empty, return empty DC
-        */
-        walkDown(new MMCSNode(numberOfPredicates, evidenceToCover, input.getLineCount()));
+         */
+        CPTree cpTree = new CPTree();
+        cpTree.setClusterPairs(initClusterPairs);
+        walkDown(new MMCSNode(numberOfPredicates, evidenceToCover, input.getLineCount()), false,cpTree, new NTreeSearch());
     }
 
     /**
-     *  root is the root of the deep transversal tree, the elements is null, and the uncover is full EvidenceSet
-    */
+     * root is the root of the deep transversal tree, the elements is null, and the uncover is full EvidenceSet
+     */
 
-    public  HashEvidenceSet walkDown(MMCSNode currentNode){
+    public HashEvidenceSet walkDown(MMCSNode currentNode, boolean isThread, CPTree cpTree, NTreeSearch treeSearch) throws InterruptedException, ExecutionException {
 
         // minimize in mmcs,
         HashEvidenceSet ret = new HashEvidenceSet();
-
-        if (currentNode.canCover()){
+//        System.out.println("1");
+//        System.out.println("1");
+        List<ClusterPair> cps = new ArrayList<>();
+        if (currentNode.canCover()) {
             // we need to valid current partial dc is valid dc or not
 
             //  check is there any predicate needed combination not be refined, and update cluster pair
 
-            if(currentNode.needRefine){
+            if (currentNode.needRefine) {
 //                System.out.println("need refine ");
-                if(ENABLE_TRANSITIVE_CHECK){
+                if (ENABLE_TRANSITIVE_CHECK) {
                     long l1 = System.currentTimeMillis();
-                    for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)){
+                    for (int ne = currentNode.element.nextSetBit(0); ne != -1; ne = currentNode.element.nextSetBit(ne + 1)) {
                         IBitSet tmp = currentNode.element.clone();
                         tmp.set(ne, false);
-                        for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()){
+                        for (Predicate p2 : indexProvider.getObject(ne).getInverse().getImplications()) {
                             int index = indexProvider.getIndex(p2);
-                            if (index < numberOfPredicates){
+                            if (index < numberOfPredicates) {
                                 tmp.set(indexProvider.getIndex(p2));
                             }
                         }
 
-                        if (treeSearch.containsSubset(tmp))return ret;
+                        if (treeSearch.containsSubset(tmp)) return ret;
                     }
                     TimeCal2.add((System.currentTimeMillis() - l1), 1);
                 }
-                currentNode.refineBySelectivity(cpTree);
+                long tim1 = System.currentTimeMillis();
+                cps = currentNode.refineBySelectivity(cpTree);
+                RunHyDCFinalVersion.validTime += (System.currentTimeMillis() - tim1);
             }
 
 
-
-            if (currentNode.isValidResult()){
+            if (currentNode.isValidResult(cps)) {
 
 //                if (!currentNode.isValidResult(clusterPairs)){
 //                    System.out.println("s");
@@ -152,92 +155,152 @@ public class MMCSDC {
 
                 denialConstraintSet.add(currentNode.getDenialConstraint());
 
-            }else{
+            } else {
                 // not a valid result means cluster pair not empty, we need get added evidence set
                 // after this func, uncover update, and is a complete evidence for currNode, so cluster pair will be null
 
-                HashEvidenceSet tmp = currentNode.getAddedEvidenceSet();
+                HashEvidenceSet tmp = currentNode.getAddedEvidenceSet(cps);
                 ret.add(tmp);
-                if (currentNode.uncoverEvidenceSet.size() == 0){
+                if (currentNode.uncoverEvidenceSet.size() == 0) {
                     treeSearch.add(currentNode.element);
 
                     denialConstraintSet.add(currentNode.getDenialConstraint());
-                }else
-                    walkDown(currentNode);
+                } else
+                    walkDown(currentNode, isThread,cpTree,treeSearch);
             }
             return ret;
         }
 
 
-
-
         /**
          *  chosenEvidence = F ∩ cand， F is next Evidence needs to be covered
-        */
-        PredicateBitSet nextPredicates =  currentNode.getNextEvidence();
+         */
+        PredicateBitSet nextPredicates = currentNode.getNextEvidence();
 
         IBitSet chosenEvidence = currentNode.candidatePredicates.getAnd(nextPredicates.getBitset());
 
 
         /**
          *  cand = cand \ C, we don't change the candidatePredicates of current node
-        */
+         */
 
         IBitSet nextCandidatePredicates = currentNode.candidatePredicates.getAndNot(chosenEvidence);
 
 
-        for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)){
+        List<Integer> list = new ArrayList<>();
+        for (int next = chosenEvidence.nextSetBit(0); next >= 0; next = chosenEvidence.nextSetBit(next + 1)) {
+            list.add(next);
+        }
+//        System.out.println("2");
+        if (isThread) {
 
-            /** get Trivial prune */
-            if (currentNode.curPred == null) {
-                cpTree = new CPTree();
-                cpTree.setClusterPairs(initClusterPairs);
+            for (int i = 0; i < list.size(); i += 4) {
+
+
+                ExecutorService executorService = Executors.newFixedThreadPool(2);
+//                CountDownLatch countDownLatch = new CountDownLatch(Math.min(4,list.size() - i));
+                CopyOnWriteArrayList<HashEvidenceSet> res = new CopyOnWriteArrayList<>();
+                List<Future<HashEvidenceSet>> futures = new ArrayList<>();
+                for (int j = i; j < Math.min(i + 4, list.size()); ++j) {
+                    CPTree cpTree1 = new CPTree();
+                    cpTree1.setClusterPairs(initClusterPairs);
+                    int next = list.get(j);
+
+                    futures.add((Future<HashEvidenceSet>) executorService.submit(() -> {
+//                        System.out.println(Thread.currentThread().getName() + " begin ");
+                        IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates, next);
+
+                        MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
+
+
+                        HashEvidenceSet tmp = null;
+                        if (childNode.isGlobalMinimal()) {
+
+                            try {
+//                                System.out.println(Thread.currentThread().getName() + " walk ");
+                                tmp = walkDown(childNode, false, cpTree1,treeSearch);
+//                                System.out.println(Thread.currentThread().getName() + " end ");
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
+//                            currentNode.uncoverEvidenceSet.add(tmp);
+//                            ret.add(tmp);
+                        }
+
+//                        countDownLatch.countDown();
+//                        res.add(tmp);
+                        return tmp;
+                    }));
+//                    executorService.execute(task);
+                    nextCandidatePredicates.set(next);
+                }
+
+                executorService.shutdown();
+
+                while (!executorService.isTerminated()) {
+
+                }
+//                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+                for (Future<HashEvidenceSet> future : futures){
+                    HashEvidenceSet tmp = future.get();
+                    if (tmp!=null){
+                        currentNode.uncoverEvidenceSet.add(tmp);
+                        ret.add(tmp);
+                    }
+                }
+//                for (HashEvidenceSet tmp : res) {
+//                    currentNode.uncoverEvidenceSet.add(tmp);
+//                    ret.add(tmp);
+//                }
             }
-            IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates,next);
 
-            MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
+        }else{
+                for (int i = 0; i < list.size(); ++i) {
+                    int next = list.get(i);
+                    IBitSet prunedCandidate = PruneNextPredicates(nextCandidatePredicates, next);
 
-            if(childNode.isGlobalMinimal()){
-                HashEvidenceSet tmp = walkDown(childNode);
-                currentNode.uncoverEvidenceSet.add(tmp);
-                ret.add(tmp);
-                nextCandidatePredicates.set(next);
-                tmp = null;
+                    MMCSNode childNode = currentNode.getChildNode(next, prunedCandidate);
 
+                    if (childNode.isGlobalMinimal()) {
+                        HashEvidenceSet tmp = walkDown(childNode, false,cpTree,treeSearch);
+                        currentNode.uncoverEvidenceSet.add(tmp);
+                        ret.add(tmp);
+                        nextCandidatePredicates.set(next);
+
+                    }
+
+                    childNode = null;
+                }
             }
 
-            childNode = null;
+            return ret;
 
         }
 
+        private IBitSet PruneNextPredicates (IBitSet nextCandidatePredicates,int next){
+            IBitSet tmp = nextCandidatePredicates.clone();
 
-        return ret;
+            Predicate predicate = indexProvider.getObject(next);
 
+            Collection<Predicate> predicates = predicate.getRedundants();
+
+            // Triviality:
+            predicates.forEach(predicate1 -> {
+                int redundantIndex = indexProvider.getIndex(predicate1);
+                if (redundantIndex < numberOfPredicates)
+                    tmp.set(indexProvider.getIndex(predicate1), false);
+            });
+
+            // Implication:
+            predicate.getImplications().forEach(predicate1 -> {
+                int redundantIndex = indexProvider.getIndex(predicate1);
+                if (redundantIndex < numberOfPredicates)
+                    tmp.set(indexProvider.getIndex(predicate1), false);
+            });
+
+            return tmp;
+        }
 
     }
-
-    private IBitSet PruneNextPredicates(IBitSet nextCandidatePredicates, int next) {
-        IBitSet tmp = nextCandidatePredicates.clone();
-
-        Predicate predicate = indexProvider.getObject(next);
-
-        Collection<Predicate> predicates =  predicate.getRedundants();
-
-        // Triviality:
-        predicates.forEach(predicate1 -> {
-            int redundantIndex = indexProvider.getIndex(predicate1);
-            if (redundantIndex < numberOfPredicates)
-                tmp.set(indexProvider.getIndex(predicate1), false);
-        });
-
-        // Implication:
-        predicate.getImplications().forEach(predicate1 -> {
-            int redundantIndex = indexProvider.getIndex(predicate1);
-            if (redundantIndex < numberOfPredicates)
-                tmp.set(indexProvider.getIndex(predicate1), false);
-        });
-
-        return tmp;
-    }
-
-}

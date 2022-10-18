@@ -15,6 +15,7 @@ import mmcsforDC.MMCSNode;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 
 import static Hydra.de.hpi.naumann.dc.predicates.sets.PredicateBitSet.indexProvider;
 
@@ -29,7 +30,7 @@ public class Hydra {
 		return fullEvidenceSet;
 	}
 
-	public DenialConstraintSet run(Input input, PredicateBuilder predicates, long timebefore) {
+	public DenialConstraintSet run(Input input, PredicateBuilder predicates, long timebefore) throws ExecutionException, InterruptedException {
 
 		long hydraBegin = System.currentTimeMillis();
 		//two phases:random sampling and focused sampling

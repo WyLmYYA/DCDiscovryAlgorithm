@@ -65,18 +65,14 @@ public class BIT {
                 arr = nodes[rightBound].toArray();
                 hashMap.put(rightBound, arr);
             }
-
             int index = IEJoin.getOffset(value, arr, ColC.getIndex(), ColD.getIndex(), order2 == IEJoin.Order.DESCENDING,
                     p2.getOperator() == Operator.GREATER_EQUAL || p2.getOperator() == Operator.LESS_EQUAL);
-
             if(index != 0){
                 res.offsetInNode.add(index);
                 res.NodeIndex.add(rightBound);
             }
-
             rightBound -= lowbit(rightBound);
         }
-
         if (res.equals(indexForBIT)){
             return res;
         }else {

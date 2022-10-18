@@ -323,10 +323,6 @@ public class  IEJoin {
 
 		int len1 = clusters.getC1().size();
 		int len2 = clusters.getC2().size();
-
-
-
-
 		ParsedColumn<?> columnA = p1.getOperand1().getColumn();
 		ParsedColumn<?> columnB = p1.getOperand2().getColumn();
 		ParsedColumn<?> columnC =  p2.getOperand1().getColumn();
@@ -380,9 +376,6 @@ public class  IEJoin {
 			Cluster c2 = new Cluster();
 
 			long phase2 = System.currentTimeMillis();
-			if (A == 5557){
-				System.out.println("");
-			}
 			IndexForBIT next = bit.getSum(offsetForAandB, A, c2, indexForBIT);
 
 			if(indexForBIT.equals(next)  && next.hasNext() && lastC1 != null){
@@ -407,7 +400,6 @@ public class  IEJoin {
 							ClusterPair pairLast = new ClusterPair(lastC1, lastC2);
 							Res.accept(pairLast);
 						}
-
 						lastC2 = c2;
 						lastC1 = c1;
 					}

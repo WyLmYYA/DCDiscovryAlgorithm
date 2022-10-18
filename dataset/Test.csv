@@ -1,6 +1,4 @@
-clo1(Double),col2(Double),col3(Double),col4(Double),col5(Double)
-1,2,3,1,2
-1,2,4,2,2
-7,4,5,3,6
-7,4,6,4,6
-6,5,9,6,10
+A(String),B(Double),C(Double)
+Fizz,100,50
+Ezreal,50,120
+Graves,30,150
